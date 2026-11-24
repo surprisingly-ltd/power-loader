@@ -30,7 +30,9 @@ AMO rejects `update_url` for listed add-ons: always submit as **unlisted** ("On 
    match.
 4. **Approve** the `release` environment (Actions → the run → Review deployments). Only then can the job
    read `AMO_JWT_ISSUER` and `AMO_JWT_SECRET`. It submits that exact package, the source zip and
-   `amo-metadata.json` to AMO (unlisted) with `web-ext sign` and waits for the signed XPI.
+   `amo-metadata.json` to AMO (unlisted) with `web-ext sign` and waits for the signed XPI. If AMO already
+   has the version (a re-run after a timeout), it downloads that instead. Either way,
+   `tools/amo-signed.mjs` checks the signed XPI is this build plus Mozilla's `META-INF/` signature.
 5. **Draft release:** the workflow drafts a GitHub Release with the signed XPI, both zips, a CycloneDX
    SBOM, `SHA256SUMS` and build provenance attestations.
 6. **Publish the draft.** That runs `pages.yml`: `tools/fetch-releases.mjs` downloads every published
@@ -44,10 +46,11 @@ reject the approval (nothing reaches AMO), fix it in a pull request, and release
 
 ## A version signed outside the workflow
 
-AMO signs each version once. If a version was uploaded by hand (as 1.0.0 was, on 24 November 2026), the
-workflow can't sign it again: reject its approval request, then publish the hand-signed file yourself.
-`.claude/skills/release/SKILL.md` has the exact steps, including checking that the signed XPI is the
-build you uploaded.
+AMO signs each version once. 1.0.0 was uploaded through the Developer Hub on 24 November 2026 and signed
+that day. A tag runs the workflow as it was at the tagged commit, and 1.0.0's commit predates
+`tools/amo-signed.mjs`, so 1.0.0 is published by hand: rebuild it, download and check the signed file
+with `tools/amo-signed.mjs`, and create the release with it (reject that tag's approval request).
+`.claude/skills/release/SKILL.md` has the exact steps.
 
 ## Secrets and accounts
 

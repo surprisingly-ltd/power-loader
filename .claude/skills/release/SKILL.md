@@ -1,6 +1,6 @@
 ---
 name: release
-description: Release a new version of the Power Loader Firefox extension (bump, PR, tag, approve AMO signing, publish the GitHub Release so the site serves it and installed copies update), publish a version that was signed by hand on AMO, or check that a release is live on powerloader.surprisingly.ltd. Use when asked to release, ship, deploy, sign or publish a version, or when a signed XPI arrives from Mozilla.
+description: Release a new version of the Power Loader Firefox extension (bump, PR, tag, approve AMO signing, publish the GitHub Release so the site serves it and installed copies update), publish a version signed outside the pipeline (such as 1.0.0, uploaded by hand on AMO), or check that a release is live on powerloader.surprisingly.ltd. Use when asked to release, ship, deploy, sign or publish a version, or when a signed XPI arrives from Mozilla.
 ---
 
 # Releasing Power Loader
@@ -47,39 +47,35 @@ already on AMO, including ones uploaded by hand.
 If the build fails before signing: the user rejects the approval, the fix goes in a PR, and the release
 uses the **next** version number (the tag can't be reused).
 
-## 3. A version signed by hand on AMO
+## 3. A version signed outside the pipeline
 
-For a version uploaded through the Developer Hub (1.0.0 was, from commit `8caf0f5`), the workflow can't
-sign it again. When Mozilla's "signed" email arrives, the user downloads the XPI from the Developer Hub.
+The **Release** workflow handles a version AMO already has: its `sign` step runs `tools/amo-signed.mjs`,
+which downloads the signed XPI and checks it against the build, and only submits to AMO when the version
+isn't there. That covers re-running a release after a timeout. It doesn't cover **1.0.0**, which was
+uploaded through the Developer Hub from commit `8caf0f5`: a tag runs the workflow *as it was at the tagged
+commit*, and that one can only submit, which AMO refuses for an existing version. Publish 1.0.0 (or any
+version tagged on a commit from before this tool) by hand:
 
-1. Rebuild that version's package from the commit it came from, and check the signed file is that build
-   (Mozilla adds only `META-INF/`):
+1. Rebuild the package from its commit, then download AMO's signed file and check it is that build
+   (same files apart from Mozilla's `META-INF/`; `manifest.json` is compared as JSON, because AMO
+   re-serialises it). The keys are the AMO API pair; in a local `.env` they may be named `MOZILLA_JWT_*`.
    ```sh
-   V=1.0.0; SHA=8caf0f5     # the commit the uploaded zip was built from
+   V=1.0.0; SHA=8caf0f5
    git worktree add /tmp/pl-$V $SHA && cd /tmp/pl-$V
    pnpm install --frozen-lockfile && pnpm build:ext && pnpm bundle:source
-   mkdir -p /tmp/pl-check/{signed,built}
-   unzip -q <path to signed .xpi> -d /tmp/pl-check/signed
-   unzip -q dist/power-loader-$V.zip -d /tmp/pl-check/built
-   diff -r -x META-INF /tmp/pl-check/signed /tmp/pl-check/built && echo SAME
-   unzip -p <path to signed .xpi> manifest.json | node -e 'const m=JSON.parse(require("fs").readFileSync(0));console.log(m.version, m.browser_specific_settings.gecko.id)'
+   AMO_JWT_ISSUER=... AMO_JWT_SECRET=... node <this repo>/tools/amo-signed.mjs $V dist/power-loader-$V.zip power-loader-$V.xpi
    ```
-   Stop if anything differs, or if the version or ID is wrong.
-2. Name and checksum the files:
-   ```sh
-   cp <path to signed .xpi> power-loader-$V.xpi
-   cp dist/power-loader-$V.zip dist/power-loader-$V-src.zip .
-   sha256sum power-loader-$V.xpi power-loader-$V.zip power-loader-$V-src.zip > SHA256SUMS
-   ```
+   Stop if it reports any difference. Never print the keys.
+2. Checksums: `cp dist/power-loader-$V.zip dist/power-loader-$V-src.zip . && sha256sum power-loader-$V.xpi power-loader-$V.zip power-loader-$V-src.zip > SHA256SUMS`
 3. With the user's go-ahead, create and publish the release on that commit:
    ```sh
    gh release create v$V --target $(git rev-parse $SHA) -R surprisingly-ltd/power-loader \
-     --title "Power Loader $V" --notes "Signed by Mozilla (unlisted). Uploaded by hand through the AMO Developer Hub." \
+     --title "Power Loader $V" --notes "Signed by Mozilla (unlisted). Uploaded through the AMO Developer Hub." \
      power-loader-$V.xpi power-loader-$V.zip power-loader-$V-src.zip SHA256SUMS
    ```
-   The new tag starts a **Release** run as well: its `sign` job would fail (AMO already has this
-   version), so the user **rejects** that approval.
-4. Clean up: `git worktree remove /tmp/pl-$V`.
+   The new tag also starts a **Release** run; the user **rejects** its approval, since this version is
+   already published.
+4. Clean up: `cd - && git worktree remove /tmp/pl-$V`.
 
 ## 4. Check it's live
 

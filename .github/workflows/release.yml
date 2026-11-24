@@ -79,14 +79,26 @@ jobs:
           VERSION: ${{ needs.build.outputs.version }}
           WEB_EXT_API_KEY: ${{ secrets.AMO_JWT_ISSUER }}
           WEB_EXT_API_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
         run: |
           set -euo pipefail
-          src=$(mktemp -d)
-          unzip -q "inputs/power-loader-${VERSION}.zip" -d "$src"
-          npx web-ext sign --channel=unlisted --source-dir "$src" --artifacts-dir signed \
-            --upload-source-code "inputs/power-loader-${VERSION}-src.zip" --amo-metadata amo-metadata.json \
-            --approval-timeout 3000000
-          mv signed/*.xpi "signed/power-loader-${VERSION}.xpi"
+          mkdir -p signed
+          # AMO signs a version once. If it already has this one (uploaded by hand, or a re-run after a
+          # timeout), download it, checked against this build, instead of submitting it again.
+          status=0
+          node tools/amo-signed.mjs "$VERSION" "inputs/power-loader-${VERSION}.zip" "signed/power-loader-${VERSION}.xpi" || status=$?
+          if [ "$status" = 2 ]; then
+            src=$(mktemp -d)
+            unzip -q "inputs/power-loader-${VERSION}.zip" -d "$src"
+            npx web-ext sign --channel=unlisted --source-dir "$src" --artifacts-dir web-ext-signed \
+              --upload-source-code "inputs/power-loader-${VERSION}-src.zip" --amo-metadata amo-metadata.json \
+              --approval-timeout 3000000
+            # Then fetch the signed file the same way, so it is checked against this build too.
+            node tools/amo-signed.mjs "$VERSION" "inputs/power-loader-${VERSION}.zip" "signed/power-loader-${VERSION}.xpi"
+          elif [ "$status" != 0 ]; then
+            exit "$status"
+          fi
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: signed

@@ -9,8 +9,9 @@ pnpm test
 POWERLOADER_FIREFOX=/path/to/firefox pnpm test:firefox
 ```
 
-If Firefox is on PATH, omit POWERLOADER_FIREFOX. Run this command separately against the supported ESR
-and the deployed release. Firefox 151 was used during implementation. Headless is the default;
+If Firefox is on PATH, omit POWERLOADER_FIREFOX. CI runs it on every pull request against the latest ESR
+and the latest release (`firefox` job in `.github/workflows/ci.yml`); it was last checked locally on
+Firefox 161 and 153 ESR. Headless is the default;
 set POWERLOADER_FIREFOX_HEADFUL=1 to show the browser. The runner requires localhost networking and
 permission to start Firefox and child processes.
 

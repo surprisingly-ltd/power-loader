@@ -1,6 +1,6 @@
 # First release plan and design-review response
 
-Created: 2026-10-19. Status: proposal. This is the entry point for building the case-journeys design into the extension. It records:
+Created: 2026-10-19. Status: built and released as 1.0.0 (submitted to AMO on 24 November 2026; see `../releasing.md`). This is the entry point for building the case-journeys design into the extension. It records:
 
 - what the first release includes;
 - how each finding from the design review was handled;

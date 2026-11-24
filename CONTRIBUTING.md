@@ -48,4 +48,7 @@ Keep each pull request to one change, with a description of what changed and why
 Changes to `main` go through pull requests, and the required checks must pass. By contributing you agree
 that your contribution is licensed under the Apache License 2.0 (see `LICENSE`).
 
+Releases are made by the maintainers: see [docs/releasing.md](docs/releasing.md). Claude Code sessions in this
+repository can follow the same steps with the `release` skill (`.claude/skills/release/SKILL.md`).
+
 Security issues: please follow [SECURITY.md](SECURITY.md) instead of opening an issue.

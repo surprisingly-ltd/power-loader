@@ -9,7 +9,7 @@ A Firefox extension for caseworkers. A case starts from the forms it needs to fi
 
 **Website, demo and install instructions:** <https://powerloader.surprisingly.ltd>. Privacy policy: <https://powerloader.surprisingly.ltd/privacy>. Notes for add-on reviewers: [REVIEWERS.md](REVIEWERS.md). Published as open source (Apache-2.0) by Surprisingly Limited.
 
-The design and its decisions are in [the first release plan](docs/plans/release-plan.md), which links the feature plans. `prototype/case-journeys.html` is the clickable prototype; `pnpm test:prototype` checks it.
+The design and its decisions are in [the first release plan](docs/plans/release-plan.md), which links the feature plans. How a version is signed and published: [docs/releasing.md](docs/releasing.md). `prototype/case-journeys.html` is the clickable prototype; `pnpm test:prototype` checks it.
 
 ```text
 extension/
@@ -51,7 +51,7 @@ pnpm vendor          # builds Transformers.js with released ONNX Runtime; copies
 pnpm demo            # serves demo/ at http://localhost:8787/demo/
 ```
 
-In Firefox 140 or newer, open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on…** and select `extension/manifest.json`. Open the sidebar with the toolbar button.
+To install a signed release, follow [Setup](https://powerloader.surprisingly.ltd/setup) (enterprise policy or one computer). To run it from source, in Firefox 140 or newer, open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on…** and select `extension/manifest.json`. Open the sidebar with the toolbar button.
 
 The first time the sidebar opens it starts on **Settings**, with what to set up: download the on-device privacy model there (**Download and test the model**), connect a library if you have one, and turn on the ✦ Remote AI if you use it. The Privacy tab has the model's server and the redaction settings; it works with or without a library.
 
@@ -107,7 +107,10 @@ GitHub Actions (`.github/workflows/`) runs on every pull request and every push 
 
 ```sh
 # bump "version" in extension/manifest.json in a pull request, merge it, then:
-git tag -s v1.0.1 && git push origin v1.0.1
+git tag v1.0.1 && git push origin v1.0.1
+# approve the `release` environment in the Actions run, then publish the draft release
 ```
+
+The full procedure, including a version signed by hand on AMO, is in [docs/releasing.md](docs/releasing.md).
 
 Security reports: see [SECURITY.md](SECURITY.md). Contributing: see [CONTRIBUTING.md](CONTRIBUTING.md).

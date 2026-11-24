@@ -1,6 +1,6 @@
 # Case activity log
 
-Created: 2026-10-19. Revised the same day after design review (see `release-plan.md`). Status: proposal. See `prototype/case-journeys.html`: open the full case page, then the Activity tab.
+Created: 2026-10-19. Revised the same day after design review (see `release-plan.md`). Status: built (1.0.0). This plan records the design and its decisions; the code and README describe what ships. See `prototype/case-journeys.html`: open the full case page, then the Activity tab.
 
 ## Purpose
 

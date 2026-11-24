@@ -1,7 +1,7 @@
 # Remove the Python backend
 
 Date: 2026-10-19  
-Status: implementation complete (2026-10-19); offline checks passed. Firefox and live-endpoint smoke verification remain outstanding.
+Status: implementation complete (2026-10-19). The Firefox suite now runs in CI on the latest ESR and release; the live-endpoint smoke test (`pnpm test:live`) stays opt-in.
 
 ## Decision and first-release scope
 

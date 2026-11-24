@@ -1,0 +1,19 @@
+{
+  "schema": "powerloader-profile/1",
+  "id": "biv/employment",
+  "kind": "extract",
+  "name": "Employment and income",
+  "version": "v2",
+  "match": ["http://localhost:8787/demo/employment-*.html*"],
+  "urlPattern": "http://localhost:8787/demo/employment-{clientId}.html",
+  "fields": {
+    "lastName": "#person label(Surname)",
+    "nino": "#person label(NI number)",
+    "dob": "#person label(Date of birth) | date",
+    "employmentStatus": "#person label(Employment status)",
+    "currentEmployer": "#person label(Current employer)",
+    "weeklyIncome": "#person label(Weekly income) | number",
+    "ucClaim": "#person label(Universal Credit)",
+    "periods": ["#history tbody tr", { "@type": "period", "cat": "td:nth-child(1)", "label": "td:nth-child(2)", "start": "td:nth-child(3) | date", "end": "td:nth-child(4) | date" }]
+  }
+}

@@ -1,0 +1,14 @@
+allowBuilds:
+  '@google/genai': false
+  esbuild: true
+  onnxruntime-node: false
+  protobufjs: false
+  spawn-sync: false
+  tesseract.js: false
+ignoredBuiltDependencies:
+  - spawn-sync
+# Patched releases of development-only dependencies (web-ext's), until web-ext requires them itself.
+# None of these ship in the extension. Remove each once `pnpm why` shows the upstream range includes it.
+overrides:
+  node-forge: 1.4.3
+  fast-uri: 3.1.9

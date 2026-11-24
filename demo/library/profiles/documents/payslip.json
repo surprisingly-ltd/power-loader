@@ -1,0 +1,15 @@
+{
+  "schema": "powerloader-profile/1",
+  "id": "documents/payslip",
+  "kind": "document",
+  "name": "Payslip",
+  "version": "v1",
+  "detect": ["Payslip", "Gross pay"],
+  "fields": {
+    "firstName": { "anchor": "Employee:", "pattern": "^(\\S+)" },
+    "lastName": { "anchor": "Employee:", "pattern": "(\\S+)$" },
+    "nino": { "anchor": "NI number", "pattern": "([A-Z]{2}\\s?\\d{2}\\s?\\d{2}\\s?\\d{2}\\s?[A-D])" },
+    "currentEmployer": { "anchor": "Employer:" },
+    "weeklyIncome": { "anchor": "Gross pay", "pattern": "£?\\s?([\\d,]+\\.\\d{2})" }
+  }
+}

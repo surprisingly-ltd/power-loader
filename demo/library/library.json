@@ -1,0 +1,99 @@
+{
+  "schema": "powerloader-library/1",
+  "commit": "c8e1e9b",
+  "message": "Demo library for the fictional Northshire pages",
+  "approvedHosts": [
+    "localhost:8787",
+    "127.0.0.1:8787"
+  ],
+  "files": [
+    {
+      "path": "fields.json",
+      "sha256": "e3c9688bd6bd4e9976f8eb95d40686dc15d41296ca09930ca63dbd818fd2dbec"
+    },
+    {
+      "path": "forms/coc.json",
+      "sha256": "62a516480790d7f1f20a54c6a5ee5a5c3c3940ab57b8a3217bf0d88a8ece74d4"
+    },
+    {
+      "path": "forms/dhp.json",
+      "sha256": "0fe63cddc6f5e79d0824220d649ef4590b78a93540bcd3a4643d8dcbb782122d"
+    },
+    {
+      "path": "forms/hsr.json",
+      "sha256": "3c6611e64acf4847a3405af4e586906a3723a361890c7087dd0ae63e612c731f"
+    },
+    {
+      "path": "privacy.json",
+      "sha256": "8cf2e4f84250679d589d98d510919d963df33def789d10faa2a27a925b1fcfa1"
+    },
+    {
+      "path": "profiles/documents/payslip.json",
+      "sha256": "6efa8c9d7fd750be9a28b28de518e86e19f19410857eefd474d22b1ab848fea5"
+    },
+    {
+      "path": "profiles/documents/tenancy-agreement.json",
+      "sha256": "bb1abd54e22e43126557db775550e3608ad2c0d85144ffc1b9b40cd48c5bbd44"
+    },
+    {
+      "path": "profiles/fill/dhp.json",
+      "sha256": "a6cd1e0e46d6d808ecc26ca1ab770fd0280f3cf2b8b190328b7ceab8ab4e3768"
+    },
+    {
+      "path": "profiles/fill/housing-referral.json",
+      "sha256": "5129cc0f1dae49be585d28e4213d8a4085281ff193fed90a8e1a3af6814792b4"
+    },
+    {
+      "path": "profiles/pages/biv/employment.json",
+      "sha256": "1b34907e5567c1299b856de78cb5f95ce32cb8e352743975f23035add4bc3261"
+    },
+    {
+      "path": "profiles/pages/cm/case-notes.json",
+      "sha256": "a06d394db2630a299a3ecd7f6a73919cc1f034be64089fcf047fa05b3a30725d"
+    },
+    {
+      "path": "profiles/pages/cm/client-record.json",
+      "sha256": "f62531075da761ba22cc89451fcde6225fb4843e90a607772978eb70f9ebb3fc"
+    },
+    {
+      "path": "profiles/pages/harbour-homes/rent-account.json",
+      "sha256": "025fbe83531c0f4535feb318e75c19cad0d883f1343dadbfa6ab032c490059a5"
+    }
+  ],
+  "history": {
+    "profiles/pages/cm/client-record.json": [
+      {
+        "version": "v3",
+        "commit": "9b1e044",
+        "date": "2026-08-12",
+        "message": "Read preferred language"
+      },
+      {
+        "version": "v2",
+        "commit": "51c7a2d",
+        "date": "2026-03-03",
+        "message": "New Case Manager layout"
+      },
+      {
+        "version": "v1",
+        "commit": "0d4f1aa",
+        "date": "2026-01-09",
+        "message": "First version"
+      }
+    ],
+    "profiles/fill/dhp.json": [
+      {
+        "version": "v2",
+        "commit": "c3a91f0",
+        "date": "2026-10-16",
+        "message": "Add weekly income"
+      },
+      {
+        "version": "v1",
+        "commit": "7e20b5c",
+        "date": "2026-05-20",
+        "message": "First version"
+      }
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "powerloader-form/1",
+  "id": "dhp",
+  "short": "DHP",
+  "name": "Discretionary housing payment",
+  "category": "Housing",
+  "version": "v2",
+  "url": "http://localhost:8787/demo/dhp.html",
+  "fill": "fill/dhp",
+  "fields": [
+    { "key": "firstName", "required": true }, { "key": "lastName", "required": true }, { "key": "dob", "required": true },
+    { "key": "nino", "required": true }, { "key": "address", "required": true }, { "key": "postcode", "required": true },
+    { "key": "landlord", "required": true }, { "key": "tenancyStart" }, { "key": "monthlyRent", "required": true },
+    { "key": "arrears", "required": true }, { "key": "currentEmployer" }, { "key": "weeklyIncome", "required": true },
+    { "key": "ucClaim" }, { "key": "reason", "required": true }
+  ],
+  "rules": [{ "field": "tenancyStart", "before": "today", "message": "The tenancy start must be before today" }],
+  "confirmation": { "match": ["http://localhost:8787/demo/dhp-submitted.html*"], "refPattern": "DHP-\\d{5}" },
+  "sideEffects": ["Leaving the NI number box looks the claimant up and shows their name next to it."]
+}

@@ -1,0 +1,172 @@
+{
+  "id": "builtin:casetype-housing-referral",
+  "kind": "casetype",
+  "name": "Housing support referral",
+  "description": "Everything the Northshire housing support referral form needs. Clip the client record, any landlord or company pages, then fill the form.",
+  "form": {
+    "url": "http://localhost:8787/demo/referral.html",
+    "fillProfile": "builtin:fill-casetype-housing-referral"
+  },
+  "fields": [
+    {
+      "key": "title",
+      "label": "Title",
+      "section": "Client"
+    },
+    {
+      "key": "firstName",
+      "label": "First name",
+      "section": "Client",
+      "required": true
+    },
+    {
+      "key": "lastName",
+      "label": "Last name",
+      "section": "Client",
+      "required": true
+    },
+    {
+      "key": "dob",
+      "label": "Date of birth",
+      "type": "date",
+      "section": "Client",
+      "required": true
+    },
+    {
+      "key": "nino",
+      "label": "National Insurance number",
+      "section": "Client"
+    },
+    {
+      "key": "clientId",
+      "label": "Client ID",
+      "section": "Client"
+    },
+    {
+      "key": "language",
+      "label": "Preferred language",
+      "section": "Client"
+    },
+    {
+      "key": "phone",
+      "label": "Telephone",
+      "type": "tel",
+      "section": "Contact"
+    },
+    {
+      "key": "email",
+      "label": "Email",
+      "type": "email",
+      "section": "Contact"
+    },
+    {
+      "key": "contactPref",
+      "label": "Preferred contact",
+      "type": "choice",
+      "options": [
+        "Phone",
+        "Email",
+        "Letter"
+      ],
+      "section": "Contact"
+    },
+    {
+      "key": "address",
+      "label": "Address",
+      "type": "longtext",
+      "section": "Contact",
+      "required": true
+    },
+    {
+      "key": "postcode",
+      "label": "Postcode",
+      "section": "Contact",
+      "required": true
+    },
+    {
+      "key": "consent",
+      "label": "Consent to share",
+      "type": "boolean",
+      "section": "Contact"
+    },
+    {
+      "key": "caseRef",
+      "label": "Case reference",
+      "section": "Case"
+    },
+    {
+      "key": "caseType",
+      "label": "Case type",
+      "section": "Case"
+    },
+    {
+      "key": "opened",
+      "label": "Date opened",
+      "type": "date",
+      "section": "Case"
+    },
+    {
+      "key": "worker",
+      "label": "Allocated worker",
+      "section": "Case"
+    },
+    {
+      "key": "risk",
+      "label": "Risk level",
+      "type": "choice",
+      "options": [
+        "Low",
+        "Medium",
+        "High"
+      ],
+      "section": "Case"
+    },
+    {
+      "key": "status",
+      "label": "Status",
+      "section": "Case"
+    },
+    {
+      "key": "household",
+      "label": "Household members",
+      "type": "list",
+      "section": "Household",
+      "fields": [
+        {
+          "key": "name",
+          "label": "Name"
+        },
+        {
+          "key": "relationship",
+          "label": "Relationship"
+        },
+        {
+          "key": "dob",
+          "label": "Date of birth",
+          "type": "date"
+        }
+      ]
+    },
+    {
+      "key": "orgName",
+      "label": "Landlord or organisation",
+      "section": "Landlord or other organisation"
+    },
+    {
+      "key": "orgNumber",
+      "label": "Company number",
+      "section": "Landlord or other organisation"
+    },
+    {
+      "key": "orgAddress",
+      "label": "Registered address",
+      "section": "Landlord or other organisation"
+    },
+    {
+      "key": "reason",
+      "label": "Background and case notes",
+      "type": "longtext",
+      "section": "Reason for referral"
+    }
+  ]
+}

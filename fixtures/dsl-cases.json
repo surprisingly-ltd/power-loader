@@ -1,0 +1,85 @@
+[
+  {
+    "name": "text, attributes, literals and @type",
+    "html": "<h1 class='n'>  Jane \n  Doe </h1><a class='e' href='mailto:jane@example.org'>email</a><img src='/p.png'>",
+    "url": "https://example.org/people/1",
+    "fields": {"@type": "Person", "name": "h1.n", "email": "a.e @href | remove:mailto:", "image": "img @src | abs", "country": "=GB", "missing": ".nope"},
+    "expected": {"@type": "Person", "name": "Jane Doe", "email": "jane@example.org", "image": "https://example.org/p.png", "country": "GB", "missing": null}
+  },
+  {
+    "name": "block elements become lines",
+    "html": "<div id='a'><p>Flat 3</p><p>12 Mill <b>Lane</b></p>Northtown<br>NS1 4AB</div>",
+    "fields": {"text": "#a", "lines": "#a | lines", "one": "#a | oneline"},
+    "expected": {"text": "Flat 3\n12 Mill Lane\nNorthtown\nNS1 4AB", "lines": ["Flat 3", "12 Mill Lane", "Northtown", "NS1 4AB"], "one": "Flat 3, 12 Mill Lane, Northtown, NS1 4AB"}
+  },
+  {
+    "name": "label(): dl, table, label[for], inline text, prefix text, quoted",
+    "html": "<dl><dt>Case reference:</dt><dd>HSG/1</dd></dl><table><tr><th><span>Date of birth *</span></th><td>14/07/1986</td></tr></table><label for='x'>Email</label><div><input id='x' value='a@b.c'></div><p><b>Client ID:</b> NC-1 <span class='tag'>Active</span></p><ul><li>Status: Open</li></ul><div><span>Phone (home)</span><span>0123</span></div>",
+    "fields": {"ref": "label(Case reference)", "dob": "label(date of birth) | date", "email": "label(Email)", "id": "label(Client ID)", "status": "label(Status)", "phone": "label(\"Phone (home)\")", "none": "label(Nope)"},
+    "expected": {"ref": "HSG/1", "dob": "1986-07-14", "email": "a@b.c", "id": "NC-1", "status": "Open", "phone": "0123", "none": null}
+  },
+  {
+    "name": "css prefix before label() and css after",
+    "html": "<div id='one'><dt>Born</dt><dd><span class='d'>x</span></dd></div><table id='two'><tr><th>Born</th><td>Text <span class='d'>1815-12-10</span></td></tr></table>",
+    "fields": {"a": "#two label(Born) .d | date", "b": "#one label(Born)"},
+    "expected": {"a": "1815-12-10", "b": "x"}
+  },
+  {
+    "name": "form controls",
+    "html": "<input id='t' value=' hi '><input id='c' type='checkbox' checked><input id='r' type='radio'><select id='s'><option>One</option><option selected value='2'>Two</option></select><select id='s2'><option>First</option><option>Second</option></select><textarea id='ta'>Line 1\nLine 2</textarea>",
+    "fields": {"t": "#t", "c": "#c | bool", "r": "#r | bool", "s": "#s", "sv": "#s @value", "s2": "#s2", "ta": "#ta | lines"},
+    "expected": {"t": "hi", "c": true, "r": false, "s": "Two", "sv": "2", "s2": "First", "ta": ["Line 1", "Line 2"]}
+  },
+  {
+    "name": "lists, $scope, empty rows dropped, fixed lists",
+    "html": "<table id='h'><thead><tr><th>Name</th><th>Rel</th></tr></thead><tbody><tr><td>A</td><td>Partner</td></tr><tr><td></td><td></td></tr><tr><td>B</td><td>Son</td></tr></tbody></table><ul class='tags'><li>x</li><li>y</li></ul><a class='l' href='/1'>1</a><a class='l' href='/2'>2</a><section class='s'><b class='v'>in</b></section><b class='v'>out</b>",
+    "fields": {
+      "people": ["#h tbody tr", {"@type": "Person", "name": "td:nth-child(1)", "rel": "td:nth-child(2) | lower"}],
+      "tags": ["ul.tags li"],
+      "links": ["a.l @href"],
+      "scoped": {"$scope": "section.s", "v": ".v"},
+      "noscope": {"$scope": "section.zzz", "v": ".v"},
+      "ids": [{"@type": "PropertyValue", "propertyID": "=A", "value": "=1"}, {"@type": "PropertyValue", "propertyID": "=B", "value": ".v"}],
+      "empty": [".nothing"]
+    },
+    "expected": {
+      "people": [{"@type": "Person", "name": "A", "rel": "partner"}, {"@type": "Person", "name": "B", "rel": "son"}],
+      "tags": ["x", "y"],
+      "links": ["/1", "/2"],
+      "scoped": {"v": "in"},
+      "noscope": null,
+      "ids": [{"@type": "PropertyValue", "propertyID": "A", "value": "1"}, {"@type": "PropertyValue", "propertyID": "B", "value": "in"}],
+      "empty": []
+    }
+  },
+  {
+    "name": "filters",
+    "html": "<i id='m'>£1,234.50 due</i><i id='n'>Total: -7 items</i><i id='d1'>Thu 12 Mar 2020 14:30</i><i id='d2'>March 5th, 2021</i><i id='d3'>2019-01-02T10:00</i><i id='d4'>31/02/2020</i><i id='d5'>September 1974</i><i id='d6'>03/04/2020</i><i id='ref'>Ref: ABC-123 (closed)</i><i id='csv'>a, b,,c</i><i id='y'>Yes</i><i id='j'>{\"a\": [1, 2]}</i><i id='cite'>Mass media[1][note 2]</i>",
+    "fields": {
+      "money": "#m | number", "int": "#n | int", "d1": "#d1 | date", "d2": "#d2 | date", "d3": "#d3 | date",
+      "bad": "#d4 | date", "month": "#d5 | date", "us": "#d6 | date:mdy",
+      "after": "#ref | after:Ref: | before:(", "regex": "#ref | regex:([A-Z]+)-([0-9]+)", "upper": "#csv | upper | split",
+      "bool": "#y | bool", "json": "#j | json", "drop": "#cite | drop:\\[[^\\]]*\\]",
+      "default": ".missing | default:n/a", "nullfilter": ".missing | upper"
+    },
+    "expected": {
+      "money": 1234.5, "int": -7, "d1": "2020-03-12", "d2": "2021-03-05", "d3": "2019-01-02",
+      "bad": "31/02/2020", "month": "1974-09", "us": "2020-03-04",
+      "after": "ABC-123", "regex": "ABC", "upper": ["A", "B", "C"],
+      "bool": true, "json": {"a": [1, 2]}, "drop": "Mass media",
+      "default": "n/a", "nullfilter": null
+    }
+  },
+  {
+    "name": "pipes inside brackets and groups don't split",
+    "html": "<p lang='en-GB' id='p'>Mrs Smith</p>",
+    "fields": {"title": "p[lang|=en] | regex:^(Mr|Mrs|Ms)\\b"},
+    "expected": {"title": "Mrs"}
+  },
+  {
+    "name": "hidden text is included; script/style/template are not",
+    "html": "<div id='a'>Visible<span style='display:none'>(hidden)</span><script>var x=1</script><style>.a{}</style><template><p>t</p></template></div>",
+    "fields": {"a": "#a"},
+    "expected": {"a": "Visible(hidden)"}
+  }
+]

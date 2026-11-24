@@ -1,0 +1,68 @@
+{
+  "@type": "Person",
+  "name": "Maria Kowalska",
+  "honorificPrefix": "Ms",
+  "givenName": "Maria",
+  "familyName": "Kowalska",
+  "birthDate": "1986-07-14",
+  "identifier": [
+    {
+      "@type": "PropertyValue",
+      "propertyID": "Client ID",
+      "value": "NC-1042"
+    },
+    {
+      "@type": "PropertyValue",
+      "propertyID": "NI number",
+      "value": "QQ123456C"
+    }
+  ],
+  "knowsLanguage": "Polish",
+  "telephone": "07700 900123",
+  "email": "maria.k@example.org",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": [
+      "Flat 3, 12 Mill Lane",
+      "Northtown",
+      "NS1 4AB"
+    ],
+    "postalCode": "NS1 4AB"
+  },
+  "contactPreference": "Phone",
+  "consentToShare": true,
+  "case": {
+    "caseReference": "HSG/2026/0187",
+    "caseType": "Homelessness prevention",
+    "dateOpened": "2026-02-03",
+    "allocatedWorker": "A. Worker",
+    "riskLevel": "Medium"
+  },
+  "relatedTo": [
+    {
+      "@type": "Person",
+      "name": "Piotr Kowalski",
+      "relationship": "Partner",
+      "birthDate": "1984-11-02"
+    },
+    {
+      "@type": "Person",
+      "name": "Zofia Kowalska",
+      "relationship": "Daughter",
+      "birthDate": "2015-05-21"
+    }
+  ],
+  "notes": [
+    {
+      "dateCreated": "2026-03-12",
+      "author": "A. Worker",
+      "text": "Home visit completed. Landlord has issued a section 21 notice; tenancy ends 30 April."
+    },
+    {
+      "dateCreated": "2026-03-02",
+      "author": "B. Officer",
+      "text": "Initial triage call. Client requested interpreter (Polish)."
+    }
+  ],
+  "caseStatus": "Active"
+}

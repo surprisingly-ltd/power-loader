@@ -1,0 +1,472 @@
+{
+ "draft": {
+  "name": "Housing support referral",
+  "description": "Everything the Northshire housing support referral form needs. Clip the client record, any landlord or company pages, then fill the form.",
+  "url": "http://localhost:8787/demo/referral.html",
+  "match": [
+   "http://localhost:8787/demo/referral.html"
+  ],
+  "fields": [
+   {
+    "key": "title",
+    "label": "Title",
+    "section": "Client",
+    "target": "#title",
+    "example": "Mr"
+   },
+   {
+    "key": "firstName",
+    "label": "First name",
+    "section": "Client",
+    "required": true,
+    "target": "#firstName",
+    "example": "Sam",
+    "schema": "Person.givenName"
+   },
+   {
+    "key": "lastName",
+    "label": "Last name",
+    "section": "Client",
+    "required": true,
+    "target": "#lastName",
+    "example": "Example",
+    "schema": "Person.familyName"
+   },
+   {
+    "key": "dob",
+    "label": "Date of birth",
+    "type": "date",
+    "section": "Client",
+    "required": true,
+    "target": "#dob",
+    "example": "1990-02-03",
+    "schema": "Person.birthDate"
+   },
+   {
+    "key": "nino",
+    "label": "National Insurance number",
+    "section": "Client",
+    "target": "#nino",
+    "example": "QQ123456C"
+   },
+   {
+    "key": "clientId",
+    "label": "Client ID",
+    "section": "Client",
+    "target": "#clientId"
+   },
+   {
+    "key": "language",
+    "label": "Preferred language",
+    "section": "Client",
+    "target": "#language"
+   },
+   {
+    "key": "phone",
+    "label": "Telephone",
+    "type": "tel",
+    "section": "Contact",
+    "target": "#phone",
+    "example": "07700 900000",
+    "schema": "Person.telephone"
+   },
+   {
+    "key": "email",
+    "label": "Email",
+    "type": "email",
+    "section": "Contact",
+    "target": "#email",
+    "example": "sam@example.org",
+    "schema": "Person.email"
+   },
+   {
+    "key": "contactPref",
+    "label": "Preferred contact",
+    "type": "choice",
+    "options": [
+     "Phone",
+     "Email",
+     "Letter"
+    ],
+    "section": "Contact",
+    "target": "#contactPref",
+    "example": "Email"
+   },
+   {
+    "key": "address",
+    "label": "Address",
+    "type": "longtext",
+    "section": "Contact",
+    "required": true,
+    "target": "#address"
+   },
+   {
+    "key": "postcode",
+    "label": "Postcode",
+    "section": "Contact",
+    "required": true,
+    "target": "#postcode",
+    "example": "ZZ1 1ZZ",
+    "schema": "Person.address.postalCode"
+   },
+   {
+    "key": "consent",
+    "label": "Consent to share",
+    "type": "boolean",
+    "section": "Contact",
+    "target": "#consent",
+    "example": true
+   },
+   {
+    "key": "caseRef",
+    "label": "Case reference",
+    "section": "Case",
+    "target": "#caseRef"
+   },
+   {
+    "key": "caseType",
+    "label": "Case type",
+    "section": "Case",
+    "target": "#caseType"
+   },
+   {
+    "key": "opened",
+    "label": "Date opened",
+    "type": "date",
+    "section": "Case",
+    "target": "#opened",
+    "example": "2026-01-05"
+   },
+   {
+    "key": "worker",
+    "label": "Allocated worker",
+    "section": "Case",
+    "target": "#worker"
+   },
+   {
+    "key": "risk",
+    "label": "Risk level",
+    "type": "choice",
+    "options": [
+     "Low",
+     "Medium",
+     "High"
+    ],
+    "section": "Case",
+    "target": "#risk",
+    "example": "Medium"
+   },
+   {
+    "key": "status",
+    "label": "Status",
+    "section": "Case",
+    "target": "#status"
+   },
+   {
+    "key": "household",
+    "label": "Household members",
+    "type": "list",
+    "section": "Household",
+    "fields": [
+     {
+      "key": "name",
+      "label": "Name",
+      "target": "input[name=\"memberName\"]"
+     },
+     {
+      "key": "relationship",
+      "label": "Relationship",
+      "target": "input[name=\"memberRelationship\"]"
+     },
+     {
+      "key": "dob",
+      "label": "Date of birth",
+      "type": "date",
+      "target": "input[name=\"memberDob\"]"
+     }
+    ],
+    "rows": "#household > tr",
+    "add": "#addMember",
+    "example": [
+     {
+      "name": "Alex Example",
+      "relationship": "Son",
+      "dob": "2015-06-01"
+     }
+    ]
+   },
+   {
+    "key": "orgName",
+    "label": "Landlord or organisation",
+    "section": "Landlord or other organisation",
+    "target": "#orgName",
+    "schema": "Organization.legalName"
+   },
+   {
+    "key": "orgNumber",
+    "label": "Company number",
+    "section": "Landlord or other organisation",
+    "target": "#orgNumber"
+   },
+   {
+    "key": "orgAddress",
+    "label": "Registered address",
+    "section": "Landlord or other organisation",
+    "target": "#orgAddress"
+   },
+   {
+    "key": "reason",
+    "label": "Background and case notes",
+    "type": "longtext",
+    "section": "Reason for referral",
+    "target": "#reason"
+   }
+  ]
+ },
+ "expected": {
+  "caseType": {
+   "kind": "casetype",
+   "name": "Housing support referral",
+   "description": "Everything the Northshire housing support referral form needs. Clip the client record, any landlord or company pages, then fill the form.",
+   "form": {
+    "url": "http://localhost:8787/demo/referral.html"
+   },
+   "fields": [
+    {
+     "key": "title",
+     "label": "Title",
+     "section": "Client"
+    },
+    {
+     "key": "firstName",
+     "label": "First name",
+     "required": true,
+     "section": "Client",
+     "schema": "Person.givenName"
+    },
+    {
+     "key": "lastName",
+     "label": "Last name",
+     "required": true,
+     "section": "Client",
+     "schema": "Person.familyName"
+    },
+    {
+     "key": "dob",
+     "label": "Date of birth",
+     "type": "date",
+     "required": true,
+     "section": "Client",
+     "schema": "Person.birthDate"
+    },
+    {
+     "key": "nino",
+     "label": "National Insurance number",
+     "section": "Client"
+    },
+    {
+     "key": "clientId",
+     "label": "Client ID",
+     "section": "Client"
+    },
+    {
+     "key": "language",
+     "label": "Preferred language",
+     "section": "Client"
+    },
+    {
+     "key": "phone",
+     "label": "Telephone",
+     "type": "tel",
+     "section": "Contact",
+     "schema": "Person.telephone"
+    },
+    {
+     "key": "email",
+     "label": "Email",
+     "type": "email",
+     "section": "Contact",
+     "schema": "Person.email"
+    },
+    {
+     "key": "contactPref",
+     "label": "Preferred contact",
+     "type": "choice",
+     "options": [
+      "Phone",
+      "Email",
+      "Letter"
+     ],
+     "section": "Contact"
+    },
+    {
+     "key": "address",
+     "label": "Address",
+     "type": "longtext",
+     "required": true,
+     "section": "Contact"
+    },
+    {
+     "key": "postcode",
+     "label": "Postcode",
+     "required": true,
+     "section": "Contact",
+     "schema": "Person.address.postalCode"
+    },
+    {
+     "key": "consent",
+     "label": "Consent to share",
+     "type": "boolean",
+     "section": "Contact"
+    },
+    {
+     "key": "caseRef",
+     "label": "Case reference",
+     "section": "Case"
+    },
+    {
+     "key": "caseType",
+     "label": "Case type",
+     "section": "Case"
+    },
+    {
+     "key": "opened",
+     "label": "Date opened",
+     "type": "date",
+     "section": "Case"
+    },
+    {
+     "key": "worker",
+     "label": "Allocated worker",
+     "section": "Case"
+    },
+    {
+     "key": "risk",
+     "label": "Risk level",
+     "type": "choice",
+     "options": [
+      "Low",
+      "Medium",
+      "High"
+     ],
+     "section": "Case"
+    },
+    {
+     "key": "status",
+     "label": "Status",
+     "section": "Case"
+    },
+    {
+     "key": "household",
+     "label": "Household members",
+     "type": "list",
+     "section": "Household",
+     "fields": [
+      {
+       "key": "name",
+       "label": "Name"
+      },
+      {
+       "key": "relationship",
+       "label": "Relationship"
+      },
+      {
+       "key": "dob",
+       "label": "Date of birth",
+       "type": "date"
+      }
+     ]
+    },
+    {
+     "key": "orgName",
+     "label": "Landlord or organisation",
+     "section": "Landlord or other organisation",
+     "schema": "Organization.legalName"
+    },
+    {
+     "key": "orgNumber",
+     "label": "Company number",
+     "section": "Landlord or other organisation"
+    },
+    {
+     "key": "orgAddress",
+     "label": "Registered address",
+     "section": "Landlord or other organisation"
+    },
+    {
+     "key": "reason",
+     "label": "Background and case notes",
+     "type": "longtext",
+     "section": "Reason for referral"
+    }
+   ]
+  },
+  "fillProfile": {
+   "kind": "fill",
+   "caseTypeOnly": true,
+   "name": "Housing support referral (from case type)",
+   "match": [
+    "http://localhost:8787/demo/referral.html"
+   ],
+   "fields": {
+    "#title": "CaseData.title",
+    "#firstName": "CaseData.firstName",
+    "#lastName": "CaseData.lastName",
+    "#dob": "CaseData.dob",
+    "#nino": "CaseData.nino",
+    "#clientId": "CaseData.clientId",
+    "#language": "CaseData.language",
+    "#phone": "CaseData.phone",
+    "#email": "CaseData.email",
+    "#contactPref": "CaseData.contactPref",
+    "#address": "CaseData.address",
+    "#postcode": "CaseData.postcode",
+    "#consent": "CaseData.consent",
+    "#caseRef": "CaseData.caseRef",
+    "#caseType": "CaseData.caseType",
+    "#opened": "CaseData.opened",
+    "#worker": "CaseData.worker",
+    "#risk": "CaseData.risk",
+    "#status": "CaseData.status",
+    "#orgName": "CaseData.orgName",
+    "#orgNumber": "CaseData.orgNumber",
+    "#orgAddress": "CaseData.orgAddress",
+    "#reason": "CaseData.reason"
+   },
+   "lists": [
+    {
+     "source": "CaseData.household",
+     "rows": "#household > tr",
+     "add": "#addMember",
+     "fields": {
+      "input[name=\"memberName\"]": ".name",
+      "input[name=\"memberRelationship\"]": ".relationship",
+      "input[name=\"memberDob\"]": ".dob"
+     }
+    }
+   ]
+  },
+  "sample": {
+   "@type": "CaseData",
+   "title": "Mr",
+   "firstName": "Sam",
+   "lastName": "Example",
+   "dob": "1990-02-03",
+   "nino": "QQ123456C",
+   "phone": "07700 900000",
+   "email": "sam@example.org",
+   "contactPref": "Email",
+   "postcode": "ZZ1 1ZZ",
+   "consent": true,
+   "opened": "2026-01-05",
+   "risk": "Medium",
+   "household": [
+    {
+     "name": "Alex Example",
+     "relationship": "Son",
+     "dob": "2015-06-01"
+    }
+   ]
+  }
+ }
+}

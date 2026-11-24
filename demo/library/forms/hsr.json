@@ -1,0 +1,18 @@
+{
+  "schema": "powerloader-form/1",
+  "id": "hsr",
+  "short": "HSR",
+  "name": "Housing support referral",
+  "category": "Housing",
+  "version": "v4",
+  "url": "http://localhost:8787/demo/referral.html",
+  "fill": "fill/housing-referral",
+  "fields": [
+    { "key": "title" }, { "key": "firstName", "required": true }, { "key": "lastName", "required": true },
+    { "key": "dob", "required": true }, { "key": "nino", "required": true }, { "key": "clientId" }, { "key": "language" },
+    { "key": "phone", "required": true }, { "key": "email" }, { "key": "contactPref" },
+    { "key": "address", "required": true }, { "key": "postcode", "required": true },
+    { "key": "riskLevel", "required": true }, { "key": "consent", "required": true }, { "key": "reason" }
+  ],
+  "sideEffects": []
+}

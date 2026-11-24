@@ -1,0 +1,20 @@
+node_modules/
+dist/
+server/.venv/
+server/.env
+__pycache__/
+.pytest_cache/
+.idea/
+
+fixtures/candidates/
+
+.env*
+
+.demo-site/
+
+# Reference checkouts (own git repos)
+scratch/
+
+# Vendored by tools/vendor-transformers.mjs at build time
+extension/vendor/
+

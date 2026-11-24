@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "Power Loader",
+  "version": "1.0.0",
+  "description": "Collect information for a case from approved casework pages, check it, and fill the target forms. Works with your team’s forms library.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "powerloader@surprisingly.ltd",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": [
+          "websiteContent",
+          "personallyIdentifyingInfo",
+          "financialAndPaymentInfo",
+          "healthInfo"
+        ]
+      },
+      "update_url": "https://powerloader.surprisingly.ltd/updates.json"
+    }
+  },
+  "icons": {
+    "48": "icons/icon.svg",
+    "96": "icons/icon.svg"
+  },
+  "permissions": [
+    "storage",
+    "scripting",
+    "tabs",
+    "clipboardWrite",
+    "downloads",
+    "unlimitedStorage"
+  ],
+  "optional_host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ],
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Power Loader",
+    "default_icon": "icons/icon.svg"
+  },
+  "sidebar_action": {
+    "default_title": "Power Loader",
+    "default_panel": "sidebar/sidebar.html",
+    "default_icon": "icons/icon.svg",
+    "open_at_install": false
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'none'; img-src 'self' data: blob:; frame-src 'none'; media-src 'none'; style-src 'self' 'unsafe-inline'"
+  }
+}

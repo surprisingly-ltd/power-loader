@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Housing support referral – Northshire Council</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --panel: #fff; --text: #1d2329; --muted: #5b6672; --border: #dde1e6;
+    --accent: #24364b; --filled: #e6f4ea; --filled-border: #5fa777; --missing: #fdf2dc; --warn: #8a5a00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1b1f24; --panel: #23292f; --text: #e6eaee; --muted: #9aa5b1; --border: #38414b;
+      --accent: #7fb0e0; --filled: #22372b; --filled-border: #5fa777; --missing: #3a3020; --warn: #f0c36b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { font: 15px/1.45 system-ui, sans-serif; margin: 0; color: var(--text); background: var(--bg); }
+  .topbar { background: #24364b; color: #fff; padding: 10px 24px; }
+  main { max-width: 980px; margin: 20px auto; padding: 0 16px; display: grid; gap: 16px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; }
+  h1 { margin: 0 0 4px; font-size: 1.5rem; } h2 { font-size: 1.05rem; margin: 0 0 12px; }
+  p.lead { margin: 0; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px 16px; }
+  .field { display: flex; flex-direction: column; gap: 3px; }
+  .field.wide { grid-column: 1 / -1; }
+  label { font-size: .85rem; color: var(--muted); }
+  input, select, textarea { font: inherit; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--panel); color: var(--text); width: 100%; }
+  input[type=checkbox] { width: auto; }
+  .check { flex-direction: row; align-items: center; gap: 8px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--border); }
+  th { font-size: .85rem; color: var(--muted); font-weight: 500; }
+  td input { min-width: 0; }
+  button { font: inherit; padding: 7px 14px; border-radius: 4px; border: 1px solid var(--border); background: var(--panel); color: var(--text); cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  pre#submitted { white-space: pre-wrap; font-size: 12px; max-height: 300px; overflow: auto; }
+  @media (max-width: 600px) { main { padding: 0 12px; } .panel { padding: 14px; } }
+</style>
+</head>
+<body>
+<div class="topbar">Northshire Council · Housing Support Team</div>
+<main>
+  <section class="panel">
+    <h1>Housing support referral</h1>
+    <p class="lead">Refer a client to the Housing Support Team. Fields marked optional can be left blank.</p>
+  </section>
+
+  <form id="referral" class="panel" autocomplete="off">
+    <h2>1. Client</h2>
+    <div class="grid">
+      <div class="field"><label for="title">Title</label><input id="title" name="title"></div>
+      <div class="field"><label for="firstName">First name</label><input id="firstName" name="firstName"></div>
+      <div class="field"><label for="lastName">Last name</label><input id="lastName" name="lastName"></div>
+      <div class="field"><label for="dob">Date of birth</label><input id="dob" name="dob" type="date"></div>
+      <div class="field"><label for="nino">National Insurance number</label><input id="nino" name="nino"></div>
+      <div class="field"><label for="clientId">Client ID</label><input id="clientId" name="clientId"></div>
+      <div class="field"><label for="language">Preferred language</label><input id="language" name="language"></div>
+    </div>
+
+    <h2 style="margin-top:20px">2. Contact</h2>
+    <div class="grid">
+      <div class="field"><label for="phone">Telephone</label><input id="phone" name="phone" type="tel"></div>
+      <div class="field"><label for="email">Email</label><input id="email" name="email" type="email"></div>
+      <div class="field"><label for="contactPref">Preferred contact</label>
+        <select id="contactPref" name="contactPref"><option value="">Choose…</option><option>Phone</option><option>Email</option><option>Letter</option></select></div>
+      <div class="field wide"><label for="address">Address</label><textarea id="address" name="address" rows="3"></textarea></div>
+      <div class="field"><label for="postcode">Postcode</label><input id="postcode" name="postcode"></div>
+      <div class="field check wide"><input id="consent" name="consent" type="checkbox"><label for="consent">Client consents to information being shared with partner agencies</label></div>
+    </div>
+
+    <h2 style="margin-top:20px">3. Case</h2>
+    <div class="grid">
+      <div class="field"><label for="caseRef">Case reference</label><input id="caseRef" name="caseRef"></div>
+      <div class="field"><label for="caseType">Case type</label><input id="caseType" name="caseType"></div>
+      <div class="field"><label for="opened">Date opened</label><input id="opened" name="opened" type="date"></div>
+      <div class="field"><label for="worker">Allocated worker</label><input id="worker" name="worker"></div>
+      <div class="field"><label for="risk">Risk level</label>
+        <select id="risk" name="risk"><option value="">Choose…</option><option>Low</option><option>Medium</option><option>High</option></select></div>
+      <div class="field"><label for="status">Status</label><input id="status" name="status"></div>
+    </div>
+
+    <h2 style="margin-top:20px">4. Household members</h2>
+    <table>
+      <thead><tr><th>Name</th><th>Relationship</th><th>Date of birth</th><th></th></tr></thead>
+      <tbody id="household"></tbody>
+    </table>
+    <button type="button" id="addMember" style="margin-top:8px">Add member</button>
+
+    <h2 style="margin-top:20px">5. Landlord or other organisation (optional)</h2>
+    <div class="grid">
+      <div class="field"><label for="orgName">Organisation name</label><input id="orgName" name="orgName"></div>
+      <div class="field"><label for="orgNumber">Company number</label><input id="orgNumber" name="orgNumber"></div>
+      <div class="field wide"><label for="orgAddress">Registered address</label><input id="orgAddress" name="orgAddress"></div>
+    </div>
+
+    <h2 style="margin-top:20px">6. Reason for referral</h2>
+    <div class="field wide"><label for="reason">Background and case notes</label><textarea id="reason" name="reason" rows="6"></textarea></div>
+
+    <div class="row" style="margin-top:16px"><button class="primary" type="submit">Submit referral</button></div>
+    <pre id="submitted" hidden></pre>
+  </form>
+</main>
+
+<script>
+const form = document.getElementById('referral');
+const household = document.getElementById('household');
+
+function addMemberRow() {
+  const tr = document.createElement('tr');
+  tr.innerHTML = '<td><input name="memberName" aria-label="Member name"></td>' +
+    '<td><input name="memberRelationship" aria-label="Relationship"></td>' +
+    '<td><input name="memberDob" type="date" aria-label="Member date of birth"></td>' +
+    '<td><button type="button" title="Remove member">✕</button></td>';
+  tr.querySelector('button').onclick = () => tr.remove();
+  household.append(tr);
+}
+
+document.getElementById('addMember').onclick = addMemberRow;
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries([...new FormData(form)].filter(([k]) => !k.startsWith('member')));
+  data.consent = document.getElementById('consent').checked;
+  data.householdMembers = [...household.querySelectorAll('tr')].map((tr) => {
+    const [n, r, d] = tr.querySelectorAll('input');
+    return { name: n.value, relationship: r.value, dateOfBirth: d.value };
+  }).filter((m) => m.name);
+  const out = document.getElementById('submitted');
+  out.textContent = 'Demo only. This would be submitted:\n' + JSON.stringify(data, null, 2);
+  out.hidden = false;
+});
+addMemberRow();
+</script>
+</body>
+</html>

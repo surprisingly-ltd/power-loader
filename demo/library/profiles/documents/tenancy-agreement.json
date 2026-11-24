@@ -1,0 +1,14 @@
+{
+  "schema": "powerloader-profile/1",
+  "id": "documents/tenancy-agreement",
+  "kind": "document",
+  "name": "Tenancy agreement",
+  "version": "v1",
+  "detect": ["tenancy agreement", "landlord"],
+  "fields": {
+    "landlord": { "anchor": "between", "pattern": "^(.+?)\\s*\\(" },
+    "tenancyType": { "anchor": "type of tenancy" },
+    "tenancyStart": { "anchor": "commencing on", "pattern": "(\\d{1,2}(?:st|nd|rd|th)? \\w+ \\d{4}|\\d{1,2}/\\d{1,2}/\\d{4})" },
+    "monthlyRent": { "anchor": "rent of", "pattern": "£\\s?([\\d,]+\\.\\d{2})" }
+  }
+}

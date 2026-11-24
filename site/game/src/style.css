@@ -1,0 +1,40 @@
+* { box-sizing: border-box }
+html, body { margin: 0; height: 100%; background: #10171c; color: #e9e8de; font: 13px/1.4 Arial, Helvetica, sans-serif; overflow: hidden }
+#hud { padding: 8px 14px 4px; display: flex; flex-direction: column; gap: 4px }
+#hud .row { display: flex; align-items: center; gap: 16px; min-height: 34px }
+.brand { display: flex; align-items: center; gap: 8px; white-space: nowrap }
+.brand b { font-size: 17px; letter-spacing: -.5px }
+.brand small, .caption, #help { color: #a1adb0 }
+.brand small { font-size: 10px; letter-spacing: .14em; text-transform: uppercase }
+.mark { display: inline-block; background: repeating-linear-gradient(120deg, #efb750 0 5px, transparent 5px 9px); width: 26px; height: 20px }
+.title { font-weight: 700; font-size: 15px; white-space: nowrap }
+.title span { color: #ecb44e; margin-right: 6px }
+.chip { display: flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 4px; background: #202a30; border: 1px solid #39454b; white-space: nowrap; min-height: 28px }
+.chip .sw { width: 22px; height: 16px; border-radius: 2px; color: #17242d; font-weight: 800; font-size: 11px; display: grid; place-items: center }
+.count { font-variant-numeric: tabular-nums; white-space: nowrap }
+.count b { color: #ecb44e }
+.controls { margin-left: auto; display: flex; gap: 8px; align-items: center; white-space: nowrap }
+button, select { font: inherit; color: inherit; background: #202a30; border: 1px solid #405057; border-radius: 4px; padding: 5px 10px; cursor: pointer }
+button:hover, select:hover { background: #334047 }
+button:focus-visible, select:focus-visible { outline: 2px solid #edbd60; outline-offset: 1px }
+.caption { margin: 0; font-size: 13px; min-height: 18px }
+#stage { position: relative; margin: 0 auto }
+canvas { display: block; width: 100%; height: 100%; background: #222f39; border: 1px solid #2c3a42 }
+#help { text-align: center; margin: 6px 0 0; font-size: 12px }
+kbd { font: 700 11px Arial; background: #253038; border: 1px solid #405057; border-bottom-width: 2px; border-radius: 3px; padding: 0 5px; color: #e9e8de; margin: 0 1px }
+.panel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(560px, 80%); background: rgba(16, 23, 28, .94); border: 1px solid #405057; border-top: 4px solid #ecb44e; border-radius: 6px; padding: 22px 26px; text-align: left; box-shadow: 0 20px 60px rgba(0, 0, 0, .45) }
+.panel small { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #ecb44e }
+.panel h2 { margin: 6px 0 10px; font-size: 26px; letter-spacing: -.5px }
+.panel p { margin: 0 0 14px; font-size: 15px; line-height: 1.5; color: #d6d8cf }
+.panel button { background: #ecb44e; color: #17242d; border: 0; font-weight: 800; padding: 9px 16px }
+.panel button:hover { background: #f5c869 }
+.panel .hint { margin-left: 10px; color: #8d999c; font-size: 12px }
+.end { width: min(640px, 86%) }
+.end .next { border-left: 3px solid #4fcf63; padding-left: 12px; color: #b9c4bf }
+#small-screen { position: fixed; inset: 0; background: #10171c; display: grid; place-items: center; padding: 24px; z-index: 10; text-align: center }
+#small-screen[hidden], .panel[hidden] { display: none }
+#small-screen h2 { font-size: 22px; margin: 12px 0 }
+#small-screen p { max-width: 420px; color: #a1adb0; font-size: 15px }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+#skip { position: absolute; right: 12px; top: 12px; background: rgba(16, 23, 28, .88); border-color: #ecb44e; color: #ecb44e; font-weight: 700 }
+#skip[hidden] { display: none }

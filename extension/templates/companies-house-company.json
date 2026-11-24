@@ -1,0 +1,38 @@
+{
+  "id": "builtin:companies-house-company",
+  "name": "Companies House – company overview",
+  "description": "Company overview page on find-and-update.company-information.service.gov.uk.",
+  "match": [
+    "https://find-and-update.company-information.service.gov.uk/company/*"
+  ],
+  "when": "#company-status",
+  "fields": {
+    "@type": "Organization",
+    "legalName": ".company-header h1",
+    "identifier": {
+      "@type": "PropertyValue",
+      "propertyID": "=Companies House number",
+      "value": "#company-number strong"
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "#roa-address",
+      "postalCode": "#roa-address | regex:([A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2})$"
+    },
+    "companyStatus": "#company-status",
+    "companyType": "#company-type-value",
+    "foundingDate": "#company-creation-date | date",
+    "dissolutionDate": "#cessation-date | date",
+    "sicCodes": [
+      "span[id^=sic]"
+    ],
+    "previousNames": [
+      "#previousNameTable tr",
+      {
+        "name": "td[id^=previous-name]",
+        "startDate": "td[id^=previous-date] | before:- | date",
+        "endDate": "td[id^=previous-date] | after:- | date"
+      }
+    ]
+  }
+}

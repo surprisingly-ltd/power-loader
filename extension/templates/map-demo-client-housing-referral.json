@@ -1,0 +1,80 @@
+{
+  "id": "builtin:map-demo-client-housing-referral",
+  "kind": "map",
+  "name": "Northshire client record → Housing support referral",
+  "sourceProfile": "builtin:demo-client",
+  "caseType": "builtin:casetype-housing-referral",
+  "fields": {
+    "title": "Person.honorificPrefix",
+    "firstName": [
+      "Person.givenName",
+      "Person.name | regex:^(\\S+)"
+    ],
+    "lastName": [
+      "Person.familyName",
+      "Person.name | regex:(\\S+)$"
+    ],
+    "dob": "Person.birthDate",
+    "nino": [
+      "Person.identifier[propertyID=NI number].value",
+      "Person.nationalInsuranceNumber"
+    ],
+    "clientId": "Person.identifier[propertyID=Client ID].value",
+    "language": "Person.knowsLanguage",
+    "phone": "Person.telephone",
+    "email": "Person.email",
+    "contactPref": [
+      "Person.contactPreference",
+      "Person.preferredContact"
+    ],
+    "address": [
+      "Person.address.streetAddress | join:\\n",
+      "Person.address | split | join:\\n"
+    ],
+    "postcode": [
+      "Person.address.postalCode",
+      "Person.address | regex:([A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2})"
+    ],
+    "consent": "Person.consentToShare",
+    "caseRef": [
+      "Person.case.caseReference",
+      "Person.caseReference"
+    ],
+    "caseType": [
+      "Person.case.caseType",
+      "Person.caseType"
+    ],
+    "opened": [
+      "Person.case.dateOpened",
+      "Person.caseOpened"
+    ],
+    "worker": [
+      "Person.case.allocatedWorker",
+      "Person.allocatedWorker"
+    ],
+    "risk": [
+      "Person.case.riskLevel",
+      "Person.riskLevel"
+    ],
+    "status": [
+      "Person.caseStatus",
+      "Person.case.status"
+    ],
+    "reason": [
+      "Person.notes | join:\\n",
+      "Person.subjectOf | join:\\n"
+    ]
+  },
+  "lists": [
+    {
+      "key": "household",
+      "source": "Person.relatedTo",
+      "fields": {
+        "name": ".name",
+        "relationship": ".relationship",
+        "dob": ".birthDate"
+      }
+    }
+  ],
+  "unsure": {}
+}

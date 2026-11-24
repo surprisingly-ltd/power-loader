@@ -1,0 +1,23 @@
+{
+  "id": "builtin:wikipedia-person",
+  "name": "Wikipedia – person",
+  "description": "Biography articles (pages with a biography infobox).",
+  "match": ["https://*.wikipedia.org/wiki/*"],
+  "when": "table.infobox.biography",
+  "fields": {
+    "@type": "Person",
+    "name": "#firstHeading",
+    "description": "#mw-content-text section > p:not(.mw-empty-elt) | drop:\\[[^\\]]*\\]",
+    "birthDate": "table.infobox label(Born) .bday | date",
+    "birthPlace": "table.infobox label(Born) .birthplace",
+    "deathDate": "table.infobox label(Died) | regex:\\(([0-9]{4}-[0-9]{2}-[0-9]{2})\\)",
+    "deathPlace": "table.infobox label(Died) .deathplace",
+    "nationality": "table.infobox label(Nationality)",
+    "knowsAbout": "table.infobox label(Known for) | drop:\\[[^\\]]*\\] | split",
+    "jobTitle": "table.infobox label(Occupation) | drop:\\[[^\\]]*\\] | oneline",
+    "spouse": "table.infobox label(Spouse) | drop:\\[[^\\]]*\\] | lines",
+    "image": "table.infobox .infobox-image img @src | abs",
+    "url": "link[rel=canonical] @href",
+    "sameAs": "#t-wikibase a @href"
+  }
+}

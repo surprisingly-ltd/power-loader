@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Power Loader Reviewer Notes</title>
+<meta name="description" content="Notes for Mozilla add-on reviewers: permissions, CSP, third-party libraries with checksums, and how to rebuild Power Loader from source.">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+{{HEADER}}
+<main id="main">
+<div class="prose">
+<h1>Notes for add-on reviewers</h1>
+<p class="lede">Power Loader {{VERSION}} · <code>{{ID}}</code> · distributed unlisted to organisations through Firefox enterprise policy.</p>
+
+<h2>What it does</h2>
+<p>Caseworkers start a case from one or more forms in their organisation’s forms library. They clip values from approved casework pages, review where sources agree and conflict, and fill target forms with the checked values. All application logic runs inside the extension. The optional AI features go only to the organisation’s own gateway, and only after the user has approved a redaction preview of the exact request.</p>
+
+<h2>No remotely hosted code</h2>
+<ul>
+<li>Every script that runs is in the package. There is no <code>eval</code>, <code>new Function</code> or <code>innerHTML</code> in Power Loader’s own code, and the CSP forbids <code>'unsafe-eval'</code>.</li>
+<li>The <strong>forms library</strong> (<code>lib/library-sync.js</code>, <code>lib/library.js</code>) downloads JSON only. It is checked against a manifest with a SHA-256 per file and validated as untrusted input. Profiles are a declarative extraction language, which <code>lib/extract.js</code> interprets with DOM queries. Detection patterns in <code>privacy.json</code> are compiled with <code>new RegExp</code>. Nothing from the library is executed as code.</li>
+<li><strong>Model weights</strong> for the on-device privacy model (Transformers.js plus ONNX Runtime WASM, in <code>privacy/worker.js</code>) are data, not code. By default they come from Hugging Face: <code>openai/privacy-filter</code>, pinned to commit <code>{{MODEL_REVISION}}</code>. The SHA-256 of every file is built into the extension (<code>DEFAULT_MODEL</code> in <code>lib/model-fetch.js</code>), and each download is checked as it streams. A request outside the model server, or for a file with no expected hash, is refused. The user can choose another server with the same files (Privacy tab), and policy can lock the address. Either way the pinned revision and hashes still apply unless policy sets others. Files are fetched with CORS, which Hugging Face allows, so no host permission is needed.</li>
+<li><strong>Prompts</strong> are packaged Markdown files in <code>prompts/</code>.</li>
+<li>Tesseract runs with <code>workerBlobURL: false</code>, and its worker, core and language data are all loaded from <code>vendor/</code>, never from a CDN.</li>
+</ul>
+
+<h2>Content security policy</h2>
+<pre><code>script-src 'self' 'wasm-unsafe-eval'; object-src 'none'; img-src 'self' data: blob:;
+frame-src 'none'; media-src 'none'; style-src 'self' 'unsafe-inline'</code></pre>
+<ul>
+<li><code>'wasm-unsafe-eval'</code> is required to instantiate the packaged WebAssembly: ONNX Runtime for the privacy model, and tesseract.js-core for OCR.</li>
+<li><code>img-src data: blob:</code> displays pictures and PDF pages the user drops into the reader, after they are rendered on the computer.</li>
+</ul>
+
+<h2>Permissions</h2>
+<table>
+<thead><tr><th scope="col">Permission</th><th scope="col">Why</th></tr></thead>
+<tbody>
+<tr><td><code>storage</code>, <code>unlimitedStorage</code></td><td>The active case, activity log, settings, profile drafts and the last good library copy are kept locally. The privacy model is cached locally with the Cache API, and can exceed the default quota.</td></tr>
+<tr><td><code>scripting</code></td><td>Injects the packaged in-page agent (<code>lib/extract.js</code>, <code>lib/capture.js</code>, <code>lib/agent.js</code>) into a casework tab when the user clips, picks a field or fills a form.</td></tr>
+<tr><td><code>tabs</code></td><td>Matches the current tab’s address against the library’s approved page profiles, follows tab changes for the activity log (approved systems only), and opens the full case, library, log and readiness pages.</td></tr>
+<tr><td><code>clipboardWrite</code></td><td>The user’s “Copy” buttons: values, the fill report, diagnostics.</td></tr>
+<tr><td><code>downloads</code></td><td>The user’s downloads of the activity log (CSV/JSON), settings and drafts backups, and exported profiles.</td></tr>
+<tr><td>Host permissions</td><td>The organisation’s casework systems, forms library and AI gateway. The model server (Hugging Face by default) is fetched with CORS and needs none.</td></tr>
+<tr><td><code>&lt;all_urls&gt;</code> (optional)</td><td>Only for organisations that grant it by policy, so that newly approved systems work without a new release. It is never requested in normal use.</td></tr>
+</tbody>
+</table>
+
+<h2>Updates</h2>
+<p>This add-on is self-distributed (unlisted). Its <code>update_url</code> is <code>{{SITE}}/updates.json</code>, published by GitHub Pages from <a href="{{REPO}}">the public repository</a>. It lists only Mozilla-signed XPIs, each with its SHA-256, served from <code>{{SITE}}/download/</code>. Organisations install it by enterprise policy from <code>{{DOWNLOAD}}</code>. We lint with <code>web-ext lint --self-hosted</code> for this reason.</p>
+
+<h2>Data collection</h2>
+<p>Firefox 140 or newer is required for built-in data consent. The manifest declares website content, personally identifying information, financial/payment information and health information, as case text can contain all of these. Images cannot be sent to AI in this release. The Settings gateway test sends only the fixed text “Reply with OK.”</p>
+<p>Power Loader declares its data categories in <code>data_collection_permissions</code>. Case data is stored locally and deleted when the case ends. The only transmissions are to the organisation-configured forms library and AI gateway, and model-file downloads from the model server (Hugging Face by default), which carry no case data. See the <a href="/privacy">privacy policy</a>. Every case-data AI request passes through <code>previewBeforeSend()</code> in <code>lib/ai/boundary.js</code>, and <code>lib/ai/client.js</code> refuses any payload that has not been approved. There is no analytics or telemetry, and no case data is sent to the publisher. If the user chooses our hosted demo library, our hosting service receives ordinary request metadata to serve its fictional files.</p>
+
+<h2>Third-party libraries</h2>
+<p>The PDF/OCR libraries and ONNX WASM/loader are unmodified files from npm releases, copied into <code>vendor/</code> by <code>tools/vendor.mjs</code>. The same list ships in the package as <code>vendor/SOURCES.tsv</code>. Each checksum can be checked against the linked file:</p>
+<pre><code>curl -sL &lt;url&gt; | sha256sum</code></pre>
+<div class="scroll">
+{{VENDOR_TABLE}}
+</div>
+<p>The linter’s <code>DANGEROUS_EVAL</code> and <code>UNSAFE_VAR_ASSIGNMENT</code> warnings are all inside these library files. None comes from Power Loader’s own code.</p>
+
+<h2>Rebuilding from source</h2>
+<p>The source archive contains the current build inputs, with per-file SHA-256 hashes in SOURCE.json; it excludes local credentials, caches, dependencies and generated files. The build uses open-source tools only:</p>
+<pre><code># Node.js {{NODE}}, pnpm {{PNPM}}, on Linux, macOS or Windows
+pnpm install --frozen-lockfile
+pnpm build:ext            # runs tools/vendor.mjs, then web-ext build
+# output: dist/power-loader-{{VERSION}}.zip, and the packaged tree is extension/</code></pre>
+<p>Power Loader’s own code in <code>extension/</code> is not minified, bundled or transpiled. The build copies the libraries listed above and bundles the unmodified Transformers.js web entry with released ONNX Runtime 1.30.0 using esbuild 0.27.2. The upstream all-in-one bundle embeds a prerelease runtime and is excluded. The exact inputs and generated bundle hash are in vendor/BUNDLE.json. Run pnpm vendor to reproduce it; the generated bundle will not match a CDN copy.</p>
+
+<h2>Trying it</h2>
+<p>The quickest way is the hosted demo: fictional casework pages and a forms library at <a href="/demo/">{{SITE}}/demo/</a>. <a href="/try">Try the demo</a> walks through every feature step by step. In short:</p>
+<ol>
+<li>Open the sidebar. In <strong>Settings</strong>, enter the library address <code>{{DEMO_LIBRARY}}</code>, press <strong>Connect</strong> and allow access to the site.</li>
+<li>On the <strong>Case</strong> tab, tick two forms and start a case.</li>
+<li>Open <a href="/demo/client-1042.html">/demo/client-1042.html</a>, press <strong>Allow on {{HOST}}</strong>, then <strong>Clip this page</strong>. Clip the rent account (it produces a conflict) and <a href="/demo/client-2077.html">client-2077</a> (a different person, which shows the identity warning).</li>
+<li>Open <a href="/demo/dhp.html">/demo/dhp.html</a> and press <strong>Fill this form</strong>. The plan is shown before anything is filled, and Power Loader never submits.</li>
+</ol>
+<p>Page and library access is asked for at run time, through the optional host permission, so the demo needs no extra permission in the manifest. The demo pages are static HTML and their forms only move between pages on this site. AI features need an organisation gateway, which the public demo doesn’t have. Without one, the preview still works and nothing is sent.</p>
+<p>The same demo runs offline from the source archive with <code>pnpm demo</code> (library address <code>http://localhost:8787/demo/library/</code>). <code>pnpm test</code> runs the unit tests.</p>
+
+<h2>Contact</h2>
+<p><a href="mailto:privacy@surprisingly.ltd">privacy@surprisingly.ltd</a></p>
+</div>
+</main>
+{{FOOTER}}
+</body>
+</html>

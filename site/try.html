@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Try a flow · Power Loader training, level 2</title>
+<meta name="description" content="Load a ready-made Power Loader flow, from the demo forms library or as a .flow.json file, and run a whole case on fictional casework pages.">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+{{HEADER}}
+<main id="main">
+<div class="prose">
+<span class="kicker">Training · Level 2</span>
+<h1>Try a flow</h1>
+<p class="lede">Load a ready-made flow and run a whole case with it: clip a client’s details from three fictional systems, settle a conflict, catch the wrong person, and fill a benefit form. It takes about ten minutes.</p>
+
+<div class="note">
+<p><b>Everything under <a href="/demo/">/demo/</a> is made up:</b> Northshire Council, its clients, its landlord and its forms. The demo pages store nothing, but submitting the demo DHP form puts your answers in the confirmation page’s address, which reaches the web host like any page request. <b>Use only made-up details.</b></p>
+<p>Finish <a href="/setup">Level 1</a> first, so the add-on is installed. You don’t need the AI gateway or the privacy model for this level.</p>
+</div>
+
+<h2>1. Load a flow</h2>
+<p>A <b>flow</b> is the form a case fills, the pages its answers come from, and which value goes where. There are two ways to get one. Teams normally use a forms library. A single flow file is handy for trying something out or passing a flow on to someone else.</p>
+
+<h3>Option A: connect the demo forms library</h3>
+<ol>
+<li>In the sidebar, open <b>Settings</b>. Under <b>Forms library</b>, enter this <b>Library address</b>:<br><code>{{DEMO_LIBRARY}}</code></li>
+<li>Leave <b>Branch</b> as <code>main</code> and press <b>Connect</b>.</li>
+<li>Firefox asks whether Power Loader may access <code>{{HOST}}</code>. Choose <b>Allow</b>. Power Loader downloads the library, checks every file against <a href="/demo/library/library.json">its manifest</a> and lists three forms.</li>
+</ol>
+
+<h3>Option B: import a flow file</h3>
+<ol>
+<li>Download a flow:
+  <div class="download actions">
+    <a class="button ghost" href="/flows/discretionary-housing-payment.flow.json" download>Discretionary housing payment.flow.json</a>
+    <a class="button ghost" href="/flows/housing-support-referral.flow.json" download>Housing support referral.flow.json</a>
+  </div>
+</li>
+<li>In the sidebar, open <b>Flows</b> and press <b>Import a flow…</b>. Choose the file you downloaded.</li>
+<li>The flow appears in the list, marked with problems: <b>hasn’t been tested on its page</b>. That’s expected, and it doesn’t stop you starting a case. A flow’s pages are always tested on the computer that uses them. Level 3 shows you how.</li>
+</ol>
+<p class="muted">The files are plain JSON. Open one to see what a flow is: the fields, each page’s address pattern, and for each field the element it’s read from or the box it goes into. They were made from the demo library, so options A and B give you the same flow.</p>
+
+<h2>2. Start a case</h2>
+<ul>
+<li><b>From the library:</b> on the <b>Case</b> tab, tick <b>Discretionary housing payment</b> (and <b>Housing support referral</b> if you like) and press <b>Start case</b>.</li>
+<li><b>From an imported flow:</b> on the <b>Flows</b> tab, press <b>Start case</b> next to it. Power Loader says which pages haven’t been tested on this computer; press <b>Start case</b> again to carry on.</li>
+</ul>
+<p>The case lists every field the form needs, all empty for now.</p>
+
+<h2>3. Clip the client’s details</h2>
+<ol>
+<li>Open <a href="/demo/client-1042.html">Client NC-1042: Maria Kowalska</a>, the council’s case system. The first time, the sidebar asks for access to this site: press <b>Allow on {{HOST}}</b>.</li>
+<li>Press <b>Clip this page</b>. Her name, date of birth, NI number and address fill the case, each linked to where it came from.</li>
+<li>Open her <a href="/demo/rent-account-1042.html">rent account</a> at Harbour Homes and clip it. Its phone number disagrees with the client record, so the sidebar shows <b>1 conflict to decide</b>. Press <b>Use this</b> next to the one you trust.</li>
+<li>Clip <a href="/demo/employment-1042.html">employment and income</a> too.</li>
+</ol>
+
+<h2>4. Catch the wrong person</h2>
+<ol>
+<li>Open <a href="/demo/client-2077.html">Client NC-2077: David Okafor</a>, a different person, and press <b>Clip this page</b>.</li>
+<li>The sidebar warns <b>This may be a different person</b> before anything else.</li>
+<li>Press <b>Undo this clip</b>, keep <b>Wrong person</b> selected and press <b>Remove clip</b>. Everything that came from that clip is cleared.</li>
+</ol>
+
+<h2>5. Fill the form</h2>
+<ol>
+<li>Open the <a href="/demo/dhp.html">Discretionary housing payment</a> form and press <b>Fill this form</b> in the sidebar.</li>
+<li>A fill plan lists what will go in each box, what’s missing and what stays empty. Nothing touches the page yet. Press <b>Fill <i>n</i> boxes</b>.</li>
+<li>Type the reason for the application yourself (it isn’t on any page), check the form and submit it. Power Loader never submits. The <a href="/demo/dhp-submitted.html">confirmation page</a> is recognised, and its reference is recorded in the case.</li>
+<li>Started with the referral too? Fill the <a href="/demo/referral.html">Housing support referral</a> the same way. The values you’ve already checked are reused.</li>
+</ol>
+
+<h2>6. Finish the case</h2>
+<ol>
+<li>Press <b>Finish case</b>. It lists what was filled and what wasn’t.</li>
+<li>Tick the confirmation and press <b>Finish and delete data</b>. The case and its values are deleted from Firefox. The receipt that remains names no one.</li>
+</ol>
+
+<h2>While you’re here</h2>
+<ul>
+<li><b>⤢</b> opens the full case page, with fields, sources and activity.</li>
+<li><b>Tools</b> has a calculator that finds which payments add up to the arrears, a timeline of the dates in the case, and a reader for PDFs and pictures. All three run on your computer.</li>
+<li><b>Privacy → Check this page</b> and <b>Highlight on page</b> show the personal data that would be redacted before an AI request.</li>
+</ul>
+
+<h2>The demo pages</h2>
+<div class="scroll">
+<table>
+<thead><tr><th scope="col">Page</th><th scope="col">Plays the part of</th></tr></thead>
+<tbody>
+<tr><td><a href="/demo/client-1042.html">Client NC-1042</a></td><td>The council’s case system: a client record</td></tr>
+<tr><td><a href="/demo/rent-account-1042.html">Rent account</a></td><td>A housing association’s system, with a phone number that conflicts</td></tr>
+<tr><td><a href="/demo/employment-1042.html">Employment and income</a></td><td>A benefits and income system</td></tr>
+<tr><td><a href="/demo/case-notes-1042.html">Case notes</a></td><td>Free text with dates and names</td></tr>
+<tr><td><a href="/demo/client-2077.html">Client NC-2077</a></td><td>A different person, which triggers the identity warning</td></tr>
+<tr><td><a href="/demo/dhp.html">Discretionary housing payment</a></td><td>A form to fill, with a confirmation page</td></tr>
+<tr><td><a href="/demo/referral.html">Housing support referral</a></td><td>An ordinary form to fill</td></tr>
+<tr><td><a href="/demo/library/library.json">Forms library</a></td><td>The library manifest: every file with its SHA-256</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Running the demo on your own computer</h2>
+<p>From <a href="{{REPO}}">the source</a>, run <code>pnpm install</code> then <code>pnpm demo</code>, and use the library address <code>http://localhost:8787/demo/library/</code>. The pages are the same.</p>
+</div>
+
+{{NEXT_LEVEL}}
+</main>
+{{FOOTER}}
+</body>
+</html>

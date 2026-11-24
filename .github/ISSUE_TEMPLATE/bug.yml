@@ -1,0 +1,28 @@
+name: Bug report
+description: Something in Power Loader doesn't work as it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please don't include real case data, names or screenshots of real records. For security problems, follow SECURITY.md instead.
+  - type: input
+    id: version
+    attributes:
+      label: Power Loader and Firefox versions
+      placeholder: Power Loader 1.0.0, Firefox 140.5 ESR on Windows 11
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: What you did
+      description: Steps to reproduce, ideally with the demo pages at https://powerloader.surprisingly.ltd/demo/
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected, and what happened instead
+    validations:
+      required: true

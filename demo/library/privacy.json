@@ -1,0 +1,15 @@
+{
+  "schema": "powerloader-privacy/1",
+  "patterns": [
+    {
+      "category": "client_id",
+      "pattern": "\\bNC-\\d{4}\\b",
+      "score": 0.99
+    },
+    {
+      "category": "reference",
+      "pattern": "\\b(?:HSG/\\d{4}/\\d{4}|HH-\\d{5}|DHP-\\d{5})\\b",
+      "score": 0.95
+    }
+  ]
+}

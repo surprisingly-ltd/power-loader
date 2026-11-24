@@ -1,0 +1,19 @@
+name: Set up Node, pnpm and dependencies
+description: Node 24.19.0 and pnpm from packageManager, a frozen install, and optionally the vendored runtime files.
+inputs:
+  vendor:
+    description: Also run pnpm vendor (extension/vendor/ is not in git)
+    default: "true"
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24.19.0
+        cache: pnpm
+    - run: pnpm install --frozen-lockfile
+      shell: bash
+    - if: inputs.vendor == 'true'
+      run: pnpm vendor
+      shell: bash

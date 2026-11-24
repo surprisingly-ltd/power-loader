@@ -1,0 +1,23 @@
+import { JSDOM } from 'jsdom';
+import fs from 'fs';
+const html = fs.readFileSync(new URL('../case-journeys.html', import.meta.url), 'utf8');
+const errors = [];
+const dom = new JSDOM(`<!doctype html><html><body>${html}</body></html>`, { runScripts: 'dangerously', pretendToBeVisual: true });
+const w = dom.window; w.addEventListener('error', e => errors.push(e.message));
+const d = w.document; const q = s => d.querySelector(s);
+const click = s => q(s).dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+const change = (el, v) => { if (v !== undefined) el.value = v; el.dispatchEvent(new w.Event('input', { bubbles: true })); el.dispatchEvent(new w.Event('change', { bubbles: true })); };
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const txt = el => el.textContent.replace(/\s+/g, ' ').trim();
+click('[data-act=jump][data-v="4"]'); click('[data-act=sideTab][data-v=privacy]');
+console.log('locked inputs disabled:', q('#px-mirror').disabled, '| url:', txt(q('#sb')).match(/Downloads from \S+/)[0]);
+click('[data-act=pxTestModel]'); await wait(1000); console.log('test:', txt(q('#sb')).match(/Found[^]*?MB\)/)?.[0]);
+click('[data-act=pxLockModel]'); change(q('#px-mirror'), 'https://artifactory.example.gov.uk/api/huggingfaceml/hf-remote'); change(q('#px-rev'), '7c1e2d4');
+console.log('custom url:', txt(q('#sb')).match(/Downloads from \S+/)[0]);
+const hf = q('input[name=px-src][value=hf]'); hf.checked = true; change(hf);
+console.log('hf status:', txt(q('#sb')).match(/On-device model Can't reach \S+/)?.[0]);
+click('[data-act=pxTestModel]'); await wait(1000); console.log('hf test:', txt(q('#sb')).includes('Blocked by the network'));
+click('[data-act=pxCheck]'); console.log('preview warns:', !!q('.modal .notice-bad'), '| patel still redacted:', !q('#px-text').textContent.includes('A. Patel') ? 'yes' : 'no (model off, expected)');
+console.log('ERRORS:', errors.length ? errors : 'none');
+// Release jsdom timers so the runner can observe normal completion.
+dom.window.close();

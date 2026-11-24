@@ -1,0 +1,13 @@
+{
+  "expected/companies-house-company.json": "3e598a2b90dd34bd677e5fb61a5bb46aaa3a7d347bf533db6c1769fddbfb8f3d",
+  "expected/companies-house-officers.json": "d80bca99e5f9de2396501db8a59e95f5678aef3ef76a6384b5f124f14785c10b",
+  "expected/demo-client-1042.json": "c4f905a4f25db7514a1764924fd5ec5323004bf36d9cb34fff982bb12d4da1a2",
+  "expected/demo-client-2077.json": "9de4a7fd1f633a43f03ca8ea956d400365abb13bba75ab870f556a68a39c8d47",
+  "expected/fill-demo-referral-from-an-AI-shaped-record.json": "e9801c9504bc9b148d9969603d1572d485814294c8e43da152a22e72b39831e8",
+  "expected/fill-demo-referral-from-built-in-records.json": "edc1d2432d24e5d38d31e4e5ebc5c1653f1a4b51ee972d96f847e0e701b03fcf",
+  "expected/wikipedia-article-person-page.json": "0da37d10d83bd9765512f5d2dbd11551ec3da859b89d3858c501ba0518e6573e",
+  "expected/wikipedia-org.json": "c8a546909d8ecdf997542da686228f4b9d5873bbac0e1a634122581ef352e7be",
+  "expected/wikipedia-person.json": "bf56c150a1811f3e8fb699b8c077997ac9695a962abc3b2f4f9454b0bfd8adb3",
+  "dsl-cases.json": "5ea28fa085ac20e2a37d4e66819b0d98d5a2595e96de0b0bdf05946ca80b551d",
+  "form-profile.json": "1e3900947035249e6a5c52aef1336dc6cf6551392593765a06d2f0e2ae02e92d"
+}

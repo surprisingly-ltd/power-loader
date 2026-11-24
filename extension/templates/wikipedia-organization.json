@@ -1,0 +1,23 @@
+{
+  "id": "builtin:wikipedia-organization",
+  "name": "Wikipedia – organisation",
+  "description": "Companies and organisations (pages with an organisation infobox).",
+  "match": ["https://*.wikipedia.org/wiki/*"],
+  "when": "table.infobox .org",
+  "fields": {
+    "@type": "Organization",
+    "name": "#firstHeading",
+    "legalName": "table.infobox .org",
+    "description": "#mw-content-text section > p:not(.mw-empty-elt) | drop:\\[[^\\]]*\\]",
+    "organizationType": "table.infobox label(Type) | drop:\\[[^\\]]*\\]",
+    "industry": "table.infobox label(Industry) | drop:\\[[^\\]]*\\]",
+    "foundingDate": "table.infobox label(Founded) .bday | date",
+    "founder": "table.infobox label(Founder) | drop:\\[[^\\]]*\\] | lines",
+    "location": "table.infobox label(Headquarters) | drop:\\[[^\\]]*\\] | oneline",
+    "areaServed": "table.infobox label(Area served) | drop:\\[[^\\]]*\\]",
+    "numberOfEmployees": "table.infobox label(Number of employees) | drop:\\[[^\\]]*\\] | number",
+    "url": "table.infobox label(Website) a @href",
+    "sameAs": "#t-wikibase a @href",
+    "subjectOf": "link[rel=canonical] @href"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "@type": "Organization",
+  "name": "BBC",
+  "legalName": "British Broadcasting Corporation",
+  "description": "The British Broadcasting Corporation (BBC) is a British public service broadcaster headquartered at Broadcasting House in London, England. Originally established in 1922 as the British Broadcasting Company, it evolved into its current state with its current name on 1 January 1927. It is the oldest and largest local and global broadcaster by stature and by number of employees, with a total staff of 22,000.",
+  "organizationType": "Chartered corporation, public broadcaster",
+  "industry": "Mass media",
+  "foundingDate": "1922-10-18",
+  "founder": [
+    "Government of the United Kingdom"
+  ],
+  "location": "Broadcasting House, London, England, UK",
+  "areaServed": "Worldwide",
+  "numberOfEmployees": 21918,
+  "url": "https://bbc.com",
+  "sameAs": "https://www.wikidata.org/wiki/Special:EntityPage/Q9531",
+  "subjectOf": "https://en.wikipedia.org/wiki/BBC"
+}

@@ -1,0 +1,39 @@
+[
+  {
+    "finding": "DANGEROUS_EVAL vendor/ort-wasm-simd-threaded.asyncify.mjs",
+    "count": 1
+  },
+  {
+    "finding": "DANGEROUS_EVAL vendor/pdfjs/pdf.min.mjs",
+    "count": 3
+  },
+  {
+    "finding": "DANGEROUS_EVAL vendor/pdfjs/pdf.worker.min.mjs",
+    "count": 4
+  },
+  {
+    "finding": "DANGEROUS_EVAL vendor/tesseract/tesseract.esm.min.js",
+    "count": 1
+  },
+  {
+    "finding": "DANGEROUS_EVAL vendor/tesseract/worker.min.js",
+    "count": 2
+  },
+  {
+    "finding": "KEY_FIREFOX_ANDROID_UNSUPPORTED_BY_MIN_VERSION manifest.json",
+    "count": 1,
+    "reason": "Desktop only: Power Loader needs sidebar_action, which Firefox for Android lacks, so it declares no Android support (no gecko_android key). Desktop Firefox 140 supports data_collection_permissions."
+  },
+  {
+    "finding": "UNSAFE_VAR_ASSIGNMENT vendor/pdfjs/pdf.min.mjs",
+    "count": 1
+  },
+  {
+    "finding": "UNSAFE_VAR_ASSIGNMENT vendor/tesseract/worker.min.js",
+    "count": 2
+  },
+  {
+    "finding": "UNSAFE_VAR_ASSIGNMENT vendor/transformers.min.js",
+    "count": 1
+  }
+]

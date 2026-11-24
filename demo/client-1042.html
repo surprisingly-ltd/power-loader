@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Maria Kowalska – Client record – Northshire Council Case Manager</title>
+<style>
+  body { font: 15px/1.45 system-ui, sans-serif; margin: 0; color: #1d2329; background: #f4f5f7; }
+  .topbar { background: #24364b; color: #fff; padding: 10px 24px; display: flex; justify-content: space-between; }
+  .topbar a { color: #cfe0f5; margin-right: 16px; }
+  main { max-width: 980px; margin: 20px auto; padding: 0 16px; }
+  .css-9xk2pq { background: #fff; border: 1px solid #dde1e6; border-radius: 6px; padding: 16px 20px; margin-bottom: 16px; }
+  h1 { margin: 0 0 4px; } h2 { font-size: 1.05rem; margin: 0 0 10px; }
+  dl.summary { display: grid; grid-template-columns: 180px 1fr; gap: 4px 12px; margin: 0; }
+  dt { color: #5b6672; } dd { margin: 0; }
+  table { border-collapse: collapse; width: 100%; } th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e6e9ed; }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 10px; background: #fde7c4; font-size: .85rem; }
+  .form-row { display: grid; grid-template-columns: 180px 1fr; gap: 12px; margin-bottom: 8px; }
+  input, select, textarea { font: inherit; padding: 4px 6px; }
+  .note { border-left: 3px solid #9fb6cf; padding-left: 10px; margin-bottom: 12px; }
+  .note-meta { color: #5b6672; font-size: .85rem; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <nav><a href="#">Dashboard</a><a href="#">My cases</a><a href="#">Search</a><a href="#">Reports</a></nav>
+  <div class="user">Logged in as <b>A. Worker</b> (Housing Support Team)</div>
+</div>
+<main>
+  <p class="breadcrumbs"><a href="#">Cases</a> › <a href="#">HSG/2026/0187</a> › Client</p>
+
+  <section class="css-9xk2pq" id="client-header">
+    <h1 class="client-name">Maria Kowalska</h1>
+    <p><b>Client ID:</b> NC-1042 &nbsp; <span class="tag status">Active</span></p>
+  </section>
+
+  <section class="css-9xk2pq">
+    <h2>Case summary</h2>
+    <dl class="summary">
+      <dt>Case reference</dt><dd>HSG/2026/0187</dd>
+      <dt>Case type</dt><dd>Homelessness prevention</dd>
+      <dt>Opened</dt><dd>03/02/2026</dd>
+      <dt>Allocated worker</dt><dd>A. Worker</dd>
+      <dt>Risk level</dt><dd class="risk">Medium</dd>
+    </dl>
+  </section>
+
+  <section class="css-9xk2pq">
+    <h2>Personal details</h2>
+    <table class="details">
+      <tr><th>Title</th><td>Ms</td></tr>
+      <tr><th>First name</th><td>Maria</td></tr>
+      <tr><th>Last name</th><td>Kowalska</td></tr>
+      <tr><th>Date of birth</th><td>14/07/1986</td></tr>
+      <tr><th>NI number</th><td>QQ 12 34 56 C</td></tr>
+      <tr><th>Preferred language</th><td>Polish</td></tr>
+    </table>
+  </section>
+
+  <section class="css-9xk2pq">
+    <h2>Contact details</h2>
+    <form id="contact-form">
+      <div class="form-row"><label for="c-phone">Telephone</label><input id="c-phone" name="phone" value="07700 900123"></div>
+      <div class="form-row"><label for="c-email">Email</label><input id="c-email" name="email" type="email" value="maria.k@example.org"></div>
+      <div class="form-row"><label for="c-contact">Preferred contact</label>
+        <select id="c-contact" name="preferred_contact"><option selected>Phone</option><option>Email</option><option>Letter</option></select></div>
+      <div class="form-row"><label for="c-consent">Consent to share</label><input id="c-consent" name="consent" type="checkbox" checked></div>
+      <div class="form-row"><label for="c-address">Address</label><textarea id="c-address" name="address" rows="4">Flat 3, 12 Mill Lane
+Northtown
+NS1 4AB</textarea></div>
+    </form>
+  </section>
+
+  <section class="css-9xk2pq">
+    <h2>Household members</h2>
+    <table id="household">
+      <thead><tr><th>Name</th><th>Relationship</th><th>Date of birth</th></tr></thead>
+      <tbody>
+        <tr><td>Piotr Kowalski</td><td>Partner</td><td>02/11/1984</td></tr>
+        <tr><td>Zofia Kowalska</td><td>Daughter</td><td>21/05/2015</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="css-9xk2pq">
+    <h2>Case notes</h2>
+    <div class="notes">
+      <div class="note"><div class="note-meta"><span class="note-date">12 Mar 2026</span> · <span class="note-author">A. Worker</span></div><p>Home visit completed. Landlord has issued a section 21 notice; tenancy ends 30 April.</p></div>
+      <div class="note"><div class="note-meta"><span class="note-date">02 Mar 2026</span> · <span class="note-author">B. Officer</span></div><p>Initial triage call. Client requested interpreter (Polish).</p></div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

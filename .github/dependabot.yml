@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    versioning-strategy: increase
+    open-pull-requests-limit: 10
+    groups:
+      # Shipped inside the extension: each update regenerates vendor/SOURCES.tsv and BUNDLE.json and needs
+      # the Firefox suite and a manual check before merging.
+      vendored-runtime:
+        patterns:
+          - "@huggingface/transformers"
+          - "onnxruntime-web"
+          - "pdfjs-dist"
+          - "tesseract.js"
+          - "tesseract.js-core"
+          - "@tesseract.js-data/*"
+      build-and-test:
+        patterns:
+          - "*"
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns:
+          - "*"

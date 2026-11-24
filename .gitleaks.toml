@@ -1,0 +1,25 @@
+# gitleaks configuration: the default rules, minus known test data and file hashes.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Third-party saved pages (test fixtures) and the lockfile's integrity hashes"
+paths = [
+  '''^fixtures/pages/''',
+  '''^pnpm-lock\.yaml$''',
+]
+
+[[allowlists]]
+description = "Synthetic credentials in tests"
+regexes = [
+  '''synthetic-[a-z-]+''',
+  '''policy-token''',
+  '''test-password''',
+  '''wrong-password''',
+]
+
+[[allowlists]]
+description = "SHA-256 hashes of the pinned on-device model files, keyed by file name"
+condition = "AND"
+paths = ['''^extension/lib/model-fetch\.js$''']
+regexes = ['''^[0-9a-f]{64}$''']

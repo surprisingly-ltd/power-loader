@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>New DHP application – Northshire Council</title>
+<style>
+  body { font: 15px/1.45 system-ui, sans-serif; margin: 0; color: #1d2329; background: #f4f5f7; }
+  .topbar { background: #24364b; color: #fff; padding: 10px 24px; }
+  main { max-width: 980px; margin: 20px auto; padding: 0 16px; }
+  .panel { background: #fff; border: 1px solid #dde1e6; border-radius: 6px; padding: 16px 20px; margin-bottom: 16px; }
+  h1 { margin: 0 0 4px; } h2 { font-size: 1.05rem; margin: 0 0 10px; }
+  dl { display: grid; grid-template-columns: 200px 1fr; gap: 4px 12px; margin: 0; } dt { color: #5b6672; } dd { margin: 0; }
+  table { border-collapse: collapse; width: 100%; } th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e6e9ed; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .note { border-left: 3px solid #9fb6cf; padding-left: 10px; margin-bottom: 12px; } .note small { color: #5b6672; }
+</style>
+</head>
+<body>
+<div class="topbar">Northshire Council · Discretionary housing payments (fictional)</div>
+<main>
+<form id="dhp" class="panel" action="dhp-submitted.html" method="get" autocomplete="off">
+  <h1>Discretionary housing payment</h1>
+  <p><label for="d-first">First name</label><br><input id="d-first" name="first"></p>
+  <p><label for="d-last">Last name</label><br><input id="d-last" name="last"></p>
+  <p><label for="d-dob">Date of birth</label><br><input id="d-dob" name="dob" type="date"></p>
+  <p><label for="d-nino">NI number</label><br><input id="d-nino" name="nino"> <span id="d-lookup" aria-live="polite"></span></p>
+  <p><label for="d-address">Address</label><br><textarea id="d-address" name="address" rows="3"></textarea></p>
+  <p><label for="d-postcode">Postcode</label><br><input id="d-postcode" name="postcode"></p>
+  <p><label for="d-landlord">Landlord</label><br><input id="d-landlord" name="landlord"></p>
+  <p><label for="d-start">Tenancy start</label><br><input id="d-start" name="start" type="date"></p>
+  <p><label for="d-rent">Monthly rent (£)</label><br><input id="d-rent" name="rent"></p>
+  <p><label for="d-arrears">Arrears (£)</label><br><input id="d-arrears" name="arrears"></p>
+  <p><label for="d-employer">Current employer</label><br><input id="d-employer" name="employer"></p>
+  <p><label for="d-income">Weekly income (£)</label><br><input id="d-income" name="income"></p>
+  <p><label for="d-uc">Universal Credit</label><br><input id="d-uc" name="uc"></p>
+  <p><label for="d-reason">Why is help needed?</label><br><textarea id="d-reason" name="reason" rows="5"></textarea></p>
+  <input type="hidden" name="ref" value="DHP-20417">
+  <p><button type="submit">Submit application</button></p>
+</form>
+</main>
+<script>
+// A page side effect, as real forms have: changing the NI number "looks up" the claimant.
+document.getElementById('d-nino').addEventListener('change', (e) => {
+  document.getElementById('d-lookup').textContent = e.target.value ? 'Claimant found' : '';
+});
+</script>
+</body>
+</html>

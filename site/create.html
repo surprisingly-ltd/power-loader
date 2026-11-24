@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Create a flow · Power Loader training, level 3</title>
+<meta name="description" content="Build your own Power Loader flow on the hosted demo pages: start from the form to fill, map each page you copy from, test it and export it.">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+{{HEADER}}
+<main id="main">
+<div class="prose">
+<span class="kicker">Training · Level 3</span>
+<h1>Create a flow</h1>
+<p class="lede">Build the Discretionary housing payment flow yourself on the demo pages: tell Power Loader what the form collects, show it where each value lives in the other systems, test it, and export it for your team. Allow about twenty minutes.</p>
+
+<div class="note">
+<p><b>You don’t need a forms library</b> to make a flow. You make it on the real pages, and it’s saved in Firefox as you go.</p>
+<p><b>With the AI gateway</b> from <a href="/setup#ai">Level 1</a>, the ✦ buttons do most of the mapping for you, and you check and correct it. <b>Without it</b>, you map each field by clicking. That takes longer, but it’s the same flow.</p>
+</div>
+
+<h2>The idea: start from the form</h2>
+<p>A flow has at least one <b>form to fill</b> (where the values go) and at least one <b>page to clip</b> (where they come from). Between them is the <b>contract</b>: the list of fields, each defined once with a name and a type, such as a date, an amount of money or an NI number.</p>
+<p>You always start with the form, because the form decides what the flow has to collect. Then for each field, you find the page it comes from.</p>
+
+<h2>The demo pages to build with</h2>
+<div class="scroll">
+<table>
+<thead><tr><th scope="col">Role in the flow</th><th scope="col">Page</th><th scope="col">What to find there</th></tr></thead>
+<tbody>
+<tr><td>Form to fill</td><td><a href="/demo/dhp.html">Discretionary housing payment</a></td><td>Every box; the reason is typed by the caseworker</td></tr>
+<tr><td>Page to clip</td><td><a href="/demo/client-1042.html">Client record NC-1042</a></td><td>First and last name, date of birth, NI number, address, postcode</td></tr>
+<tr><td>Page to clip</td><td><a href="/demo/rent-account-1042.html">Rent account</a></td><td>Landlord, tenancy start date, monthly rent, rent arrears</td></tr>
+<tr><td>Page to clip</td><td><a href="/demo/employment-1042.html">Employment and income</a></td><td>Current employer, weekly income, Universal Credit claim</td></tr>
+<tr><td>Second record, for testing</td><td><a href="/demo/client-2077.html">Client record NC-2077</a></td><td>The same layout, different person: checks your mapping isn’t tied to one record</td></tr>
+</tbody>
+</table>
+</div>
+<p class="muted">Want another one to try afterwards? Build the <a href="/demo/referral.html">Housing support referral</a> from the same three pages.</p>
+
+<h2>Guidance for the AI</h2>
+<p>Guidance is optional. It’s a short description of the flow in plain words, and it goes with every ✦ request for this flow (after the redaction preview). Paste this one when you create the flow:</p>
+<textarea class="guidance" id="flow-guidance" readonly aria-label="Guidance for the demo flow">{{DEMO_GUIDANCE}}</textarea>
+<div class="actions"><button type="button" class="button ghost" id="copy-guidance">Copy the guidance</button><span id="copied" role="status" aria-live="polite" class="muted"></span></div>
+
+<h2>Build it</h2>
+<ol class="steps">
+<li>
+  <h3>Create the flow</h3>
+  <p>In the sidebar, open <b>Flows</b> and press <b>New flow</b>. Fill in <b>Name of the flow</b> (for example “DHP application”) and paste the guidance into <b>Guidance (optional)</b>. The new flow already has <b>Form to fill 1</b> and <b>Page to clip 1</b>.</p>
+</li>
+<li>
+  <h3>Choose the form to fill</h3>
+  <p>Open <b>Form to fill 1</b>. The sidebar asks <b>Which form does this flow fill?</b> In the same tab, go to the <a href="/demo/dhp.html">Discretionary housing payment form</a>, or paste its address and press <b>Go to it</b>. Then press <b>Use the current form</b>. If Firefox asks, allow Power Loader on <code>{{HOST}}</code>.</p>
+</li>
+<li>
+  <h3>Work out what the form collects</h3>
+  <p><b>With AI:</b> press <b>✦ Generate the extraction profile with AI</b>. Check the preview: the form’s boxes and your guidance, with any personal data replaced by placeholders. Then send it. The AI names a field for each box, with its type. Each suggestion is marked <b>Suggested by the AI</b> for you to check.</p>
+  <p><b>By hand:</b> press <b>Make it by hand</b>. Every box on the form is outlined. Type a field’s name in <b>Add a field this form collects</b> (for example “Date of birth”), choose it, then click its box on the page. Repeat for each box.</p>
+  <p>Either way, you can correct anything: click a box to change its field, tick <b>Required</b>, and for the reason for the application tick <b>The caseworker types it</b>, because it isn’t on any page.</p>
+</li>
+<li>
+  <h3>Test the form</h3>
+  <p>Press <b>Test on this page</b>. Power Loader checks that every field finds its box. When it says <b>Test passed on this page</b>, go back to the flow with <b>Back to the flow</b>. The fields list now shows what the flow has to gather.</p>
+</li>
+<li>
+  <h3>Map the client record</h3>
+  <p>Open <b>Page to clip 1</b>, go to <a href="/demo/client-1042.html">client record NC-1042</a> and press <b>Use the current page</b>.</p>
+  <p><b>With AI:</b> press <b>✦ Generate the extraction profile with AI</b>. The AI gets the page’s layout with <i>every</i> value on it replaced by a placeholder, so it never sees Maria’s details. It returns where each field is.</p>
+  <p><b>By hand:</b> every value Power Loader can read is outlined. Choose a field and press <b>Find it</b>, then click its value on the page. If a value isn’t outlined, use <b>Pick something that isn’t outlined</b>.</p>
+  <p>Using a real record is fine: only where values are, not the values themselves, is kept in the flow.</p>
+</li>
+<li>
+  <h3>Test it on two records</h3>
+  <p>Press <b>Test on this page</b>, then open <a href="/demo/client-2077.html">client record NC-2077</a> and press <b>Test on this record too</b>. A mapping that works on two people’s records doesn’t depend on one person’s details.</p>
+</li>
+<li>
+  <h3>Add the other pages</h3>
+  <p>Back on the flow, press <b>+ Add another page to clip</b> twice. Do the same for the <a href="/demo/rent-account-1042.html">rent account</a> and <a href="/demo/employment-1042.html">employment and income</a>: use the current page, find the fields the form still needs, and test.</p>
+</li>
+<li>
+  <h3>Clear the checks</h3>
+  <p>The flow is checked every time it changes. Under <b>Checks</b>, each problem says what’s wrong and offers fixes: a field no page gathers yet, a page that hasn’t been tested, a value that might be personal data left in the flow. <b>✦ Fix with AI</b> asks the AI to find just the fields that are missing. When it says <b>Every page is made and tested, and every field a form needs is gathered</b>, the flow is ready.</p>
+</li>
+<li>
+  <h3>Use it, and export it</h3>
+  <p>Press <b>Start case</b> to try it straight away, just as in <a href="/try">Level 2</a>. Then press <b>Export</b>. You get one <code>.flow.json</code> file with the flow and the library files it becomes. Send it to whoever maintains your team’s forms library, or to a colleague who can use <b>Import a flow…</b>.</p>
+</li>
+</ol>
+
+<h2>Shortcut: start from a library form</h2>
+<p>If you’ve connected a library, <b>Flows → Make a flow from a library form</b> copies a form with its fill profile and the page profiles that read its fields. Change it in the flow; the library itself isn’t changed. It’s a quick way to adapt an existing flow to a new system.</p>
+
+<h2>What makes a good flow</h2>
+<ul>
+<li><b>One task per flow.</b> “Apply for a DHP” rather than “everything about housing”.</li>
+<li><b>Name fields the way your team talks.</b> The names appear in the case and the fill plan.</li>
+<li><b>Test on more than one record,</b> especially one with gaps, such as no phone number or a different household.</li>
+<li><b>Keep the guidance short and factual:</b> which page has what, what the caseworker types, what’s required. Never put personal data in it.</li>
+</ul>
+</div>
+
+<div class="next-level"><small>Training complete</small>You’re a Power Loader operator. <a href="{{REPO}}">Share a flow or improve the code on GitHub</a>, or take a break and <a href="/play">play Transfer Bay 07 →</a></div>
+</main>
+{{FOOTER}}
+<script>
+document.getElementById('copy-guidance').addEventListener('click', async () => {
+  const t = document.getElementById('flow-guidance'), out = document.getElementById('copied');
+  try { await navigator.clipboard.writeText(t.value); out.textContent = 'Copied.'; }
+  catch { t.focus(); t.select(); out.textContent = 'Press Ctrl+C to copy.'; }
+});
+</script>
+</body>
+</html>

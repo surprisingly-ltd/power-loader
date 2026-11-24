@@ -1,0 +1,132 @@
+{
+  "fields": [
+    {
+      "target": "#title",
+      "value": "Ms"
+    },
+    {
+      "target": "#firstName",
+      "value": "Maria"
+    },
+    {
+      "target": "#lastName",
+      "value": "Kowalska"
+    },
+    {
+      "target": "#dob",
+      "value": "1986-07-14"
+    },
+    {
+      "target": "#nino",
+      "value": "QQ123456C"
+    },
+    {
+      "target": "#clientId",
+      "value": "NC-1042"
+    },
+    {
+      "target": "#language",
+      "value": "Polish"
+    },
+    {
+      "target": "#phone",
+      "value": "07700 900123"
+    },
+    {
+      "target": "#email",
+      "value": "maria.k@example.org"
+    },
+    {
+      "target": "#contactPref",
+      "value": "Phone"
+    },
+    {
+      "target": "#address",
+      "value": "Flat 3, 12 Mill Lane\nNorthtown\nNS1 4AB"
+    },
+    {
+      "target": "#postcode",
+      "value": "NS1 4AB"
+    },
+    {
+      "target": "#consent",
+      "value": true
+    },
+    {
+      "target": "#caseRef",
+      "value": "HSG/2026/0187"
+    },
+    {
+      "target": "#caseType",
+      "value": "Homelessness prevention"
+    },
+    {
+      "target": "#opened",
+      "value": "2026-02-03"
+    },
+    {
+      "target": "#worker",
+      "value": "A. Worker"
+    },
+    {
+      "target": "#risk",
+      "value": "Medium"
+    },
+    {
+      "target": "#status",
+      "value": "Active"
+    },
+    {
+      "target": "#orgName",
+      "value": "TESCO PLC"
+    },
+    {
+      "target": "#orgNumber",
+      "value": "00445790"
+    },
+    {
+      "target": "#orgAddress",
+      "value": "Tesco House, Shire Park, Kestrel Way, Welwyn Garden City, United Kingdom, AL7 1GA"
+    },
+    {
+      "target": "#reason",
+      "value": "2026-03-12, A. Worker, Home visit completed. Landlord has issued a section 21 notice; tenancy ends 30 April.\n2026-03-02, B. Officer, Initial triage call. Client requested interpreter (Polish)."
+    }
+  ],
+  "lists": [
+    {
+      "rows": "#household tr",
+      "add": "#addMember",
+      "items": [
+        [
+          {
+            "target": "input[name=memberName]",
+            "value": "Piotr Kowalski"
+          },
+          {
+            "target": "input[name=memberRelationship]",
+            "value": "Partner"
+          },
+          {
+            "target": "input[name=memberDob]",
+            "value": "1984-11-02"
+          }
+        ],
+        [
+          {
+            "target": "input[name=memberName]",
+            "value": "Zofia Kowalska"
+          },
+          {
+            "target": "input[name=memberRelationship]",
+            "value": "Daughter"
+          },
+          {
+            "target": "input[name=memberDob]",
+            "value": "2015-05-21"
+          }
+        ]
+      ]
+    }
+  ]
+}

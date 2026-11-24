@@ -1,0 +1,13 @@
+{
+  "schema": "powerloader-form/1",
+  "id": "coc",
+  "short": "CoC",
+  "name": "Change of circumstances",
+  "category": "Benefits",
+  "version": "v6",
+  "fields": [
+    { "key": "firstName", "required": true }, { "key": "lastName", "required": true }, { "key": "dob", "required": true },
+    { "key": "nino", "required": true }, { "key": "address", "required": true }, { "key": "postcode", "required": true },
+    { "key": "phone" }, { "key": "currentEmployer", "required": true }, { "key": "weeklyIncome", "required": true }, { "key": "reason", "required": true }
+  ]
+}

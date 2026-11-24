@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: pnpm test
+      - run: pnpm test:prototype
+
+  lint-ext:
+    name: lint-ext
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: web-ext lint (errors fail; warnings only as in tools/lint-baseline.json)
+        run: pnpm check:lint
+
+  build:
+    name: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Vendored files match SOURCES.tsv and their npm releases
+        run: pnpm check:vendor
+      - run: pnpm build:ext
+      - run: pnpm bundle:source
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: power-loader-unsigned
+          path: |
+            dist/power-loader-*.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  reproducible:
+    name: reproducible
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          vendor: "false"
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: power-loader-unsigned
+          path: built
+      - name: Rebuild from the source archive (as AMO's reviewers do) and compare every packaged file
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./extension/manifest.json').version")
+          work=$(mktemp -d)
+          unzip -q "built/power-loader-${version}-src.zip" -d "$work/src"
+          (cd "$work/src" && pnpm install --frozen-lockfile && pnpm build:ext)
+          unzip -q "built/power-loader-${version}.zip" -d "$work/ci"
+          unzip -q "$work/src/dist/power-loader-${version}.zip" -d "$work/rebuilt"
+          diff -r "$work/ci" "$work/rebuilt"
+          echo "Rebuilt from source: identical to the CI build"
+
+  site:
+    name: site
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: pnpm build:site
+      - name: Every link, anchor and site address resolves
+        run: pnpm check:site
+
+  firefox:
+    name: firefox (${{ matrix.firefox }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        firefox: [latest-esr, latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - id: firefox
+        uses: browser-actions/setup-firefox@0bc507ddf224827e3b1af68e014d5e42ab93e795 # v1.7.2
+        with:
+          firefox-version: ${{ matrix.firefox }}
+      - run: firefox --version
+      - name: Real Firefox suites (workflow, network, documents, restarts)
+        run: pnpm test:firefox
+        env:
+          POWERLOADER_FIREFOX: ${{ steps.firefox.outputs.firefox-path }}

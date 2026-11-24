@@ -1,0 +1,28 @@
+{
+  "schema": "powerloader-profile/1",
+  "id": "fill/housing-referral",
+  "kind": "fill",
+  "name": "Housing support referral",
+  "version": "v4",
+  "form": { "id": "hsr", "version": "v4" },
+  "match": ["http://localhost:8787/demo/referral.html*"],
+  "urlPattern": "http://localhost:8787/demo/referral.html",
+  "when": "form#referral",
+  "fields": {
+    "#title": "CaseData.title",
+    "#firstName": "CaseData.firstName",
+    "#lastName": "CaseData.lastName",
+    "#dob": "CaseData.dob",
+    "#nino": "CaseData.nino",
+    "#clientId": "CaseData.clientId",
+    "#language": "CaseData.language",
+    "#phone": "CaseData.phone",
+    "#email": "CaseData.email",
+    "#contactPref": "CaseData.contactPref",
+    "#address": "CaseData.address",
+    "#postcode": "CaseData.postcode",
+    "#consent": "CaseData.consent",
+    "#risk": "CaseData.riskLevel",
+    "#reason": "CaseData.reason"
+  }
+}

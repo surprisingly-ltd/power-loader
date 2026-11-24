@@ -1,0 +1,65 @@
+{
+  "id": "builtin:demo-client",
+  "name": "Northshire demo – client record",
+  "description": "Fictional council case system served by the Power Loader server at /demo.",
+  "match": [
+    "http://localhost:8787/demo/client-*",
+    "http://127.0.0.1:8787/demo/client-*"
+  ],
+  "fields": {
+    "@type": "Person",
+    "name": "h1.client-name",
+    "honorificPrefix": "table.details label(Title)",
+    "givenName": "table.details label(First name)",
+    "familyName": "table.details label(Last name)",
+    "birthDate": "table.details label(Date of birth) | date",
+    "identifier": [
+      {
+        "@type": "PropertyValue",
+        "propertyID": "=Client ID",
+        "value": "#client-header label(Client ID)"
+      },
+      {
+        "@type": "PropertyValue",
+        "propertyID": "=NI number",
+        "value": "table.details label(NI number) | drop:[ ]"
+      }
+    ],
+    "knowsLanguage": "table.details label(Preferred language)",
+    "telephone": "#c-phone",
+    "email": "#c-email",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "#c-address | lines",
+      "postalCode": "#c-address | regex:([A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2})"
+    },
+    "contactPreference": "#c-contact",
+    "consentToShare": "#c-consent | bool",
+    "case": {
+      "$scope": "dl.summary",
+      "caseReference": "label(Case reference)",
+      "caseType": "label(Case type)",
+      "dateOpened": "label(Opened) | date",
+      "allocatedWorker": "label(Allocated worker)",
+      "riskLevel": "label(Risk level)"
+    },
+    "relatedTo": [
+      "#household tbody tr",
+      {
+        "@type": "Person",
+        "name": "td:nth-child(1)",
+        "relationship": "td:nth-child(2)",
+        "birthDate": "td:nth-child(3) | date"
+      }
+    ],
+    "notes": [
+      ".notes .note",
+      {
+        "dateCreated": ".note-date | date",
+        "author": ".note-author",
+        "text": "p"
+      }
+    ],
+    "caseStatus": "#client-header .status"
+  }
+}

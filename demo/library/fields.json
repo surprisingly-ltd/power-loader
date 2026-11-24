@@ -1,0 +1,36 @@
+{
+  "schema": "powerloader-fields/1",
+  "fields": {
+    "title": { "label": "Title", "section": "Client" },
+    "firstName": { "label": "First name", "section": "Client", "identity": true, "accepts": ["first_name", "person_name"] },
+    "lastName": { "label": "Last name", "section": "Client", "identity": true, "accepts": ["last_name", "person_name"] },
+    "dob": { "label": "Date of birth", "section": "Client", "type": "date", "identity": "strong", "accepts": ["date_of_birth", "date"] },
+    "nino": { "label": "National Insurance number", "section": "Client", "type": "nino", "identity": "strong", "accepts": ["nino"] },
+    "clientId": { "label": "Client ID", "section": "Client", "identity": "strong", "accepts": ["client_id", "reference"] },
+    "language": { "label": "Preferred language", "section": "Client" },
+    "phone": { "label": "Telephone", "section": "Contact", "type": "phone", "accepts": ["phone"] },
+    "email": { "label": "Email", "section": "Contact", "type": "email", "accepts": ["email"] },
+    "contactPref": { "label": "Preferred contact", "section": "Contact", "options": ["Phone", "Email", "Letter"] },
+    "address": { "label": "Address", "section": "Contact", "long": true, "accepts": ["address", "postcode"] },
+    "postcode": { "label": "Postcode", "section": "Contact", "type": "postcode", "accepts": ["postcode"] },
+    "landlord": { "label": "Landlord", "section": "Housing" },
+    "tenancyStart": { "label": "Tenancy start", "section": "Housing", "type": "date", "accepts": ["date"] },
+    "tenancyType": { "label": "Tenancy type", "section": "Housing" },
+    "monthlyRent": { "label": "Monthly rent", "section": "Housing", "type": "money" },
+    "arrears": { "label": "Rent arrears", "section": "Housing", "type": "money" },
+    "employmentStatus": { "label": "Employment status", "section": "Income" },
+    "currentEmployer": { "label": "Current employer", "section": "Income" },
+    "weeklyIncome": { "label": "Weekly income", "section": "Income", "type": "money" },
+    "ucClaim": { "label": "Universal Credit claim", "section": "Income" },
+    "ucAward": { "label": "UC monthly award", "section": "Income", "type": "money" },
+    "riskLevel": { "label": "Risk level", "section": "Your assessment", "manual": true, "options": ["Low", "Medium", "High"] },
+    "consent": { "label": "Consent to share with partners", "section": "Your assessment", "manual": true, "options": ["Yes", "No"] },
+    "reason": { "label": "Reason for application", "section": "Your assessment", "manual": true, "long": true }
+  },
+  "identifierTypes": {
+    "nino": { "shape": "AA999999A", "pattern": "[A-Z]{2}\\d{6}[A-D]" },
+    "postcode": { "shape": "AA9 9AA", "pattern": "[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}" },
+    "phone": { "shape": "99999 999999", "pattern": "0\\d{4} ?\\d{6}" },
+    "client_id": { "shape": "AA-9999", "pattern": "NC-\\d{4}" }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "note": "OCR output (line text and confidence) for a fictional scanned tenancy agreement, as tesseract returns it. Used so tests don't run OCR.",
+  "lines": [
+    { "text": "ASSURED SHORTHOLD TENANCY AGREEMENT", "confidence": 91, "page": 1 },
+    { "text": "This agreement is made between HARBOUR HOMES LIMITED (the Landlord)", "confidence": 88, "page": 1 },
+    { "text": "and the Tenant for the property: Flat 3, 12 Mill Lane, Northtown", "confidence": 86, "page": 1 },
+    { "text": "Type of tenancy: Assured shorthold tenancy", "confidence": 84, "page": 1 },
+    { "text": "The tenancy is commencing on 1 June 2021", "confidence": 79, "page": 2 },
+    { "text": "The Tenant agrees to pay a rent of £7Z5.00 per calendar month", "confidence": 52, "page": 2 }
+  ]
+}

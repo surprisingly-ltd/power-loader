@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Play Transfer Bay 07 · Power Loader</title>
+<meta name="description" content="Transfer Bay 07: a short browser game about Power Loader. Carry files by hand, then teach the loader each route once.">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body class="play-page">
+{{HEADER}}
+<main id="main" class="wide">
+<div class="play-head">
+  <div>
+    <span class="kicker">Play</span>
+    <h1>Transfer Bay 07</h1>
+    <p class="lede">A tax inspector carries files by hand from dispensers to the machines that need them. Then the amber loader learns each route once, and one press does the copying. Eight short chapters, a few minutes each.</p>
+  </div>
+  <div class="play-actions">
+    <button type="button" class="button" id="fullscreen">Full screen</button>
+    <a class="button ghost" href="/game/" target="_blank" rel="noopener">Open in a new tab</a>
+  </div>
+</div>
+<p class="muted play-keys">Move <kbd>←</kbd> <kbd>→</kbd> or <kbd>A</kbd> <kbd>D</kbd> · Jump <kbd>Space</kbd> · Interact <kbd>E</kbd> or <kbd>Enter</kbd> · Drop through a deck <kbd>↓</kbd> + <kbd>Space</kbd> · Full screen <kbd>F</kbd> · Click the game first if the keys don’t respond. Needs a keyboard and a window at least 1024 × 576.</p>
+<div class="game-frame" id="game-frame">
+  <iframe id="game" src="/game/" title="Transfer Bay 07, a platform game about Power Loader" allow="fullscreen; autoplay"></iframe>
+</div>
+<p class="muted">The game runs entirely in your browser. It sends nothing anywhere and remembers only whether you muted the sound.</p>
+</main>
+{{FOOTER}}
+<script>
+const frame = document.getElementById('game-frame'), game = document.getElementById('game'), button = document.getElementById('fullscreen');
+const focusGame = () => { try { game.contentWindow.focus(); } catch { game.focus(); } };
+game.addEventListener('load', focusGame);
+if (!document.fullscreenEnabled) button.hidden = true;
+button.addEventListener('click', async () => {
+  try { document.fullscreenElement ? await document.exitFullscreen() : await frame.requestFullscreen(); } catch { /* the browser refused: nothing to undo */ }
+  focusGame();
+});
+document.addEventListener('fullscreenchange', () => {
+  button.textContent = document.fullscreenElement ? 'Exit full screen' : 'Full screen';
+  focusGame();
+});
+// Inside the game, F toggles full screen too (the game ignores F).
+game.addEventListener('load', () => {
+  try {
+    game.contentWindow.addEventListener('keydown', (e) => {
+      if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey && !/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) button.click();
+    });
+  } catch { /* cross-origin: keep the button only */ }
+});
+</script>
+</body>
+</html>

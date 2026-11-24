@@ -1,0 +1,166 @@
+[
+ {
+  "name": "demo referral from built-in records",
+  "template": "fill-demo-referral",
+  "records": [
+   {
+    "data": {
+     "@type": "Person",
+     "name": "Maria Kowalska",
+     "honorificPrefix": "Ms",
+     "givenName": "Maria",
+     "familyName": "Kowalska",
+     "birthDate": "1986-07-14",
+     "identifier": [
+      {
+       "@type": "PropertyValue",
+       "propertyID": "Client ID",
+       "value": "NC-1042"
+      },
+      {
+       "@type": "PropertyValue",
+       "propertyID": "NI number",
+       "value": "QQ123456C"
+      }
+     ],
+     "knowsLanguage": "Polish",
+     "telephone": "07700 900123",
+     "email": "maria.k@example.org",
+     "address": {
+      "@type": "PostalAddress",
+      "streetAddress": [
+       "Flat 3, 12 Mill Lane",
+       "Northtown",
+       "NS1 4AB"
+      ],
+      "postalCode": "NS1 4AB"
+     },
+     "contactPreference": "Phone",
+     "consentToShare": true,
+     "case": {
+      "caseReference": "HSG/2026/0187",
+      "caseType": "Homelessness prevention",
+      "dateOpened": "2026-02-03",
+      "allocatedWorker": "A. Worker",
+      "riskLevel": "Medium"
+     },
+     "relatedTo": [
+      {
+       "@type": "Person",
+       "name": "Piotr Kowalski",
+       "relationship": "Partner",
+       "birthDate": "1984-11-02"
+      },
+      {
+       "@type": "Person",
+       "name": "Zofia Kowalska",
+       "relationship": "Daughter",
+       "birthDate": "2015-05-21"
+      }
+     ],
+     "notes": [
+      {
+       "dateCreated": "2026-03-12",
+       "author": "A. Worker",
+       "text": "Home visit completed. Landlord has issued a section 21 notice; tenancy ends 30 April."
+      },
+      {
+       "dateCreated": "2026-03-02",
+       "author": "B. Officer",
+       "text": "Initial triage call. Client requested interpreter (Polish)."
+      }
+     ],
+     "caseStatus": "Active"
+    }
+   },
+   {
+    "data": {
+     "@type": "Organization",
+     "legalName": "TESCO PLC",
+     "identifier": {
+      "@type": "PropertyValue",
+      "propertyID": "Companies House number",
+      "value": "00445790"
+     },
+     "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Tesco House, Shire Park, Kestrel Way, Welwyn Garden City, United Kingdom, AL7 1GA",
+      "postalCode": "AL7 1GA"
+     },
+     "companyStatus": "Active",
+     "companyType": "Public limited Company",
+     "foundingDate": "1947-11-27",
+     "dissolutionDate": null,
+     "sicCodes": [
+      "47110 - Retail sale in non-specialised stores with food, beverages or tobacco predominating"
+     ],
+     "previousNames": [
+      {
+       "name": "TESCO STORES (HOLDINGS) PUBLIC LIMITED COMPANY",
+       "startDate": "1981-12-14",
+       "endDate": "1983-08-25"
+      },
+      {
+       "name": "TESCO STORES (HOLDINGS) LIMITED",
+       "startDate": "1947-11-27",
+       "endDate": "1981-12-14"
+      }
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "name": "demo referral from an AI-shaped record",
+  "template": "fill-demo-referral",
+  "records": [
+   {
+    "source": {},
+    "data": {
+     "@type": "Person",
+     "name": "David Okafor",
+     "identifier": [
+      {
+       "@type": "PropertyValue",
+       "propertyID": "Client ID",
+       "value": "NC-2077"
+      },
+      {
+       "@type": "PropertyValue",
+       "propertyID": "NI number",
+       "value": "QQ 98 76 54 A"
+      }
+     ],
+     "birthDate": "1972-01-30",
+     "knowsLanguage": "English",
+     "telephone": null,
+     "email": "d.okafor@example.com",
+     "preferredContact": "Email",
+     "consentToShare": false,
+     "address": "45 Station Road, Eastbury, NS7 2QD",
+     "caseReference": "HSG/2026/0342",
+     "caseType": "Housing benefit query",
+     "caseStatus": "Awaiting review",
+     "caseOpened": "2026-05-19",
+     "allocatedWorker": "C. Caseworker",
+     "householdMembers": [
+      {
+       "@type": "Person",
+       "name": "Grace Okafor",
+       "relationship": "Spouse",
+       "birthDate": "1975-09-11"
+      }
+     ],
+     "subjectOf": [
+      {
+       "@type": "Comment",
+       "dateCreated": "2026-05-20",
+       "author": "C. Caseworker",
+       "text": "Benefit statement requested from DWP."
+      }
+     ]
+    }
+   }
+  ]
+ }
+]

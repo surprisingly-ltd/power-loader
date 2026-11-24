@@ -1,0 +1,34 @@
+[
+  {
+    "finding": "DANGEROUS_EVAL vendor/ort-wasm-simd-threaded.asyncify.mjs",
+    "count": 1
+  },
+  {
+    "finding": "DANGEROUS_EVAL vendor/pdfjs/pdf.min.mjs",
+    "count": 3
+  },
+  {
+    "finding": "DANGEROUS_EVAL vendor/pdfjs/pdf.worker.min.mjs",
+    "count": 4
+  },
+  {
+    "finding": "DANGEROUS_EVAL vendor/tesseract/tesseract.esm.min.js",
+    "count": 1
+  },
+  {
+    "finding": "DANGEROUS_EVAL vendor/tesseract/worker.min.js",
+    "count": 2
+  },
+  {
+    "finding": "UNSAFE_VAR_ASSIGNMENT vendor/pdfjs/pdf.min.mjs",
+    "count": 1
+  },
+  {
+    "finding": "UNSAFE_VAR_ASSIGNMENT vendor/tesseract/worker.min.js",
+    "count": 2
+  },
+  {
+    "finding": "UNSAFE_VAR_ASSIGNMENT vendor/transformers.min.js",
+    "count": 1
+  }
+]

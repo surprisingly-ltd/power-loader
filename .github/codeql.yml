@@ -1,0 +1,6 @@
+name: CodeQL config
+paths-ignore:
+  - extension/vendor
+  - fixtures/pages
+  - node_modules
+  - dist

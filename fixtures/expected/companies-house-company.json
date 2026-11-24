@@ -1,0 +1,33 @@
+{
+  "@type": "Organization",
+  "legalName": "TESCO PLC",
+  "identifier": {
+    "@type": "PropertyValue",
+    "propertyID": "Companies House number",
+    "value": "00445790"
+  },
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Tesco House, Shire Park, Kestrel Way, Welwyn Garden City, United Kingdom, AL7 1GA",
+    "postalCode": "AL7 1GA"
+  },
+  "companyStatus": "Active",
+  "companyType": "Public limited Company",
+  "foundingDate": "1947-11-27",
+  "dissolutionDate": null,
+  "sicCodes": [
+    "47110 - Retail sale in non-specialised stores with food, beverages or tobacco predominating"
+  ],
+  "previousNames": [
+    {
+      "name": "TESCO STORES (HOLDINGS) PUBLIC LIMITED COMPANY",
+      "startDate": "1981-12-14",
+      "endDate": "1983-08-25"
+    },
+    {
+      "name": "TESCO STORES (HOLDINGS) LIMITED",
+      "startDate": "1947-11-27",
+      "endDate": "1981-12-14"
+    }
+  ]
+}

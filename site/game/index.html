@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Power Loader — Transfer Bay 07</title>
+</head>
+<body>
+<header id="hud">
+  <div class="row">
+    <div class="brand"><i class="mark" aria-hidden="true"></i><b>Power Loader</b><small>Transfer Bay 07</small></div>
+    <div id="chapter-title" class="title"></div>
+    <div id="request" class="chip" aria-live="polite"></div>
+    <div id="count" class="count"></div>
+    <div class="controls">
+      <label>Chapter <select id="chapter-select" aria-label="Choose chapter"></select></label>
+      <button id="restart" type="button">Restart</button>
+      <button id="mute" type="button" aria-pressed="false">Sound on</button>
+    </div>
+  </div>
+  <p id="caption" class="caption"></p>
+</header>
+<main id="stage">
+  <canvas id="game" aria-label="Transfer Bay 07: a platformer about moving files between machines"></canvas>
+  <button id="skip" type="button" hidden>Skip ⏭</button>
+  <div id="banner" class="panel" hidden>
+    <small id="banner-kicker"></small>
+    <h2 id="banner-title"></h2>
+    <p id="banner-text"></p>
+    <button id="banner-next" type="button">Next chapter →</button>
+    <span class="hint">or press E / Enter</span>
+  </div>
+  <div id="end" class="panel end" hidden>
+    <small>Transfer Bay 07 · all files filed</small>
+    <h2>From carrying files to systems that share them.</h2>
+    <p><b>Power Loader today (chapters 1–5).</b> It turns the copying you do by hand into a <b>flow</b>: a
+      reviewable list of what to copy from each page and which box it goes in, carried in <b>one bookmark</b>.
+      Show it each page once. After that it copies when you press <b>Copy</b> and fills when you press
+      <b>Fill</b>. It never submits the form for you.</p>
+    <p class="next"><b>Where this is heading (chapters 6–8).</b> Fully automated processes that run the learned
+      routes without anyone pressing a button, at fleet scale, and finally underlying systems fixed so they
+      share data directly, with nothing left to copy.</p>
+    <button id="play-again" type="button">Play again</button>
+  </div>
+</main>
+<p id="help">Move <kbd>←</kbd><kbd>→</kbd> or <kbd>A</kbd><kbd>D</kbd> · Jump <kbd>Space</kbd> · Interact <kbd>E</kbd> or <kbd>Enter</kbd> · Drop through a deck <kbd>↓</kbd>+<kbd>Space</kbd></p>
+<div id="small-screen" hidden>
+  <div>
+    <i class="mark" aria-hidden="true"></i>
+    <h2>Power Loader needs a bigger screen</h2>
+    <p>This game is played with a keyboard and needs a desktop or laptop window at least 1024 × 576. Try
+      making the window larger, or come back on a computer.</p>
+  </div>
+</div>
+<script type="module" src="./src/main.ts"></script>
+</body>
+</html>

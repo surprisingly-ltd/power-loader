@@ -1,0 +1,220 @@
+{
+ "url": "http://localhost:8787/demo/referral.html",
+ "title": "Housing support referral – Northshire Council",
+ "controls": [
+  {
+   "selector": "#title",
+   "label": "Title",
+   "tag": "input",
+   "type": "text",
+   "section": "Client"
+  },
+  {
+   "selector": "#firstName",
+   "label": "First name",
+   "tag": "input",
+   "type": "text",
+   "section": "Client"
+  },
+  {
+   "selector": "#lastName",
+   "label": "Last name",
+   "tag": "input",
+   "type": "text",
+   "section": "Client"
+  },
+  {
+   "selector": "#dob",
+   "label": "Date of birth",
+   "tag": "input",
+   "type": "date",
+   "section": "Client"
+  },
+  {
+   "selector": "#nino",
+   "label": "National Insurance number",
+   "tag": "input",
+   "type": "text",
+   "section": "Client"
+  },
+  {
+   "selector": "#clientId",
+   "label": "Client ID",
+   "tag": "input",
+   "type": "text",
+   "section": "Client"
+  },
+  {
+   "selector": "#language",
+   "label": "Preferred language",
+   "tag": "input",
+   "type": "text",
+   "section": "Client"
+  },
+  {
+   "selector": "#phone",
+   "label": "Telephone",
+   "tag": "input",
+   "type": "tel",
+   "section": "Contact"
+  },
+  {
+   "selector": "#email",
+   "label": "Email",
+   "tag": "input",
+   "type": "email",
+   "section": "Contact"
+  },
+  {
+   "selector": "#contactPref",
+   "label": "Preferred contact",
+   "tag": "select",
+   "type": "select",
+   "options": [
+    "Choose…",
+    "Phone",
+    "Email",
+    "Letter"
+   ],
+   "section": "Contact"
+  },
+  {
+   "selector": "#address",
+   "label": "Address",
+   "tag": "textarea",
+   "type": "textarea",
+   "section": "Contact"
+  },
+  {
+   "selector": "#postcode",
+   "label": "Postcode",
+   "tag": "input",
+   "type": "text",
+   "section": "Contact"
+  },
+  {
+   "selector": "#consent",
+   "label": "Client consents to information being shared with partner agencies",
+   "tag": "input",
+   "type": "checkbox",
+   "section": "Contact"
+  },
+  {
+   "selector": "#caseRef",
+   "label": "Case reference",
+   "tag": "input",
+   "type": "text",
+   "section": "Case"
+  },
+  {
+   "selector": "#caseType",
+   "label": "Case type",
+   "tag": "input",
+   "type": "text",
+   "section": "Case"
+  },
+  {
+   "selector": "#opened",
+   "label": "Date opened",
+   "tag": "input",
+   "type": "date",
+   "section": "Case"
+  },
+  {
+   "selector": "#worker",
+   "label": "Allocated worker",
+   "tag": "input",
+   "type": "text",
+   "section": "Case"
+  },
+  {
+   "selector": "#risk",
+   "label": "Risk level",
+   "tag": "select",
+   "type": "select",
+   "options": [
+    "Choose…",
+    "Low",
+    "Medium",
+    "High"
+   ],
+   "section": "Case"
+  },
+  {
+   "selector": "#status",
+   "label": "Status",
+   "tag": "input",
+   "type": "text",
+   "section": "Case"
+  },
+  {
+   "selector": "#orgName",
+   "label": "Organisation name",
+   "tag": "input",
+   "type": "text",
+   "section": "Landlord or other organisation (optional)"
+  },
+  {
+   "selector": "#orgNumber",
+   "label": "Company number",
+   "tag": "input",
+   "type": "text",
+   "section": "Landlord or other organisation (optional)"
+  },
+  {
+   "selector": "#orgAddress",
+   "label": "Registered address",
+   "tag": "input",
+   "type": "text",
+   "section": "Landlord or other organisation (optional)"
+  },
+  {
+   "selector": "#reason",
+   "label": "Background and case notes",
+   "tag": "textarea",
+   "type": "textarea",
+   "section": "Reason for referral"
+  }
+ ],
+ "groups": [
+  {
+   "rows": "#household > tr",
+   "rowCount": 1,
+   "controls": [
+    {
+     "selector": "input[name=\"memberName\"]",
+     "label": "Member name",
+     "tag": "input",
+     "type": "text"
+    },
+    {
+     "selector": "input[name=\"memberRelationship\"]",
+     "label": "Relationship",
+     "tag": "input",
+     "type": "text"
+    },
+    {
+     "selector": "input[name=\"memberDob\"]",
+     "label": "Member date of birth",
+     "tag": "input",
+     "type": "date"
+    }
+   ],
+   "heading": "Household members"
+  }
+ ],
+ "buttons": [
+  {
+   "selector": "#household > tr > td:nth-of-type(4) > button",
+   "text": "✕"
+  },
+  {
+   "selector": "#addMember",
+   "text": "Add member"
+  },
+  {
+   "selector": "#referral > div:nth-of-type(6) > button",
+   "text": "Submit referral"
+  }
+ ]
+}

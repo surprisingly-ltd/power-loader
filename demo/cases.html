@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My cases – Northshire Council Case Manager</title>
+<style>
+  body { font: 15px/1.45 system-ui, sans-serif; margin: 0; color: #1d2329; background: #f4f5f7; }
+  .topbar { background: #24364b; color: #fff; padding: 10px 24px; display: flex; justify-content: space-between; }
+  .topbar a { color: #cfe0f5; margin-right: 16px; }
+  main { max-width: 980px; margin: 20px auto; padding: 0 16px; }
+  .panel { background: #fff; border: 1px solid #dde1e6; border-radius: 6px; padding: 16px 20px; margin-bottom: 16px; }
+  h1 { margin: 0 0 4px; }
+  table { border-collapse: collapse; width: 100%; } th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e6e9ed; }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 10px; background: #fde7c4; font-size: .85rem; }
+  .tag.new { background: #d2e8d4; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <nav><a href="#">Dashboard</a><a href="cases.html">My cases</a><a href="#">Search</a><a href="#">Reports</a></nav>
+  <div class="user">Logged in as <b>A. Worker</b> (Housing Support Team)</div>
+</div>
+<main>
+  <section class="panel" id="queue">
+    <h1>My cases</h1>
+    <p>Housing Support Team work queue. Pick up the oldest new case first.</p>
+    <table>
+      <thead><tr><th>Case</th><th>Client number</th><th>Client</th><th>Received</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>HSG/2026/0187</td><td>1042</td><td><a href="client-1042.html">Maria Kowalska</a></td><td>02/11/2026</td><td><span class="tag new">New</span></td></tr>
+        <tr><td>HSG/2026/0342</td><td>2077</td><td><a href="client-2077.html">David Okafor</a></td><td>16/11/2026</td><td><span class="tag">Awaiting review</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+</body>
+</html>

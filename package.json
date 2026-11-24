@@ -1,0 +1,47 @@
+{
+  "name": "power-loader",
+  "private": true,
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=24.19.0"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "node --test 'tests/js/*.test.js'",
+    "lint:ext": "web-ext lint --self-hosted --source-dir extension",
+    "start:firefox": "web-ext run --source-dir extension --start-url http://localhost:8787/demo/",
+    "build:ext": "node tools/vendor.mjs && web-ext build --source-dir extension --artifacts-dir dist --filename power-loader-{version}.zip --overwrite-dest",
+    "demo": "node tools/serve-demo.mjs",
+    "test:live": "node tests/tools/live-smoke.mjs",
+    "test:prototype": "node prototype/tests/run-all.mjs",
+    "fixtures:candidates": "node tests/tools/regen-expected.mjs",
+    "vendor": "node tools/vendor.mjs",
+    "build:site": "node tools/vendor.mjs && node tools/build-site.mjs",
+    "bundle:source": "node tools/source-bundle.mjs",
+    "test:firefox": "node tests/tools/firefox-suite.mjs",
+    "test:firefox:smoke": "node tests/tools/firefox-smoke.mjs",
+    "check:vendor": "node tools/check-vendor.mjs",
+    "check:lint": "node tools/check-lint.mjs",
+    "check:site": "node tools/check-site.mjs"
+  },
+  "devDependencies": {
+    "@huggingface/transformers": "4.3.1",
+    "@playwright/test": "1.60.0",
+    "@tesseract.js-data/eng": "1.0.0",
+    "esbuild": "0.27.2",
+    "jsdom": "25.0.1",
+    "onnxruntime-web": "1.30.0",
+    "pdfjs-dist": "4.10.38",
+    "ses": "^2.3.0",
+    "tesseract.js": "5.1.1",
+    "tesseract.js-core": "5.1.1",
+    "web-ext": "8.10.0",
+    "zip-dir": "2.0.0"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/surprisingly-ltd/auto-loader.git"
+  },
+  "homepage": "https://powerloader.surprisingly.ltd"
+}

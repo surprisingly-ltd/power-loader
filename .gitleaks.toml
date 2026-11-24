@@ -1,0 +1,16 @@
+# gitleaks configuration: the default rules, minus known test data.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Third-party saved pages and synthetic test credentials"
+paths = [
+  '''^fixtures/pages/''',
+  '''^pnpm-lock\.yaml$''',
+]
+regexes = [
+  '''synthetic-[a-z-]+''',
+  '''policy-token''',
+  '''test-password''',
+  '''wrong-password''',
+]

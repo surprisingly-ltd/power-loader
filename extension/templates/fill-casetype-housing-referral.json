@@ -1,0 +1,49 @@
+{
+  "id": "builtin:fill-casetype-housing-referral",
+  "kind": "fill",
+  "name": "Housing support referral (from case type)",
+  "description": "Fills the referral form from a Housing support referral case.",
+  "caseTypeOnly": true,
+  "match": [
+    "http://localhost:8787/demo/referral.html*",
+    "http://127.0.0.1:8787/demo/referral.html*"
+  ],
+  "when": "form#referral",
+  "fields": {
+    "#title": "CaseData.title",
+    "#firstName": "CaseData.firstName",
+    "#lastName": "CaseData.lastName",
+    "#dob": "CaseData.dob",
+    "#nino": "CaseData.nino",
+    "#clientId": "CaseData.clientId",
+    "#language": "CaseData.language",
+    "#phone": "CaseData.phone",
+    "#email": "CaseData.email",
+    "#contactPref": "CaseData.contactPref",
+    "#address": "CaseData.address",
+    "#postcode": "CaseData.postcode",
+    "#consent": "CaseData.consent",
+    "#caseRef": "CaseData.caseRef",
+    "#caseType": "CaseData.caseType",
+    "#opened": "CaseData.opened",
+    "#worker": "CaseData.worker",
+    "#risk": "CaseData.risk",
+    "#status": "CaseData.status",
+    "#orgName": "CaseData.orgName",
+    "#orgNumber": "CaseData.orgNumber",
+    "#orgAddress": "CaseData.orgAddress",
+    "#reason": "CaseData.reason"
+  },
+  "lists": [
+    {
+      "source": "CaseData.household",
+      "rows": "#household tr",
+      "add": "#addMember",
+      "fields": {
+        "input[name=memberName]": ".name",
+        "input[name=memberRelationship]": ".relationship",
+        "input[name=memberDob]": ".dob"
+      }
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Power Loader: copy a case between web systems, checked, in a few clicks</title>
+<meta name="description" content="Power Loader is an open-source Firefox add-on for caseworkers. It collects a case’s details from the web systems you already use, checks them, and fills the forms for you to submit.">
+<link rel="stylesheet" href="/style.css">
+<script type="module" src="/hero.js"></script>
+</head>
+<body>
+{{HEADER}}
+<main id="main">
+
+<section class="hero">
+  <div>
+    <h1>Stop retyping the same case <em>into every system.</em></h1>
+    <p class="lede">Power Loader is a free, open-source Firefox add-on for caseworkers. It collects a person’s details from the web systems you already use, shows you where they disagree, and fills in the form. You check it and press submit yourself.</p>
+    <div class="actions">
+      <a class="button" href="/setup">Start training</a>
+      <a class="button ghost" href="/try">Try a ready-made flow</a>
+    </div>
+  </div>
+  <div class="flowcard" aria-labelledby="how-title">
+    <h2 id="how-title">How it works</h2>
+    <ol>
+      <li><b>Start a case</b> from a <em>flow</em>: the form you need to fill and the pages its answers come from.</li>
+      <li><b>Clip each page</b> in your case system, landlord portal or benefits system. Every value remembers where it came from.</li>
+      <li><b>Sort out conflicts.</b> Two phone numbers? A different person’s record? Power Loader stops and asks you.</li>
+      <li><b>Fill the form.</b> You see exactly what goes in each box first. Nothing is ever submitted for you.</li>
+    </ol>
+  </div>
+</section>
+
+<h2>Why it’s a good idea</h2>
+<div class="grid">
+  <div class="card"><span class="tag">Time</span><h3>Copying is not casework</h3><p>Caseworkers spend hours carrying names, dates, references and amounts from one screen to another. Power Loader does the carrying, so their time goes on the person in front of them.</p></div>
+  <div class="card"><span class="tag">Accuracy</span><h3>Fewer mistakes, caught earlier</h3><p>Retyping causes typos, swapped digits and the wrong client’s details. Power Loader copies values exactly, flags sources that disagree, and warns you when a page is about someone else.</p></div>
+  <div class="card"><span class="tag">No IT project</span><h3>Works with the systems you have</h3><p>There’s no integration to build and nothing to change in the systems themselves. If you can see it in Firefox, a flow can read it or fill it.</p></div>
+  <div class="card"><span class="tag">Reviewable</span><h3>Flows are data, not code</h3><p>A flow is a small JSON file that says which value comes from where and goes into which box. Your team can read it, test it and approve it before anyone uses it.</p></div>
+  <div class="card"><span class="tag">Private</span><h3>Case data stays on the computer</h3><p>Cases are kept in Firefox and deleted when you finish. A privacy model runs on your own machine. Nothing goes to us: no analytics, no telemetry.</p></div>
+  <div class="card"><span class="tag">AI, on your terms</span><h3>Optional, and always previewed</h3><p>AI can help write flows. It only uses your organisation’s own gateway, and you see a preview with personal data replaced by placeholders before anything is sent.</p></div>
+</div>
+
+<h2>Who it’s for</h2>
+<p class="prose">Teams who work across several web systems that don’t talk to each other, such as councils, housing associations, advice services and benefits teams. An organisation installs Power Loader for its staff through Firefox policy and shares its flows in a forms library. Anyone can try it with our fictional demo pages first. A bookmarklet edition, for computers where add-ons can’t be installed, is a sibling project.</p>
+
+<h2>Training</h2>
+<p class="prose">Three short levels take you from installing the add-on to building a flow of your own on our demo pages.</p>
+<ol class="levels">
+  <li><a href="/setup"><span class="lvl">1</span><b>Setup</b>Install the add-on, connect your AI gateway if you have one, and download the on-device privacy model.</a></li>
+  <li><a href="/try"><span class="lvl">2</span><b>Try a flow</b>Connect the demo library or import a flow file, then run a whole case on the demo pages.</a></li>
+  <li><a href="/create"><span class="lvl">3</span><b>Create a flow</b>Build your own flow on the demo pages, test it and export it for your team.</a></li>
+</ol>
+
+<section class="bay" aria-labelledby="bay-title">
+  <h2 id="bay-title">Or learn it the fun way: Level 1 is through that door.</h2>
+  <div class="bay-frame">
+    <canvas id="bay" data-target="/play" width="1280" height="480" role="img" aria-label="An inspector in a yellow power loader stands in a transfer bay next to a door marked Level 1. Walking through it starts the Transfer Bay 07 game."></canvas>
+  </div>
+  <div class="bay-controls">
+    <a class="button" href="/setup">Start training</a>
+    <a class="button ghost" id="walk-in" href="/play">Play Transfer Bay 07</a>
+    <p class="keys-hint">or press <kbd>→</kbd> or <kbd>D</kbd> to walk the loader through the door (<kbd>←</kbd> <kbd>A</kbd> back up).</p>
+    <p id="bay-status" role="status" aria-live="polite"></p>
+  </div>
+</section>
+
+</main>
+{{FOOTER}}
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy policy · Power Loader</title>
+<meta name="description" content="Power Loader sends nothing to us. What the Firefox extension and this website do with data, where it is kept, and your rights under the GDPR.">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+{{HEADER}}
+<main id="main">
+<div class="prose">
+<h1>Privacy policy</h1>
+<p class="updated">Effective 24 November 2026 · Covers version {{VERSION}} of the Power Loader extension and this website</p>
+
+<div class="tip">
+<p><b>We receive nothing.</b> Power Loader has no servers of its own and no account system. It has no analytics, telemetry, tracking, advertising or crash reporting. No case data, page content, settings, keys or usage information is ever sent to Surprisingly Ltd.</p>
+<p><b>Case data stays on your computer.</b> It leaves only if <i>your organisation</i> has set up its own AI gateway, and only when you press an ✦ button, read the preview and approve it. Nothing else the extension sends contains case data.</p>
+</div>
+
+<p>This policy is written to meet the transparency requirements of the EU General Data Protection Regulation (GDPR) and the UK GDPR. It covers two things published by Surprisingly Limited (“we”, “us”), a company registered in England and Wales, company number 13766094:</p>
+<ul>
+<li>the <b>Power Loader extension</b> for Firefox, and</li>
+<li>this <b>website</b>, {{HOST}}, including the demo pages, the demo forms library and the Transfer Bay 07 game.</li>
+</ul>
+
+<h2 id="summary">The short version</h2>
+<div class="scroll">
+<table>
+<thead><tr><th scope="col">Question</th><th scope="col">Answer</th></tr></thead>
+<tbody>
+<tr><td>Does Power Loader send anything to Surprisingly Ltd?</td><td><b>No.</b> Nothing, ever. We couldn’t see your data even if we wanted to.</td></tr>
+<tr><td>Where is case data kept?</td><td>In Firefox, on your computer. It’s deleted when you finish or discard the case.</td></tr>
+<tr><td>Does case data go anywhere else?</td><td>Only to your organisation’s own AI gateway, if it has one, and only a request you have previewed and approved.</td></tr>
+<tr><td>What other connections does it make?</td><td>To your organisation’s forms library, to download the privacy model, and Firefox’s own update check. None of them carries case data. <a href="#connections">Details below.</a></td></tr>
+<tr><td>Does this website track me?</td><td>No. No cookies, no analytics, no third-party scripts or fonts. The game remembers only whether you muted it. Our host keeps standard server logs. <a href="#website">Details below.</a></td></tr>
+<tr><td>Who is responsible for the people in my cases?</td><td>Your organisation, as data controller. <a href="#roles">Details below.</a></td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="roles">Who is responsible for what</h2>
+<p><b>For the data you handle with the extension, your organisation is the data controller.</b> It installs Power Loader for its staff and decides which systems it may read, where its forms library and AI gateway are, and how long the activity log is kept. Its own privacy notice applies to that data, as do its contracts with any AI provider behind its gateway.</p>
+<p><b>Surprisingly Ltd is neither a controller nor a processor of that data.</b> We write and publish the software, but it never sends us anything, and we have no access to any computer it runs on.</p>
+<p><b>For this website and for messages you send us, Surprisingly Ltd is the controller.</b> That covers the small amount of personal data described under <a href="#website">This website</a> and <a href="#contact-us">If you contact us</a>.</p>
+
+<h2 id="extension">The extension: what it keeps on your computer</h2>
+<p>Power Loader uses Firefox’s extension storage on the computer where it runs. Nothing in this list is sent anywhere, except the gateway key, which goes only to your organisation’s gateway to sign in each approved request.</p>
+<ul>
+<li><b>The active case:</b> the forms or flow it started from, and the values you clipped from pages, each with where it came from. Depending on the case, these can include names, dates of birth, addresses, reference numbers such as NI numbers and client IDs, and financial, housing, employment and health details.</li>
+<li><b>Your notes</b> on the case.</li>
+<li><b>An activity log</b> of the approved pages you used and what you did with them, without the values themselves. Pages outside your organisation’s approved list are not logged. Your organisation sets how long entries are kept: 90 days by default.</li>
+<li><b>Flows and drafts you make:</b> page layouts, field names and test results, never values from pages. Power Loader checks for and blocks personal data left in a flow before you export it.</li>
+<li><b>Settings</b>, and the AI gateway key if you choose <b>Remember the key in this browser</b> (otherwise the key lasts only for the browser session).</li>
+<li><b>Cached files</b> from your forms library and the privacy model.</li>
+</ul>
+<p>When you <b>finish</b> or <b>discard</b> a case, Power Loader deletes the case, its values and its working data. If Firefox closes part-way through, the deletion completes the next time it starts. Removing the extension removes everything it stored.</p>
+<p>Reading text from PDFs and pictures, and finding personal data with the privacy model, both run entirely on your computer.</p>
+
+<h2 id="connections">The extension: every connection it makes</h2>
+<p>This is the complete list. The extension contains no other network code, and every library it includes is packaged with it, so nothing is loaded from the internet at runtime.</p>
+<div class="scroll">
+<table>
+<thead><tr><th scope="col">Where</th><th scope="col">What is sent</th><th scope="col">When</th><th scope="col">Case data?</th></tr></thead>
+<tbody>
+<tr><td>Your organisation’s <b>AI gateway</b> (optional, set up by your organisation)</td><td>The text of the task you chose, after redaction: detected personal details are replaced by placeholders such as <code>&lt;redacted:person_name|ref:…&gt;</code>. Images cannot be sent.</td><td>Only when you press an ✦ button and approve the preview. The <b>Test the connection</b> button sends only the fixed text “Reply with OK.”</td><td><b>Only what you approve</b>, redacted unless your organisation allows otherwise and you choose to send an item as written</td></tr>
+<tr><td>Your organisation’s <b>forms library</b> (optional)</td><td>Requests for the library’s files, with any sign-in your organisation requires</td><td>When you connect or sync the library</td><td>No</td></tr>
+<tr><td>The <b>model server</b>: Hugging Face by default, or a server set by your organisation or by you</td><td>Requests for the privacy model’s files, each checked against a known hash</td><td>Once, when you download the model, and again only if it changes</td><td>No</td></tr>
+<tr><td><b>This website</b>, through Firefox’s update check</td><td>Firefox asks for <code>/updates.json</code> to see whether a newer signed version exists</td><td>Firefox decides, normally about once a day</td><td>No</td></tr>
+<tr><td><b>This website’s demo library</b> (only if you connect it)</td><td>Requests for the fictional demo files</td><td>When you connect or sync the demo library</td><td>No</td></tr>
+</tbody>
+</table>
+</div>
+<p>Like any web request, the services above see your computer’s IP address and browser version. That’s handled under their own terms: your organisation’s for its gateway, library and model server; <a href="https://huggingface.co/privacy">Hugging Face’s privacy policy</a> for model downloads from huggingface.co; and <a href="#website">this website’s</a> for the update check and demo library. Your organisation can host the model and avoid Hugging Face altogether.</p>
+<p>Power Loader also works in your browser for you: it reads the pages you clip from, and fills form boxes you have reviewed in a fill plan. It <b>never submits a form</b>. Submitting is always your action, under the terms of the site you submit to.</p>
+
+<h3>Things that happen only when you ask</h3>
+<ul>
+<li><b>Copy diagnostics</b> puts a report on your clipboard for IT support. It contains version numbers, which settings are set and recent error types, never case values, page addresses, notes or keys. It goes nowhere unless you paste it somewhere.</li>
+<li><b>Export</b> (flows, activity log, settings) saves a file on your computer.</li>
+<li><b>Copying a value</b> puts it on your clipboard.</li>
+</ul>
+
+<h3>Firefox’s data permissions</h3>
+<p>When you install Power Loader, Firefox lists the kinds of data it handles: website content, personal information, financial and payment information, and health information. Firefox asks every add-on to declare this. It describes what Power Loader <i>handles on your computer</i> while you work on cases, not anything sent to us.</p>
+
+<h3>Automated decisions</h3>
+<p>Power Loader makes no decisions about people. AI suggestions are shown to you to check, every value is reviewed in the fill plan before it goes into a form, and only you submit.</p>
+
+<h2 id="website">This website</h2>
+<ul>
+<li><b>No cookies, no analytics, no tracking.</b> The site sets no cookies. It loads no third-party scripts, fonts or images, and has no embedded content from other sites. The only thing it stores in your browser is whether you muted the game’s sound, in local storage on your own device. You can clear it with your browser’s site data settings.</li>
+<li><b>Hosting.</b> The site is hosted on GitHub Pages by GitHub, Inc. When you visit, GitHub receives your IP address and standard request details (browser, address requested, time) and may log them for security and to keep the service running. We don’t receive or look at these logs. See <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub’s privacy statement</a>.</li>
+<li><b>Lawful basis.</b> That processing is in our legitimate interest, and yours, in serving and securing the website (GDPR Article 6(1)(f)).</li>
+<li><b>Transfers outside the UK and EU.</b> GitHub may process this data in the United States. GitHub is certified under the EU–US Data Privacy Framework and its UK extension, and also relies on standard contractual clauses.</li>
+<li><b>The demo pages</b> are fictional, and they don’t store or forward anything you type. But submitting the demo <i>Discretionary housing payment</i> form opens its confirmation page with the form’s answers in the page address, so, like any page request, that address reaches our host and may appear in its logs. <b>Use only made-up details in the demo.</b></li>
+</ul>
+
+<h2 id="contact-us">If you contact us</h2>
+<p>If you email us, we receive your email address, name and whatever you write. We use it only to reply and to deal with your request. Our lawful basis is our legitimate interest in answering you (Article 6(1)(f)). We don’t share it with anyone, and we delete it once the conversation is finished, normally within 12 months. Please don’t send us personal data about people in your cases.</p>
+<p>If you report an issue on GitHub, it is public and covered by GitHub’s terms. Use <b>Copy diagnostics</b>, which contains no case data, rather than screenshots of real cases.</p>
+
+<h2 id="rights">Your rights</h2>
+<p>Under the GDPR and UK GDPR you have the right to access your personal data, to have it corrected or erased, to restrict or object to its processing, and to data portability.</p>
+<ul>
+<li><b>About data in the extension</b> (yours, or that of people in your cases): contact your organisation’s data protection officer. We hold none of it, so we can’t access, correct or delete it. You can delete everything on your computer by finishing or discarding the case, or by removing the extension.</li>
+<li><b>About emails you’ve sent us:</b> write to <a href="mailto:privacy@surprisingly.ltd">privacy@surprisingly.ltd</a>. We’ll reply within one month.</li>
+<li><b>About website hosting logs:</b> these are held by GitHub. Contact GitHub through its privacy statement. We can help if you ask.</li>
+</ul>
+<p>You can also complain to a data protection authority: in the UK, the <a href="https://ico.org.uk/make-a-complaint/">Information Commissioner’s Office</a>; in the EU, the authority in the country where you live or work (see the <a href="https://www.edpb.europa.eu/about-edpb/about-edpb/members_en">list of EU data protection authorities</a>). We’d appreciate the chance to sort it out first.</p>
+
+<h2 id="open-source">Check it yourself</h2>
+<p>Power Loader is open source. The <a href="{{REPO}}">source code</a> shows every network request it can make, and the <a href="/reviewers">reviewer notes</a> explain how to rebuild the published package from that source and compare it byte for byte.</p>
+
+<h2 id="changes">Changes to this policy</h2>
+<p>If Power Loader or this website starts handling data differently, we will update this page and its effective date before that version is released. The history of this page is in the public repository.</p>
+
+<h2 id="contact">Who we are and how to contact us</h2>
+<p><b>Surprisingly Limited</b><br>
+Registered in England and Wales, company number 13766094<br>
+Registered office: The Old Bakery, 90 Camden Road, Tunbridge Wells, England, TN1 2QP</p>
+<p>For anything about privacy or this policy, email <a href="mailto:privacy@surprisingly.ltd">privacy@surprisingly.ltd</a>. For anything else, <a href="mailto:hello@surprisingly.ltd">hello@surprisingly.ltd</a>.</p>
+<p>We are a small company and are not required to appoint a data protection officer. Because we don’t receive personal data from the extension, we have not appointed a representative in the EU.</p>
+</div>
+</main>
+{{FOOTER}}
+</body>
+</html>

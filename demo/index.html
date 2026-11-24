@@ -1,0 +1,54 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Power Loader demo pages</title>
+<style>body{font:16px/1.5 system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 16px}</style></head><body>
+<h1>Power Loader demo pages</h1>
+<p>Fictional records from a fictional council case system, for trying out the extension.</p>
+<h2>Set up Power Loader for this demo</h2>
+<ol>
+<li>Install Power Loader in Firefox on a desktop computer and open its sidebar with the toolbar button.</li>
+<li>On the <strong>Case</strong> tab, under <strong>Connect your team’s forms library</strong>, enter this library address and press <strong>Connect</strong>:<br><code id="library-address">https://powerloader.surprisingly.ltd/demo/library/</code></li>
+<li>When Firefox asks whether Power Loader may access this site, choose <strong>Allow</strong>. The sidebar then lists the demo forms.</li>
+</ol>
+<p>Already using another library? Change the address under <strong>Settings → Forms library</strong> instead. The <a href="library/library.json">library manifest</a> lists every form and profile with its checksum.</p>
+<p>New to Power Loader? <a href="https://powerloader.surprisingly.ltd/try">The demo guide</a> walks through these pages step by step.</p>
+<script>document.getElementById('library-address').textContent = new URL('library/', location.href).href;</script>
+<ul>
+<li><a href="cases.html">My cases</a>: the work queue a case starts from</li>
+<li><a href="client-1042.html">Client NC-1042: Maria Kowalska</a></li>
+<li><a href="rent-account-1042.html">Rent account for Maria Kowalska</a> (Harbour Homes)</li>
+<li><a href="employment-1042.html">Employment and income for Maria Kowalska</a></li>
+<li><a href="case-notes-1042.html">Case notes for NC-1042</a></li>
+<li><a href="client-2077.html">Client NC-2077: David Okafor</a> (no risk level, no phone, three household members)</li>
+</ul>
+<h2>Make a flow (no library needed)</h2>
+<p>A flow is what a library is made of: the form a case fills, the pages it clips from, and the fields between them. You can make one here without connecting the demo library.</p>
+<ol>
+<li>In the Power Loader sidebar, open <strong>Flows</strong> and choose <strong>New flow</strong> (or <strong>Or make a flow → New flow</strong> on the Case tab).</li>
+<li>Name it, and paste the guidance below into <strong>Guidance</strong>.</li>
+<li>Open <strong>Form to fill 1</strong>, go to the <a href="dhp.html">Discretionary housing payment</a> form in the same tab and choose <strong>Use this form</strong>. Then choose <strong>✦ Generate the extraction profile with AI</strong> (needs ✦ Remote AI in Settings) or <strong>Make it by hand</strong>: type a field’s name and click its box.</li>
+<li>Open <strong>Page to clip 1</strong> and use the <a href="client-1042.html">client record</a>. Add two more pages to clip for the <a href="rent-account-1042.html">rent account</a> and <a href="employment-1042.html">employment and income</a>, and do the same on each.</li>
+<li>Test each page. Test the client record on <a href="client-2077.html">the other client</a> too, then go back to the flow, fix anything under <strong>Checks</strong>, and choose <strong>Export</strong>.</li>
+<li>Optional: under <strong>3. Pages to visit</strong>, add one and use <a href="cases.html">My cases</a>. Then, under <strong>The caseworker’s steps</strong>, put it first and choose <strong>✦ Write the steps from the guidance</strong>, or edit each step: what to do there, and links to the next page. A link can carry a value from the case, such as <code>client-{ref}.html</code>.</li>
+<li>Optional: under <strong>Timelines</strong>, add one with bars for employments (rows of the history table on the employment page: pick a date in it) and a pointer for the tenancy start date. A case from the flow draws it on the Tools tab.</li>
+</ol>
+<p><label for="flow-guidance"><strong>Guidance to paste</strong></label></p>
+<textarea id="flow-guidance" readonly rows="18" style="width:100%;font:inherit;font-size:14px">This flow fills the Discretionary housing payment (DHP) application form for a tenant who is behind with their rent.
+
+Start at My cases: pick up the oldest case marked New, and type its client number as the case reference. Open the client record (client-{ref}.html), then the rent account (rent-account-{ref}.html) and the employment and income page (employment-{ref}.html), clipping each one. Check the client record is the right person before going on. Then open the DHP form, fill it, check every box and submit it.
+
+Collect:
+- From the Case Manager client record: first name, last name, date of birth, NI number, address and postcode.
+- From the Harbour Homes rent account: landlord, tenancy start date, monthly rent and rent arrears.
+- From the employment and income page: current employer, weekly income and Universal Credit claim.
+
+The caseworker writes the reason for the application themselves; it isn't on any page.
+
+Every box on the form is required except tenancy start, current employer and Universal Credit. Dates are dates, and rent, arrears and income are amounts of money.</textarea>
+<p><button type="button" id="copy-guidance">Copy the guidance</button> <span id="copied" role="status"></span></p>
+<script>document.getElementById('copy-guidance').addEventListener('click', async () => {
+  const t = document.getElementById('flow-guidance');
+  try { await navigator.clipboard.writeText(t.value); document.getElementById('copied').textContent = 'Copied'; } catch { t.select(); document.getElementById('copied').textContent = 'Press Ctrl+C to copy'; }
+});</script>
+<h2>Final form</h2>
+<p><a href="dhp.html">Discretionary housing payment</a>: submitting it opens a confirmation page with a reference.</p>
+<p><a href="referral.html">Housing support referral</a>: an ordinary web form. Collect a client's details, then open this page and use the Power Loader sidebar to fill it.</p>
+</body></html>

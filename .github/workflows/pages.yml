@@ -1,0 +1,97 @@
+name: Pages
+
+# Builds and deploys https://powerloader.surprisingly.ltd: the homepage, privacy and reviewer notes, the
+# demo, and the signed releases with updates.json (which installed copies poll through update_url).
+on:
+  push:
+    branches: [main]
+    paths:
+      - site/**
+      - demo/**
+      - tools/**
+      - extension/manifest.json
+      - extension/lib/**
+      - README.md
+      - REVIEWERS.md
+      - package.json
+      - pnpm-lock.yaml
+      - .github/workflows/pages.yml
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Signed releases (published only)
+        run: node tools/fetch-releases.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - run: pnpm build:site
+      - name: Every link, anchor and site address resolves
+        run: pnpm check:site
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist/site
+
+  deploy:
+    name: deploy
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+  smoke:
+    name: smoke
+    needs: deploy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: The live site answers, and updates.json matches the served XPI
+        run: |
+          set -euo pipefail
+          site=https://powerloader.surprisingly.ltd
+          for path in / /setup /try /create /play /privacy /reviewers /demo/ /demo/library/library.json /updates.json /game/; do
+            for attempt in 1 2 3 4 5 6; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' "$site$path") || code=000
+              [ "$code" = 200 ] && break
+              sleep 20
+            done
+            echo "$code $site$path"
+            [ "$code" = 200 ]
+          done
+          curl -sf "$site/updates.json" -o updates.json
+          node -e '
+            const u = require("./updates.json"), list = Object.values(u.addons)[0].updates;
+            if (!list.length) { console.log("No signed releases listed yet"); process.exit(0) }
+            const latest = list[list.length - 1];
+            require("fs").writeFileSync("latest.txt", latest.update_link + " " + latest.update_hash.replace("sha256:", ""));
+          '
+          if [ -f latest.txt ]; then
+            read -r link hash < latest.txt
+            curl -sf "$link" -o latest.xpi
+            echo "$hash  latest.xpi" | sha256sum -c -
+          fi

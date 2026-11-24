@@ -1,0 +1,22 @@
+{
+  "id": "builtin:wikipedia-article",
+  "name": "Wikipedia – any article",
+  "description": "Fallback for any Wikipedia article: title, summary and infobox rows.",
+  "match": [
+    "https://*.wikipedia.org/wiki/*"
+  ],
+  "fields": {
+    "@type": "Article",
+    "name": "#firstHeading",
+    "description": "#mw-content-text section > p:not(.mw-empty-elt) | drop:\\[[^\\]]*\\]",
+    "url": "link[rel=canonical] @href",
+    "about": "#t-wikibase a @href",
+    "infobox": [
+      "table.infobox tr",
+      {
+        "name": "th.infobox-label",
+        "value": "td.infobox-data | drop:\\[[^\\]]*\\] | oneline"
+      }
+    ]
+  }
+}

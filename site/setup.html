@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Setup · Power Loader training, level 1</title>
+<meta name="description" content="Install Power Loader in Firefox, connect your organisation’s AI gateway, and download the on-device privacy model.">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+{{HEADER}}
+<main id="main">
+<div class="prose">
+<span class="kicker">Training · Level 1</span>
+<h1>Setup</h1>
+<p class="lede">Install the add-on, download the privacy model that runs on your own computer, and connect your organisation’s AI gateway if you have one. It takes about ten minutes, most of it waiting for the model to download.</p>
+
+<div class="note"><p><b>You need</b> Firefox 140 or newer on a desktop or laptop (Windows, macOS or Linux), and about 1 GB of free space for the privacy model. The AI gateway is optional: everything except the ✦ AI buttons works without it.</p></div>
+
+<h2 id="install">1. Install the add-on</h2>
+<p>Power Loader is signed by Mozilla and distributed from this site rather than the public add-ons store, because organisations deploy it to their own staff.</p>
+
+<h3>For a whole organisation (recommended)</h3>
+<p>Ask IT to add it to Firefox’s enterprise policy. In <code>policies.json</code>, or the matching Group Policy or configuration profile settings:</p>
+<pre><code>{
+  "policies": {
+    "ExtensionSettings": {
+      "{{ID}}": {
+        "installation_mode": "force_installed",
+        "install_url": "{{DOWNLOAD}}"
+      }
+    }
+  }
+}</code></pre>
+<p>Firefox installs it on next start. Signed releases update themselves from this site. Policy can also set the forms library, the AI gateway and the model server for everyone: see <a href="#policy">settings by policy</a> below.</p>
+
+<h3>On one computer</h3>
+<ol>
+<li>In Firefox, open <a href="{{DOWNLOAD_LINK}}">the latest signed release</a>.</li>
+<li>Firefox asks whether to add Power Loader. Choose <b>Add</b>, then <b>OK</b>.</li>
+</ol>
+
+<h3>From source, for development</h3>
+<p>Clone <a href="{{REPO}}">the repository</a>, run <code>pnpm install</code> and <code>pnpm vendor</code>, then open <code>about:debugging#/runtime/this-firefox</code>, choose <b>Load Temporary Add-on…</b> and select <code>extension/manifest.json</code>. Temporary add-ons are removed when Firefox closes.</p>
+
+<h2 id="sidebar">2. Open the sidebar</h2>
+<p>Press the Power Loader button in the toolbar (the striped amber mark). If you can’t see it, open the <b>Extensions</b> menu (the jigsaw piece) and pin it. The sidebar opens on the left. The first time, it opens at <b>Settings</b> with a list of what still needs setting up.</p>
+
+<h2 id="privacy-model">3. Download the privacy model</h2>
+<p>Before anything goes to an AI, Power Loader finds personal data such as names, addresses, dates of birth and reference numbers, and swaps them for placeholders. Part of that is a small AI model that runs entirely on your computer: <b>OpenAI Privacy Filter</b>, about 920 MB, downloaded once.</p>
+<ol class="steps">
+<li><h3>Open Settings → On-device privacy model</h3><p>It says where the model comes from. By default that’s Hugging Face, at a fixed version (<code>{{MODEL_REVISION}}</code>). Every file is checked against a known SHA-256 hash as it downloads, so a changed file is refused.</p></li>
+<li><h3>Press <b>Download and test the model</b></h3><p>Power Loader downloads the files, starts the model on your graphics card and runs a test scan. When it’s done it says <b>Ready</b>. You can keep working while it downloads.</p></li>
+<li><h3>Check it works</h3><p>Open the <b>Privacy</b> tab, choose <b>Check some text</b>, paste a made-up sentence such as “Maria Kowalska of 14 Dock Road, born 3 March 1984, called about her rent” and press <b>Check text</b>. The name and address are highlighted, and the redacted text shows what an AI would receive instead.</p></li>
+</ol>
+<div class="warn">
+<p><b>If huggingface.co is blocked</b> at work, IT can host the same files on an internal server. Under <b>Privacy → Where the model comes from</b>, choose <b>Another model server</b> and enter its <b>Model server address</b>. The files must be at the same paths as on Hugging Face, and the same hashes are checked.</p>
+<p><b>If it says WebGPU isn’t available,</b> Firefox can’t use this computer’s graphics card for the model. Update Firefox and your graphics drivers, or ask IT. Without the model, Power Loader still redacts what it knows from the case and from the library’s patterns, and policy decides whether AI requests may go ahead.</p>
+</div>
+<p>To free the space later, use <b>Remove the downloaded model</b> in the same place.</p>
+
+<h2 id="ai">4. Connect your AI gateway (optional)</h2>
+<p>The ✦ buttons use AI to help build flows: to work out what a form collects and where each value is on a page. Power Loader only talks to an AI through an <b>OpenAI-compatible chat completions endpoint</b> that your organisation controls, such as a <a href="https://docs.litellm.ai/docs/simple_proxy">LiteLLM</a> proxy or a cloud provider’s gateway. You never use a personal AI account.</p>
+<ol class="steps">
+<li><h3>Get the details from IT</h3><p>You need three things: the <b>endpoint address</b> (ending in <code>/v1</code>), a <b>model name</b> (often an alias such as <code>fast</code>), and an <b>API key</b> made for Power Loader alone, ideally with a spending limit and an expiry date.</p></li>
+<li><h3>Open Settings → ✦ Remote AI</h3><p>Fill in <b>Endpoint address (including /v1)</b>, <b>Model name</b> and <b>API key</b>. Tick <b>Remember the key in this browser</b> if you don’t want to enter it again after Firefox restarts. Otherwise it lasts for this session.</p></li>
+<li><h3>Read and tick the confirmation</h3><p>It says what is sent to the remote AI, and asks you to confirm you’ve checked that your organisation allows it.</p></li>
+<li><h3>Press <b>Turn on the remote AI</b></h3><p>Firefox asks whether Power Loader may contact the gateway’s site. Choose <b>Allow</b>.</p></li>
+<li><h3>Press <b>Test the connection</b></h3><p>This sends only the fixed text “Reply with OK.” It should say <b>Gateway reachable</b> and name the model. If it fails, the message says what to check: the address, the key, or the network path to the gateway.</p></li>
+</ol>
+<div class="tip"><p><b>What the AI sees.</b> Every ✦ request opens a preview first. Personal data is replaced by placeholders such as <code>&lt;redacted:person_name|ref:…&gt;</code>, and you can switch any item between redacted and sent as written. Nothing is sent until you approve the preview. When the answer comes back, the real values are put back on your computer.</p></div>
+
+<h2 id="library">5. Connect a forms library (if your team has one)</h2>
+<p>A forms library is where a team keeps its approved flows: forms, fields and page profiles, each checked against a hash. Under <b>Settings → Forms library</b>, enter the <b>Library address</b> and press <b>Connect</b>. Level 2 does this with our demo library. You don’t need a library to build your own flows.</p>
+
+<h2 id="check">6. Check it’s ready</h2>
+<p>In <b>Settings</b>, choose <b>Check Power Loader is ready</b>. It checks the policy, the library, the gateway and its key, WebGPU, the privacy model, free storage and permissions, and says what to fix. <b>Copy diagnostics</b> copies a report with no case data in it, for IT or for an issue on GitHub.</p>
+
+<h2 id="policy">Settings by policy, for IT</h2>
+<p>Everything above can be set for every computer through Firefox policy, under <code>3rdparty → Extensions → {{ID}}</code>. Anything set by policy is locked in the sidebar and shows <b>🔒 Set by your organisation</b>. Firefox reads policy when it starts, so changes need a restart.</p>
+<pre><code>{
+  "policies": {
+    "3rdparty": {
+      "Extensions": {
+        "{{ID}}": {
+          "library": { "baseUrl": "https://git.example.org/casework/flows/-/raw/{ref}/", "branch": "main" },
+          "gateway": { "baseUrl": "https://ai-gateway.example.org/v1", "model": "fast" },
+          "privacyModel": { "baseUrl": "https://models.example.org/huggingface/" },
+          "activityLog": { "retentionDays": 90 }
+        }
+      }
+    }
+  }
+}</code></pre>
+<p>Each person still enters the gateway API key themselves. The full list of policy settings is in the <a href="{{REPO}}#policy">README</a>.</p>
+</div>
+
+{{NEXT_LEVEL}}
+</main>
+{{FOOTER}}
+</body>
+</html>

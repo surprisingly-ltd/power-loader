@@ -1,0 +1,22 @@
+{
+  "schema": "powerloader-profile/1",
+  "id": "harbour-homes/rent-account",
+  "kind": "extract",
+  "name": "Rent account",
+  "version": "v1",
+  "match": ["http://localhost:8787/demo/rent-account-*.html*"],
+  "urlPattern": "http://localhost:8787/demo/rent-account-{tenancyRef}.html",
+  "fields": {
+    "firstName": "dd.tenant | regex:^(\\S+)",
+    "lastName": "dd.tenant | regex:(\\S+)$",
+    "phone": "#tenancy label(Contact number)",
+    "address": "#tenancy label(Property)",
+    "postcode": "#tenancy label(Property) | regex:([A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2})$",
+    "landlord": "#tenancy label(Landlord)",
+    "tenancyStart": "#tenancy label(Tenancy start) | date",
+    "tenancyType": "#tenancy label(Tenancy type)",
+    "monthlyRent": "#tenancy label(Monthly rent) | number",
+    "arrears": "#tenancy label(Arrears) | number",
+    "payments": ["#payments tbody tr", { "@type": "money", "date": "td:nth-child(1) | date", "label": "td:nth-child(2)", "amount": "td:nth-child(3) | number" }]
+  }
+}

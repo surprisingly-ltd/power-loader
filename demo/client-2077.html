@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>David Okafor – Client record – Northshire Council Case Manager</title>
+<style>
+  body { font: 15px/1.45 system-ui, sans-serif; margin: 0; color: #1d2329; background: #f4f5f7; }
+  .topbar { background: #24364b; color: #fff; padding: 10px 24px; display: flex; justify-content: space-between; }
+  .topbar a { color: #cfe0f5; margin-right: 16px; }
+  main { max-width: 980px; margin: 20px auto; padding: 0 16px; }
+  .css-9xk2pq { background: #fff; border: 1px solid #dde1e6; border-radius: 6px; padding: 16px 20px; margin-bottom: 16px; }
+  h1 { margin: 0 0 4px; } h2 { font-size: 1.05rem; margin: 0 0 10px; }
+  dl.summary { display: grid; grid-template-columns: 180px 1fr; gap: 4px 12px; margin: 0; }
+  dt { color: #5b6672; } dd { margin: 0; }
+  table { border-collapse: collapse; width: 100%; } th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e6e9ed; }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 10px; background: #fde7c4; font-size: .85rem; }
+  .form-row { display: grid; grid-template-columns: 180px 1fr; gap: 12px; margin-bottom: 8px; }
+  input, select, textarea { font: inherit; padding: 4px 6px; }
+  .note { border-left: 3px solid #9fb6cf; padding-left: 10px; margin-bottom: 12px; }
+  .note-meta { color: #5b6672; font-size: .85rem; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <nav><a href="#">Dashboard</a><a href="#">My cases</a><a href="#">Search</a><a href="#">Reports</a></nav>
+  <div class="user">Logged in as <b>A. Worker</b> (Housing Support Team)</div>
+</div>
+<main>
+  <p class="breadcrumbs"><a href="#">Cases</a> › <a href="#">HSG/2026/0342</a> › Client</p>
+
+  <section class="css-9xk2pq" id="client-header">
+    <h1 class="client-name">David Okafor</h1>
+    <p><b>Client ID:</b> NC-2077 &nbsp; <span class="tag status">Awaiting review</span></p>
+  </section>
+
+  <section class="css-9xk2pq">
+    <h2>Case summary</h2>
+    <dl class="summary">
+      <dt>Case reference</dt><dd>HSG/2026/0342</dd>
+      <dt>Case type</dt><dd>Housing benefit query</dd>
+      <dt>Opened</dt><dd>19/05/2026</dd>
+      <dt>Allocated worker</dt><dd>C. Caseworker</dd>
+      
+    </dl>
+  </section>
+
+  <section class="css-9xk2pq">
+    <h2>Personal details</h2>
+    <table class="details">
+      <tr><th>Title</th><td>Mr</td></tr>
+      <tr><th>First name</th><td>David</td></tr>
+      <tr><th>Last name</th><td>Okafor</td></tr>
+      <tr><th>Date of birth</th><td>30/01/1972</td></tr>
+      <tr><th>NI number</th><td>QQ 98 76 54 A</td></tr>
+      <tr><th>Preferred language</th><td>English</td></tr>
+    </table>
+  </section>
+
+  <section class="css-9xk2pq">
+    <h2>Contact details</h2>
+    <form id="contact-form">
+      <div class="form-row"><label for="c-phone">Telephone</label><input id="c-phone" name="phone" value=""></div>
+      <div class="form-row"><label for="c-email">Email</label><input id="c-email" name="email" type="email" value="d.okafor@example.com"></div>
+      <div class="form-row"><label for="c-contact">Preferred contact</label>
+        <select id="c-contact" name="preferred_contact"><option>Phone</option><option selected>Email</option><option>Letter</option></select></div>
+      <div class="form-row"><label for="c-consent">Consent to share</label><input id="c-consent" name="consent" type="checkbox"></div>
+      <div class="form-row"><label for="c-address">Address</label><textarea id="c-address" name="address" rows="4">45 Station Road
+Eastbury
+NS7 2QD</textarea></div>
+    </form>
+  </section>
+
+  <section class="css-9xk2pq">
+    <h2>Household members</h2>
+    <table id="household">
+      <thead><tr><th>Name</th><th>Relationship</th><th>Date of birth</th></tr></thead>
+      <tbody>
+        <tr><td>Grace Okafor</td><td>Spouse</td><td>11/09/1975</td></tr>
+        <tr><td>Samuel Okafor</td><td>Son</td><td>04/04/2008</td></tr>
+        <tr><td>Ruth Okafor</td><td>Daughter</td><td>17/12/2011</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="css-9xk2pq">
+    <h2>Case notes</h2>
+    <div class="notes">
+      <div class="note"><div class="note-meta"><span class="note-date">20 May 2026</span> · <span class="note-author">C. Caseworker</span></div><p>Benefit statement requested from DWP.</p></div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

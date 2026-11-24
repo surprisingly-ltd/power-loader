@@ -1,0 +1,32 @@
+{
+  "id": "builtin:companies-house-officers",
+  "name": "Companies House – officers",
+  "description": "The People → Officers tab of a company on Companies House.",
+  "match": [
+    "https://find-and-update.company-information.service.gov.uk/company/*/officers*"
+  ],
+  "fields": {
+    "@type": "Organization",
+    "legalName": ".company-header h1",
+    "identifier": {
+      "@type": "PropertyValue",
+      "propertyID": "=Companies House number",
+      "value": "#company-number strong"
+    },
+    "officerSummary": "#company-appointments",
+    "employee": [".appointments-list > div", {
+      "@type": "Person",
+      "name": "[id^=officer-name-]",
+      "url": "[id^=officer-name-] a @href | abs",
+      "roleName": "[id^=officer-role-]",
+      "status": "[id^=officer-status-tag-]",
+      "birthDate": "[id^=officer-date-of-birth-] | date",
+      "startDate": "[id^=officer-appointed-on-] | date",
+      "endDate": "[id^=officer-resigned-on-] | date",
+      "nationality": "[id^=officer-nationality-]",
+      "homeLocation": "[id^=officer-country-of-residence-]",
+      "jobTitle": "[id^=officer-occupation-]",
+      "address": "[id^=officer-address-value-]"
+    }]
+  }
+}

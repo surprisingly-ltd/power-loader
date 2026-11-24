@@ -1,0 +1,37 @@
+{
+  "@type": "Article",
+  "name": "Ada Lovelace",
+  "description": "Augusta Ada King, Countess of Lovelace (née Byron; 10 December 1815 – 27 November 1852), also known as Ada Lovelace, was an English mathematician and writer chiefly known for work on Charles Babbage's proposed mechanical general-purpose computer, the analytical engine. She was the first to recognise the machine had applications beyond pure calculation. Lovelace is often considered the first computer programmer.",
+  "url": "https://en.wikipedia.org/wiki/Ada_Lovelace",
+  "about": "https://www.wikidata.org/wiki/Special:EntityPage/Q7259",
+  "infobox": [
+    {
+      "name": "Born",
+      "value": "Augusta Ada Byron, (1815-12-10)10 December 1815, London, England"
+    },
+    {
+      "name": "Died",
+      "value": "27 November 1852(1852-11-27) (aged 36), Marylebone, London, England"
+    },
+    {
+      "name": "Resting place",
+      "value": "Church of St Mary Magdalene, Hucknall, Nottingham, England"
+    },
+    {
+      "name": "Known for",
+      "value": "Mathematics, computing"
+    },
+    {
+      "name": "Spouse",
+      "value": "William King-Noel, 1st Earl of Lovelace, (m. 1835)"
+    },
+    {
+      "name": "Children",
+      "value": "Byron King-Noel, Viscount Ockham, Anne Blunt, 15th Baroness Wentworth, Ralph King-Milbanke, 2nd Earl of Lovelace"
+    },
+    {
+      "name": "Parents",
+      "value": "George Byron, 6th Baron Byron (father), Anne Isabella Milbanke (mother)"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+name: Suggestion
+description: An idea or a change you'd like
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What are you trying to do?
+      description: The casework task and where Power Loader gets in the way or could help.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help?

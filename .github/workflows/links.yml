@@ -1,0 +1,24 @@
+name: Links
+
+# Weekly: every outside address the site links to still answers. Internal links are checked on every
+# change by CI; this one needs the network and other people's servers, so it doesn't gate merges.
+on:
+  schedule:
+    - cron: "23 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  external:
+    name: external links
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: pnpm build:site
+      - run: node tools/check-site.mjs --external

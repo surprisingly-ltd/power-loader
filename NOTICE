@@ -1,0 +1,27 @@
+Power Loader
+Copyright 2026 Surprisingly Limited (company number 13766094, England and Wales)
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+The built extension includes these third-party libraries, unmodified npm releases except where noted.
+Each one's licence ships with the extension in vendor/licenses/, and vendor/SOURCES.tsv lists every
+vendored file with its npm release and SHA-256:
+
+  @huggingface/transformers 4.3.1  Apache-2.0  (web entry bundled with esbuild against onnxruntime-web
+                                                 1.30.0; inputs recorded in vendor/BUNDLE.json)
+  @huggingface/tokenizers   0.2.0  Apache-2.0
+  @huggingface/jinja        0.5.10 MIT
+  onnxruntime-web           1.30.0 MIT
+  onnxruntime-common        1.30.0 MIT
+  pdfjs-dist                4.10.38 Apache-2.0
+  tesseract.js              5.1.1  Apache-2.0
+  tesseract.js-core         5.1.1  Apache-2.0
+  @tesseract.js-data/eng    1.0.0  MIT  (Tesseract English traineddata, Apache-2.0 upstream)
+
+Model weights are not part of the repository or the extension: the extension downloads them on request,
+at pinned revisions with SHA-256 checks (see extension/lib/model-fetch.js).
+
+Test fixtures in fixtures/pages/ are third-party pages under their own licences (CC BY-SA 4.0 and the
+Open Government Licence v3.0); see fixtures/pages/ATTRIBUTION.md.
+
+The sound effects in site/game/audio/ were generated for this project with ElevenLabs.

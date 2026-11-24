@@ -1,0 +1,9 @@
+[
+  {"name": "demo client 1042", "page": "../demo/client-1042.html", "url": "http://localhost:8787/demo/client-1042.html", "template": "demo-client"},
+  {"name": "demo client 2077", "page": "../demo/client-2077.html", "url": "http://localhost:8787/demo/client-2077.html", "template": "demo-client"},
+  {"name": "wikipedia person", "page": "pages/wikipedia-ada-lovelace.html", "url": "https://en.wikipedia.org/wiki/Ada_Lovelace", "template": "wikipedia-person"},
+  {"name": "wikipedia org", "page": "pages/wikipedia-bbc.html", "url": "https://en.wikipedia.org/wiki/BBC", "template": "wikipedia-organization"},
+  {"name": "wikipedia article (person page)", "page": "pages/wikipedia-ada-lovelace.html", "url": "https://en.wikipedia.org/wiki/Ada_Lovelace", "template": "wikipedia-article"},
+  {"name": "companies house company", "page": "pages/companies-house-tesco.html", "url": "https://find-and-update.company-information.service.gov.uk/company/00445790", "template": "companies-house-company"},
+  {"name": "companies house officers", "page": "pages/companies-house-tesco-officers.html", "url": "https://find-and-update.company-information.service.gov.uk/company/00445790/officers", "template": "companies-house-officers"}
+]

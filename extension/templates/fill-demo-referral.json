@@ -1,0 +1,45 @@
+{
+  "id": "builtin:fill-demo-referral",
+  "kind": "fill",
+  "name": "Northshire demo – housing referral form",
+  "description": "Fills the demo referral form from the client (Person) and any organisation in the active case.",
+  "match": ["http://localhost:8787/demo/referral.html*", "http://127.0.0.1:8787/demo/referral.html*"],
+  "when": "form#referral",
+  "fields": {
+    "#title": "Person.honorificPrefix",
+    "#firstName": ["Person.givenName", "Person.name | regex:^(\\S+)"],
+    "#lastName": ["Person.familyName", "Person.name | regex:(\\S+)$"],
+    "#dob": "Person.birthDate",
+    "#nino": ["Person.identifier[propertyID=NI number].value", "Person.nationalInsuranceNumber"],
+    "#clientId": "Person.identifier[propertyID=Client ID].value",
+    "#language": "Person.knowsLanguage",
+    "#phone": "Person.telephone",
+    "#email": "Person.email",
+    "#contactPref": ["Person.contactPreference", "Person.preferredContact"],
+    "#address": ["Person.address.streetAddress | join:\\n", "Person.address | split | join:\\n"],
+    "#postcode": ["Person.address.postalCode", "Person.address | regex:([A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2})"],
+    "#consent": "Person.consentToShare",
+    "#caseRef": ["Person.case.caseReference", "Person.caseReference"],
+    "#caseType": ["Person.case.caseType", "Person.caseType"],
+    "#opened": ["Person.case.dateOpened", "Person.caseOpened"],
+    "#worker": ["Person.case.allocatedWorker", "Person.allocatedWorker"],
+    "#risk": ["Person.case.riskLevel", "Person.riskLevel"],
+    "#status": ["Person.caseStatus", "Person.case.status"],
+    "#orgName": ["Organization.legalName", "Organization.name"],
+    "#orgNumber": "Organization.identifier.value",
+    "#orgAddress": ["Organization.address.streetAddress", "Organization.address"],
+    "#reason": ["Person.notes | join:\\n", "Person.subjectOf | join:\\n"]
+  },
+  "lists": [
+    {
+      "source": "Person.relatedTo",
+      "rows": "#household tr",
+      "add": "#addMember",
+      "fields": {
+        "input[name=memberName]": ".name",
+        "input[name=memberRelationship]": ".relationship",
+        "input[name=memberDob]": ".birthDate"
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+allowBuilds:
+  '@google/genai': false
+  esbuild: true
+  onnxruntime-node: false
+  protobufjs: false
+  spawn-sync: false
+  tesseract.js: false
+ignoredBuiltDependencies:
+  - spawn-sync

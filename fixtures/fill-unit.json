@@ -1,0 +1,37 @@
+{
+  "records": [
+    {"id": "r1", "profileName": "wrapped record", "data": {
+      "@type": "Person", "name": "Jane Q Doe", "birthDate": "1980-03-12", "consent": true, "age": 46,
+      "identifier": [{"propertyID": "Client ID", "value": "C-1"}, {"propertyID": "NI number", "value": "QQ1"}],
+      "address": {"@type": "PostalAddress", "streetAddress": ["1 High St", "Town"], "postalCode": "AB1 2CD"},
+      "relatedTo": [{"name": "John", "relationship": "Partner"}, {"name": "Amy", "relationship": "Daughter"}],
+      "tags": []
+    }},
+    {"@type": "Organization", "legalName": "ACME LTD", "identifier": {"propertyID": "Company", "value": "0123"}},
+    {"@type": "Person", "name": "Second Person"}
+  ],
+  "cases": [
+    {"name": "plain key", "spec": "Person.name", "expected": "Jane Q Doe"},
+    {"name": "first record of a type wins", "spec": "Person.birthDate", "expected": "1980-03-12"},
+    {"name": "record by index", "spec": "Person[1].name", "expected": "Second Person"},
+    {"name": "record by key", "spec": "Person[name=second person].name", "expected": "Second Person"},
+    {"name": "any record", "spec": "*.legalName", "expected": null},
+    {"name": "list item by key (case-insensitive)", "spec": "Person.identifier[propertyID=ni number].value", "expected": "QQ1"},
+    {"name": "list item by index", "spec": "Person.relatedTo[1].name", "expected": "Amy"},
+    {"name": "negative index", "spec": "Person.relatedTo[-1].relationship", "expected": "Daughter"},
+    {"name": "key over a list maps", "spec": "Person.relatedTo.name", "expected": "John, Amy"},
+    {"name": "join with newline", "spec": "Person.address.streetAddress | join:\\n", "expected": "1 High St\nTown"},
+    {"name": "first", "spec": "Person.relatedTo.name | first", "expected": "John"},
+    {"name": "object becomes text", "spec": "Person.address", "expected": "1 High St, Town, AB1 2CD"},
+    {"name": "booleans and numbers stay", "spec": "Person.consent", "expected": true},
+    {"name": "numbers stay", "spec": "Person.age", "expected": 46},
+    {"name": "filters apply", "spec": "Person.name | regex:(\\S+)$ | upper", "expected": "DOE"},
+    {"name": "alternatives: first non-empty wins", "spec": ["Person.givenName", "Person.tags", "Person.name | regex:^(\\S+)"], "expected": "Jane"},
+    {"name": "literal", "spec": "=Housing", "expected": "Housing"},
+    {"name": "object identifier (not a list)", "spec": "Organization.identifier.value", "expected": "0123"},
+    {"name": "missing type", "spec": "Place.name", "expected": null},
+    {"name": "missing key", "spec": "Person.nope.deeper", "expected": null},
+    {"name": "relative path with no item", "spec": ".name", "expected": null},
+    {"name": "default filter", "spec": "Person.nope | default:n/a", "expected": "n/a"}
+  ]
+}

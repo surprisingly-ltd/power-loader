@@ -1,0 +1,103 @@
+{
+  "fields": [
+    {
+      "target": "#title",
+      "value": null
+    },
+    {
+      "target": "#firstName",
+      "value": "David"
+    },
+    {
+      "target": "#lastName",
+      "value": "Okafor"
+    },
+    {
+      "target": "#dob",
+      "value": "1972-01-30"
+    },
+    {
+      "target": "#nino",
+      "value": "QQ 98 76 54 A"
+    },
+    {
+      "target": "#clientId",
+      "value": "NC-2077"
+    },
+    {
+      "target": "#language",
+      "value": "English"
+    },
+    {
+      "target": "#phone",
+      "value": null
+    },
+    {
+      "target": "#email",
+      "value": "d.okafor@example.com"
+    },
+    {
+      "target": "#contactPref",
+      "value": "Email"
+    },
+    {
+      "target": "#address",
+      "value": "45 Station Road\nEastbury\nNS7 2QD"
+    },
+    {
+      "target": "#postcode",
+      "value": "NS7 2QD"
+    },
+    {
+      "target": "#consent",
+      "value": false
+    },
+    {
+      "target": "#caseRef",
+      "value": "HSG/2026/0342"
+    },
+    {
+      "target": "#caseType",
+      "value": "Housing benefit query"
+    },
+    {
+      "target": "#opened",
+      "value": "2026-05-19"
+    },
+    {
+      "target": "#worker",
+      "value": "C. Caseworker"
+    },
+    {
+      "target": "#risk",
+      "value": null
+    },
+    {
+      "target": "#status",
+      "value": "Awaiting review"
+    },
+    {
+      "target": "#orgName",
+      "value": null
+    },
+    {
+      "target": "#orgNumber",
+      "value": null
+    },
+    {
+      "target": "#orgAddress",
+      "value": null
+    },
+    {
+      "target": "#reason",
+      "value": "2026-05-20, C. Caseworker, Benefit statement requested from DWP."
+    }
+  ],
+  "lists": [
+    {
+      "rows": "#household tr",
+      "add": "#addMember",
+      "items": []
+    }
+  ]
+}

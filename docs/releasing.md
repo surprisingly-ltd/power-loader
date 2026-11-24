@@ -35,10 +35,12 @@ AMO rejects `update_url` for listed add-ons: always submit as **unlisted** ("On 
    `tools/amo-signed.mjs` checks the signed XPI is this build plus Mozilla's `META-INF/` signature.
 5. **Draft release:** the workflow drafts a GitHub Release with the signed XPI, both zips, a CycloneDX
    SBOM, `SHA256SUMS` and build provenance attestations.
-6. **Publish the draft.** That runs `pages.yml`: `tools/fetch-releases.mjs` downloads every published
-   release's XPI and `SHA256SUMS`, `tools/build-site.mjs` checks each XPI's hash and manifest and writes
-   `/download/` and `/updates.json`, and a smoke check confirms the live site serves the new XPI with the
-   hash `updates.json` lists. Installed copies pick it up on Firefox's next update check (about daily).
+6. **Publish the draft.** That starts `pages.yml`, which redeploys the site from `main` (GitHub Pages only
+   serves deployments from the default branch, not from a release's tag): `tools/fetch-releases.mjs`
+   downloads every published release's XPI and `SHA256SUMS`, `tools/build-site.mjs` checks each XPI's hash
+   and manifest and writes `/download/` and `/updates.json`, and the smoke check waits (Pages' CDN caches
+   for up to 10 minutes) until the live site serves the new version and an XPI with the hash it lists.
+   Installed copies pick it up on Firefox's next update check (about daily).
 
 Firefox versions are dot-separated numbers only (no `-rc.1`), so there are no pre-release tags, and a pushed
 `v*` tag can't be deleted: tag only a version you mean to release. If something fails before step 4,

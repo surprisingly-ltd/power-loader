@@ -79,8 +79,10 @@ version tagged on a commit from before this tool) by hand:
 
 ## 4. Check it's live
 
-Publishing a release runs **Pages** (`gh run watch` on it); its `smoke` job checks the live pages and that
-the latest XPI's hash matches `updates.json`. Then confirm yourself:
+Publishing a release starts **Pages**, which dispatches a deploy from `main` (Pages ignores deployments
+from a tag). Watch that second run (`gh run list --workflow Pages`); its `smoke` job waits up to 12
+minutes for the CDN, then checks the live pages, that `updates.json` lists the version, and that the
+latest XPI has the hash it lists. Then confirm yourself:
 
 ```sh
 S=https://powerloader.surprisingly.ltd

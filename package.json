@@ -31,10 +31,10 @@
   },
   "devDependencies": {
     "@huggingface/transformers": "4.3.1",
-    "@playwright/test": "1.60.0",
+    "@playwright/test": "1.65.1",
     "@tesseract.js-data/eng": "1.0.0",
-    "esbuild": "0.27.2",
-    "jsdom": "25.0.1",
+    "esbuild": "0.28.2",
+    "jsdom": "31.0.1",
     "onnxruntime-web": "1.30.0",
     "pdfjs-dist": "4.10.38",
     "ses": "^2.3.0",

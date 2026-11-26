@@ -2,6 +2,7 @@
 html, body { background: var(--surface); }
 #app { display: flex; flex-direction: column; min-height: 100vh; }
 .sb-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px 8px; background: var(--panel); border-bottom: 4px solid var(--accent); }
+.close-note { margin: 0; padding: 3px 12px; background: var(--warn-soft); border-bottom: 1px solid var(--border); }
 .brand { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 16px; }
 .brand svg, .brand img { width: 18px; height: 18px; flex: none; }
 .case-chip { margin-left: auto; display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 12px; color: var(--muted); }
@@ -26,6 +27,14 @@ html, body { background: var(--surface); }
 .fcard.flow { grid-template-columns: minmax(0, 1fr) auto; }
 .fcard.flow .meta { grid-column: 1; }
 .fcard.flow .acts { grid-column: 2; }
+/* A flow to start: star, name and Start on one line; what it does and the reference under the name. */
+.fcard.start { grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 8px; align-items: center; }
+.fcard.start .star { grid-row: 1; grid-column: 1; }
+.fcard.start .nm { grid-row: 1; grid-column: 2; }
+.fcard.start .acts { grid-row: 1; grid-column: 3; }
+.fcard.start .meta, .fcard.start details { grid-column: 2 / -1; }
+.fcard.start details { margin-top: 2px; }
+.fcard.start details summary { color: var(--muted); }
 .fcard.sel { border-color: var(--text); box-shadow: inset 0 0 0 1px var(--text); }
 .fcard .nm { font-weight: 700; }
 .fcard .meta { grid-column: 2; color: var(--muted); font-size: 12px; }
@@ -87,3 +96,94 @@ button.star:hover:not(:disabled) { background: none; }
 /* Draft editor: target fields are drop zones for values dragged from the page. */
 .ed-row.drop { border-radius: 4px; }
 .ed-row.drop.over { outline: 3px dashed var(--magic); outline-offset: -3px; background: var(--magic-soft); }
+
+/* The two modes. The border under the header says which, from anywhere in the sidebar. */
+.sb-head.mode-casework { border-bottom-color: var(--accent); }
+.sb-head.mode-build { border-bottom-color: var(--magic); }
+.mode-switch { display: inline-flex; gap: 0; margin-left: 4px; }
+.mode-switch button { margin: 0; box-shadow: none; border-radius: 0; padding: 2px 8px; font-weight: 600; }
+.mode-switch button[aria-pressed="true"] { background: var(--text); color: var(--panel); }
+.sb-head.mode-build .mode-switch button[aria-pressed="true"] { background: var(--magic); color: #fff; }
+.drop.over { outline: 3px dashed var(--magic); outline-offset: -3px; background: var(--magic-soft); }
+
+/* A case's steps: one list that is always in view, the open step's own controls, and the values a clip
+   gathers (sidebar/steps.js, sidebar/gather-ui.js). Tokens and controls come from ui/base.css. */
+
+.card.steps.flowux { gap: 10px; border: 0; border-top: 5px solid var(--accent); padding: 12px; }
+.steps-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.steps-meter { display: flex; gap: 3px; height: 6px; }
+.steps-meter i { flex: 1; background: #e5e6e7; transition: background-color .3s; }
+.steps-meter i.done { background: var(--ok); }
+.steps-meter i.open { background: var(--accent); }
+
+/* The rail: a numbered list with a line through the numbers. */
+.steps-rail { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.step { position: relative; }
+.step::before { content: ""; position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+.step:first-child::before { top: 14px; }
+.step:last-child::before { bottom: auto; height: 14px; }
+.step.done::before { background: var(--ok); }
+.step-row { position: relative; display: flex; align-items: center; gap: 6px; min-height: 30px; }
+button.step-name { flex: 1; min-width: 0; display: flex; align-items: center; gap: 9px; justify-content: flex-start; text-align: left; white-space: normal;
+  background: none; border: 0; box-shadow: none; margin: 0; padding: 3px 4px 3px 0; font-weight: 400; }
+button.step-name:hover:not(:disabled) { background: none; }
+button.step-name:hover .step-title { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: .15em; }
+button.step-name:active { transform: none; }
+.step-dot { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums;
+  background: var(--panel); color: var(--muted); border: 2px solid var(--border); }
+.step.done .step-dot { background: var(--ok); border-color: var(--ok); color: #fff; }
+.step.filled .step-dot { border-color: var(--ok); color: var(--ok); }
+.step.open .step-dot { background: var(--accent); border-color: var(--accent); color: #fff; }
+.step.open.done .step-dot { background: var(--ok); border-color: var(--ok); box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--accent); }
+.step-title { min-width: 0; overflow-wrap: anywhere; }
+.step.open .step-title { font-weight: 700; }
+.step.done:not(.open) .step-title { color: var(--muted); }
+.step-tag { flex: none; font-size: 11.5px; color: var(--muted); }
+.step-tag.here { color: var(--text); font-weight: 700; background: var(--focus); padding: 0 5px; }
+button.step-jump { flex: none; width: 26px; height: 24px; padding: 0; margin: 0; box-shadow: none; border: 1px solid var(--border); background: var(--panel); color: var(--accent); font-weight: 700; }
+button.step-jump:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* The open step. */
+.step-body { position: relative; display: flex; flex-direction: column; gap: 9px; margin: 2px 0 10px 11px; padding: 8px 0 4px 20px; border-left: 2px solid var(--accent); }
+.step.done > .step-body { border-left-color: var(--ok); }
+.step-kind { text-transform: uppercase; letter-spacing: .04em; font-size: 11px; font-weight: 700; }
+.step-text { white-space: pre-wrap; }
+.step-body .on-page { background: var(--warn-soft); padding: 6px 9px; font-weight: 700; }
+.step-body .needs { background: var(--surface); padding: 8px 9px; }
+.step-foot { gap: 14px; }
+.step-foot:empty { display: none; }
+.step-own { display: flex; flex-direction: column; gap: 8px; }
+.step-body button.primary.big { justify-content: space-between; text-align: left; white-space: normal; }
+.step-body button.primary.big:only-child, .step-body button.primary.big[data-key=clip] { justify-content: center; }
+
+/* The values a page gives. */
+.gv-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.gv-list { display: flex; flex-direction: column; margin: 0; padding: 0; border: 1px solid var(--border); background: var(--panel); }
+.gv { display: grid; grid-template-columns: 16px minmax(0, min(9.5em, 40%)) minmax(0, 1fr) auto; gap: 0 6px; align-items: baseline; padding: 2px 8px; border-top: 1px solid #e5e6e7; font-size: 13px; }
+.gv:first-child { border-top: 0; }
+.gv:hover, .gv:focus-visible { background: var(--warn-soft); outline: 0; }
+.gv-mark { font-weight: 700; color: var(--ok); font-size: 12px; }
+.gv-label { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gv-value { font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gv.wait .gv-value::before { content: ""; display: block; height: 2px; margin-top: .8em; background: repeating-linear-gradient(90deg, var(--border) 0 4px, transparent 4px 8px); }
+.gv.none .gv-value { font-weight: 400; color: var(--muted); }
+.gv.none .gv-mark { color: var(--muted); }
+.gv.flying .gv-value { visibility: hidden; }
+/* A value in conflict: orange, with ⚠ and the word, which goes to its card. Decided: green, with which way. */
+.gv.conflict { background: var(--conflict-soft); box-shadow: inset 4px 0 var(--conflict-edge); }
+.gv.conflict .gv-mark, .gv.conflict .gv-value { color: var(--conflict); }
+.gv-what { grid-column: 4; white-space: nowrap; }
+.gv.conflict .gv-what { color: var(--conflict); font-weight: 700; font-size: 12px; }
+.gv.decided .gv-what { color: var(--ok); font-size: 12px; }
+.gv-closed { grid-column: 2 / -1; color: var(--muted); font-style: italic; white-space: normal; }
+.gv.landed { animation: gv-landed .9s ease-out; }
+@keyframes gv-landed { from { background: var(--accent-soft); } to { background: transparent; } }
+.gv-chip { position: fixed; z-index: 50; max-width: 320px; padding: 2px 8px; background: var(--accent); color: #fff; font: 700 13px/1.5 var(--font); white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; box-shadow: 0 2px 8px rgb(11 12 12 / .3); pointer-events: none; will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .gv.landed { animation: none; } .steps-meter i { transition: none; } }
+
+.step-body details > summary { cursor: pointer; color: var(--accent); }
+.step-body .notice { margin: 0; }
+.step.skipped .step-title { color: var(--muted); }
+.step.skipped .step-dot { border-style: dashed; }
+.steps-meter i.skipped { background: repeating-linear-gradient(90deg, #e5e6e7 0 3px, transparent 3px 6px); }

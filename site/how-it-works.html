@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How it works: security, compliance and data protection · Power Loader</title>
+<meta name="description" content="How Power Loader handles data and where its controls are: its parts and their boundaries, building and running a flow, site rules and policy, what leaves the browser, what is stored, and what the controls don’t do.">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+{{HEADER}}
+<main id="main">
+<div class="prose">
+<span class="kicker">For security, compliance and data protection</span>
+<h1>How Power Loader works</h1>
+<div class="note">
+<p><b>You don’t need to read this to use Power Loader.</b> It’s for the people in your organisation who approve tools like it.</p>
+</div>
+<p class="lede">This page describes how Power Loader {{VERSION}} handles data, where the boundaries between its parts are, and which controls your organisation and its forms library can apply. Each claim is true of the code in <a href="{{REPO}}">the public repository</a> at this version. Where something has been tested only with a simulated browser, not yet in real Firefox, the page says so (<a href="#limits">what the controls don’t do</a>).</p>
+<p>Words with a special meaning are explained where they first appear, and again in the <a href="#glossary">glossary</a>. For the legal side, such as who is the data controller and your rights, see the <a href="/privacy">privacy policy</a>.</p>
+
+<h2 id="in-brief">In brief</h2>
+<ul>
+<li><b>All the logic runs in the Firefox extension.</b> There is no Power Loader server, no account, and no analytics or telemetry.</li>
+<li><b>Case data stays in the browser’s extension storage</b> on the caseworker’s computer, and is deleted when the case is finished or discarded.</li>
+<li><b>Forms and profiles come from your organisation’s library:</b> a set of static files it controls, published with a manifest that gives the SHA-256 of every file. A set with a wrong hash or an invalid file is refused.</li>
+<li><b>AI is optional.</b> Power Loader works with no AI at all. If your organisation sets it up, requests go only to the gateway it chooses, and only after the caseworker has seen a redaction preview of the exact request and pressed Send.</li>
+<li><b>Your organisation and its library decide which systems Power Loader may act on,</b> and what it may do there, with site rules that only ever narrow.</li>
+<li><b>Your organisation decides how much Power Loader does,</b> from locked down to smart and easy, and can lock each choice. The next section sets out the choices.</li>
+</ul>
+
+<h2 id="choices">Your organisation decides what is sent where</h2>
+<p>Power Loader can run with no AI at all, and with very strict allow and deny lists. It can also use AI, optionally through your own organisation’s gateway, such as an internal AI endpoint. If it uses AI, the on-device privacy model (a privacy shield that runs on the caseworker’s computer) checks every request by default, before the caseworker sees the preview.</p>
+<p>Each choice is made in the same order. <b>Policy</b> comes first, and locks what it sets. Then <b>the library</b>, which can lock a choice or leave it as a default. Then <b>the caseworker</b>, in Settings, for whatever is left open.</p>
+
+<h3 id="no-ai">Power Loader with no AI</h3>
+<ul>
+<li><b>Remote AI is off until it is set up.</b> No ✦ action is offered until Settings has an endpoint address and the caseworker has ticked the acknowledgement (<code>aiReady()</code> in <code>lib/ai/settings.js</code>). Until then nothing is sent to any AI.</li>
+<li><b>Flows can be built entirely by hand.</b> The author chooses <b>Make it by hand</b>, clicks each box on the form and each value on the page, writes the steps, and tests each page.</li>
+<li><b>A case needs no AI.</b> Clipping, auto-clip, the identity check, conflicts, the fill plan, fetch steps, notes, the site rules, the calculator and the timeline all work without it. The reader reads PDFs on this computer, and pictures and scans with OCR (Tesseract, packaged in the extension).</li>
+<li><b>The two on-device models can be switched off too.</b> The privacy model with policy <code>privacyModel.use: false</code>, and the profile assistant, which suggests fields when a profile is made without remote AI, with <code>assistModel.enabled: false</code>. With both off and no remote AI, Power Loader downloads no model. The only model it runs is the packaged OCR, when a caseworker reads a picture or a scanned PDF.</li>
+</ul>
+
+<h3 id="spectrum">From locked down to smart and easy</h3>
+<p>These are the two ends of what your organisation can choose. Each row is set separately, so any mix of the two works.</p>
+</div>
+{{HIW_RANGE_DIAGRAM}}
+<div class="prose">
+<div class="scroll">
+<table>
+<thead><tr><th scope="col">Choice</th><th scope="col">Locked down</th><th scope="col">Smart and easy</th><th scope="col">Who sets it</th></tr></thead>
+<tbody>
+<tr><td><b>Remote AI</b></td><td>None. There is no policy key that forbids it, so set <code>gateway.baseUrl</code> to your own gateway and issue no keys for it: the caseworker can’t enter another address.</td><td>Your organisation’s own internal gateway: any OpenAI-compatible endpoint, such as a LiteLLM gateway, set for everyone with <code>gateway.baseUrl</code> and <code>gateway.model</code>.</td><td>Policy. Otherwise the caseworker. Either way the caseworker enters the key and ticks the acknowledgement.</td></tr>
+<tr><td><b>Building flows</b></td><td>By hand.</td><td>✦ actions work out what a form collects, suggest where each value is on a page, draft the steps and fix problems, each through the preview.</td><td>The author, once remote AI is set up.</td></tr>
+<tr><td><b>The privacy model</b></td><td>Off with <code>privacyModel.use: false</code> if no AI is used, so nothing is downloaded. If AI is used, locked on with <code>privacyModel.required: true</code>.</td><td>On, the default. While it is used, nothing is sent until it is ready.</td><td>Policy, then the library’s <code>privacy.json</code> (<code>use: { on, lock }</code>), then the caseworker.</td></tr>
+<tr><td><b>Redaction</b></td><td>Groups always redacted (<code>redaction.lockedGroups</code>), no sending an item as written (<code>redaction.allowSendAsWritten: false</code>), and no pictures (<code>redaction.blockImages: true</code>).</td><td>The case’s values, the library’s patterns and the privacy model. The caseworker can send an item as written, or a picture after a separate tick.</td><td>Policy. The library adds patterns in <code>privacy.json</code>.</td></tr>
+<tr><td><b>Where Power Loader works</b></td><td>Strict allow and deny lists in policy (<code>siteAccess.allow</code>, <code>siteAccess.deny</code>, <code>siteAccess.rules</code>), and every library rule locked (<code>siteAccess.lockLibraryRules: true</code>).</td><td>The library’s <code>access.json</code>, with some rules left for the caseworker to change.</td><td>Policy, then the library, then the caseworker. Every layer must allow.</td></tr>
+<tr><td><b>Fetch steps</b> (reading pages in the background)</td><td>Off: <code>siteAccess.backgroundReading: false</code>.</td><td>On, the default, within the site rules and the fixed caps.</td><td>Policy, then the library, then the caseworker.</td></tr>
+<tr><td><b>The profile assistant</b></td><td>Off: <code>assistModel.enabled: false</code>.</td><td>On, the default, when a profile is made without remote AI.</td><td>Policy, then the author’s switch in the profile editor.</td></tr>
+</tbody>
+</table>
+</div>
+<p>Two things don’t change at either end. Every ✦ request is shown in the redaction preview and sent only when the caseworker presses Send. And Power Loader never submits a form. The <a href="#controls">controls</a> section below has the detail, and the <a href="#sample-policy">sample <code>policies.json</code></a> sits near the locked-down end, with a gateway.</p>
+
+<h2 id="parts">The parts and the boundaries between them</h2>
+<p>Power Loader is one Firefox extension with several parts. Each part runs in its own place in the browser, and can reach only what is listed here.</p>
+<div class="scroll">
+<table>
+<thead><tr><th scope="col">Part</th><th scope="col">What it does</th><th scope="col">Data it handles</th><th scope="col">Where it runs, and what it can reach</th></tr></thead>
+<tbody>
+<tr><td><b>Sidebar</b> and the extension’s full pages (case, library, activity log, readiness)</td><td>Everything the caseworker and flow author see: starting cases, clipping, the fill plan, the redaction preview, Settings.</td><td>The case, flows, settings.</td><td>Extension pages, under the extension’s content security policy. It talks to the in-page agent only through <code>ask()</code> in <code>lib/core.js</code>, which checks the site rules first.</td></tr>
+<tr><td><b>In-page agent</b> (<code>lib/agent.js</code>, with <code>lib/extract.js</code> and <code>lib/capture.js</code>)</td><td>Reads a page with a profile, describes a form’s boxes, fills boxes, draws notes, lets the author pick elements.</td><td>The page it is in, and the values it is asked to fill.</td><td>A content script, injected only into a tab where the rules allow at least one of its actions. It listens only to the extension’s own runtime messages, never to the page, and stores nothing. It refuses a message if the page’s address has changed since the sidebar checked it.</td></tr>
+<tr><td><b>Background storage writer</b> (<code>background.js</code>, <code>lib/storage.js</code>)</td><td>The only writer of extension storage. Also finishes an interrupted case deletion at start-up, and applies the log’s retention period.</td><td>Everything in extension storage.</td><td>The extension’s background script. It refuses writes from content scripts on casework sites, and writes only known keys.</td></tr>
+<tr><td><b>On-device models</b></td><td>The <b>privacy model</b> finds names and addresses before an AI request. It is on by default and can be switched off. The <b>profile assistant</b> helps match page labels to case fields. <b>OCR</b> (Tesseract) reads pictures and scanned PDFs.</td><td>Text and pictures from the case, on this computer only.</td><td>Workers inside the extension. The two models are downloaded once, at a pinned revision, and checked against the SHA-256 of each file as they arrive (<code>lib/model-fetch.js</code>). OCR and its English language data are packaged in the extension, so nothing is downloaded for it.</td></tr>
+<tr><td><b>Forms library</b></td><td>Fields, forms, page and fill profiles, steps, privacy patterns and site rules (<code>access.json</code>), all from one commit.</td><td>No case data. It describes forms and pages.</td><td>Your organisation’s server, usually a git host’s raw-file address. The extension only downloads from it, never writes to it.</td></tr>
+<tr><td><b>AI gateway</b> (optional)</td><td>Answers ✦ requests: extracting values, mapping a form, suggesting a profile, and others.</td><td>Only the request the caseworker approved in the preview.</td><td>Your organisation’s own OpenAI-compatible gateway. The extension sends it nothing unless the caseworker has entered its address and key and ticked the acknowledgement.</td></tr>
+<tr><td><b>Casework systems</b></td><td>The systems caseworkers already use. Power Loader reads their pages and fills their forms.</td><td>Their own data, as they show it to the caseworker.</td><td>Your organisation’s servers, under the caseworker’s own sign-in. Power Loader reaches them only through the caseworker’s tabs.</td></tr>
+</tbody>
+</table>
+</div>
+<p>A <b>flow</b> is a set of instructions for one kind of case: the forms it fills, the pages it reads from, and the steps in between. A <b>profile</b> tells Power Loader where each value is on a page, with selectors, never with the values themselves. A <b>clip</b> is the set of values read from one page, each with the text it was read from.</p>
+</div>
+
+<h2 id="building">Building a flow</h2>
+<div class="prose">
+<p>A flow author, often a senior caseworker, builds a flow in the sidebar against a test record. A library maintainer then reviews it and publishes it in the forms library. Flows the library publishes are listed on the Flows tab under <b>From your library</b>, read-only: a caseworker starts a case from one, or makes a copy on their computer to edit. They are opened exactly as an imported flow file is, so they can do nothing an imported flow can’t.</p>
+</div>
+{{HIW_BUILD_DIAGRAM}}
+<div class="prose">
+<h3 id="building-steps">The steps in words</h3>
+{{HIW_BUILD_STEPS}}
+</div>
+
+<h2 id="running">Running a flow: a case</h2>
+<div class="prose">
+<p>A caseworker uses a flow to gather what a case needs from the casework systems and fill the target forms.</p>
+</div>
+{{HIW_RUN_DIAGRAM}}
+<div class="prose">
+<h3 id="running-steps">The steps in words</h3>
+{{HIW_RUN_STEPS}}
+
+<h2 id="controls">Controls your organisation and library can apply</h2>
+<p>Three people can set controls: <b>your organisation</b>, through Firefox enterprise policy; <b>your library</b>, through its files; and the <b>caseworker</b>, in Settings. Anything set by policy is locked in the sidebar.</p>
+
+<h3 id="layers">The layers and their order</h3>
+<p>Site rules say where Power Loader may act and what it may do there. They come in layers. A decision checks every layer, and every layer must allow the action:</p>
+</div>
+{{HIW_LAYERS_DIAGRAM}}
+<div class="prose">
+<div class="scroll">
+<table>
+<thead><tr><th scope="col">Layer</th><th scope="col">Set in</th><th scope="col">Who can change it</th><th scope="col">Covers</th></tr></thead>
+<tbody>
+<tr><td>1. Enterprise policy</td><td>Firefox <code>policies.json</code>: <code>siteAccess.allow</code>, <code>siteAccess.deny</code>, <code>siteAccess.rules</code></td><td>IT only. Firefox reads it at start-up.</td><td>Every action</td></tr>
+<tr><td>2. The library’s locked rules</td><td><code>access.json</code>, rules with <code>"lock": true</code> (or every rule, if policy sets <code>siteAccess.lockLibraryRules</code>)</td><td>The library maintainer</td><td>Every action</td></tr>
+<tr><td>3. The caseworker’s rules, and the library’s delegated rules</td><td><code>access.json</code> rules without a lock, plus the caseworker’s own in Settings</td><td>The caseworker can turn a delegated rule off, change it, or add their own</td><td>Every action</td></tr>
+<tr><td>4. Approved systems</td><td><code>approvedHosts</code> in the library’s <code>library.json</code>, or a flow’s own hosts</td><td>The library maintainer</td><td>Reading, filling and fetching, where a case’s library applies</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>Rules only ever narrow.</b> A deny that matches, in any layer, blocks the action. A layer that has allow rules for an action must have one that matches the address; a layer with none for that action has no opinion. So adding a layer, or a rule, can only take pages away. The one exception is <code>fetch-post</code>, which is closed until an allow rule names it (see below). While a case is open, the locked rules of both the case’s pinned library commit and the newly synced one apply, so a deny published mid-case reaches it. The rules are read again for every action, so a change in Settings applies at once. All of this is in <code>accessLayers()</code> and <code>allowed()</code> in <code>lib/access.js</code>.</p>
+</div>
+{{HIW_DECIDE_DIAGRAM}}
+<div class="prose">
+<p>If a policy deny address can’t be read, dropping it would widen what Power Loader may do, so instead Power Loader works on no page until IT corrects it, and Settings names the address. A policy allow address that can’t be read is dropped, which narrows.</p>
+<p>Site rules limit Power Loader, never the caseworker’s browsing. A blocked page still opens and works as normal. Power Loader just doesn’t read it, fill it, write notes on it, capture it or fetch it.</p>
+
+<h3 id="lists">Allow and deny lists</h3>
+<p><b>Patterns.</b> An address pattern is read as a web address, in its parts:</p>
+<ul>
+<li>the scheme: <code>https://</code>, <code>http://</code>, or <code>*://</code> for both;</li>
+<li>the host: a name such as <code>cases.council.example</code>, or <code>*.council.example</code> for that domain and every subdomain of it. A <code>*</code> can only start a host;</li>
+<li>an optional port, such as <code>:8443</code>;</li>
+<li>then either <code>*</code>, for every page on any port, or a path starting with <code>/</code>, in which <code>*</code> stands for any run of characters. The query is part of the path.</li>
+</ul>
+<p>Hosts are compared the way Firefox reads them: lower case, international names in their <code>xn--</code> form. A deny written with <code>https://</code> also covers <code>http://</code>.</p>
+<p><b>Actions.</b> Each rule can name the actions it covers: {{HIW_ACTIONS}}. A rule that names none covers all of them, except that an allow rule without actions never opens <code>fetch-post</code>.</p>
+<div class="scroll">
+<table>
+<thead><tr><th scope="col">Action</th><th scope="col">What it is</th></tr></thead>
+<tbody>
+<tr><td><code>navigate</code></td><td>Opening an address from a step link, a <b>Go to</b> button or a link in a note.</td></tr>
+<tr><td><code>read</code></td><td>Reading a page: clipping it, describing its form, testing a profile on it.</td></tr>
+<tr><td><code>fill</code></td><td>Putting values into a form’s boxes.</td></tr>
+<tr><td><code>annotate</code></td><td>Drawing a flow’s notes on a page.</td></tr>
+<tr><td><code>capture</code></td><td>Capturing a region of the visible tab as a picture, to read it with OCR.</td></tr>
+<tr><td><code>fetch-get</code></td><td>A fetch step’s GET request for a page the caseworker isn’t on.</td></tr>
+<tr><td><code>fetch-post</code></td><td>Closed: no allow rule opens it unless it names it. No code in this version makes a POST request to a casework system.</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>A worked example.</b> Two rules: allow <code>https://*.council.example*</code>, and deny <code>https://finance.council.example*</code>. Each decision in this table is worked out by <code>allowed()</code> in <code>lib/access.js</code> when this page is built, and the build fails if it differs from what is written here.</p>
+<div class="scroll">
+{{HIW_EXAMPLE}}
+</div>
+<p><b>Rules scoped to an action.</b> A library can allow background fetching on one service only, without narrowing anything else. The <a href="#sample-access">sample <code>access.json</code></a> below has one locked allow rule, for <code>fetch-get</code> on <code>https://messages.council.example/message/*</code>. Because the library has no allow rules for the other actions, it doesn’t narrow them. The demo library does the same for its Customer Messages service. Again, each decision comes from the code:</p>
+<div class="scroll">
+{{HIW_SCOPED}}
+</div>
+
+<h3 id="background-reading">The background-reading switch</h3>
+<p>A <b>fetch step</b> fetches pages the caseworker isn’t on, from the system they are on, and clips them. One switch, <b>Read pages in the background</b>, covers every fetch step. It is <b>on by default</b> (<code>BACKGROUND_READING_DEFAULT</code> in <code>lib/access.js</code>). Off is a deny of <code>fetch-get</code> and <code>fetch-post</code> in the same rules as everything else, so there is one place that enforces it.</p>
+<p>Who decides, first match wins:</p>
+<ol>
+<li>policy <code>siteAccess.backgroundReading</code>, <code>true</code> or <code>false</code>, which sets it and locks it;</li>
+<li>the library’s <code>"backgroundReading": { "on": false, "lock": true }</code> in <code>access.json</code>, or any library choice if policy sets <code>siteAccess.lockLibraryRules</code>. Between the case’s pinned library and the synced one, a locked off wins;</li>
+<li>the caseworker’s own switch in Settings;</li>
+<li>the library’s choice without a lock;</li>
+<li>the default, on.</li>
+</ol>
+<p>When it is off, a fetch step says who turned it off, and the caseworker opens each page and clips it themselves.</p>
+<p><b>Watching a fetch, and going back to it.</b> While a fetch step runs, each request has a box on the page the caseworker is on, showing what came back as text (never as the response’s own HTML), with the values it reads outlined. Afterwards, <i>View what was read</i> opens the fetched view on Power Loader’s own case page. The whole response isn’t kept: each fetched clip keeps the text around each value it read, at most 500 characters a value and 20 KB a page. That is case data: it stays in the case, appears in no log, and is deleted when the case is finished or discarded.</p>
+<p>Every fetch request is also limited by fixed caps (<code>FETCH_LIMITS</code> in <code>lib/fetch-steps.js</code>): 6 requests a step, and one list of at most 25 links, 60 a case in any 10 minutes, 4 at a time, 20 seconds and 2 MB each. Requests go only to the site of the tab the caseworker is on, use GET, and fail on any redirect, which is usually a sign-in page.</p>
+<p>A fetch step can also fetch <b>every link in a list</b> on the page the caseworker is on, such as the messages on a page of an inbox. The addresses come from that page, not from the flow, so each one is checked before anything is fetched: it must be on the same site as the tab, match the page profile the flow’s author tested for those pages, and pass the site rules for <code>fetch-get</code>. Duplicates are dropped and at most 25 are kept. What each page gives is a row, not a case value, so a list of messages from different people raises no identity warning, and the step lists the rows that match its show, exactly, and marks them on the page with fixed words.</p>
+
+<h3 id="other-controls">Other controls</h3>
+<div class="scroll">
+<table>
+<thead><tr><th scope="col">Control</th><th scope="col">Where it is set</th></tr></thead>
+<tbody>
+<tr><td><b>Redaction patterns</b>: the identifiers and formats your organisation uses, such as client numbers</td><td>The library’s <code>privacy.json</code> (validated by <code>validatePrivacy()</code> in <code>lib/privacy-detect.js</code>)</td></tr>
+<tr><td><b>What is always redacted</b>, how far the caseworker can relax it, and whether pictures can be sent</td><td>Policy <code>redaction.lockedGroups</code>, <code>redaction.maxThreshold</code>, <code>redaction.allowSendAsWritten</code>, <code>redaction.format</code>, <code>redaction.blockImages</code></td></tr>
+<tr><td><b>Using the on-device privacy model</b> at all. On by default. Off, nothing is downloaded or scanned, case values and the library’s patterns are still redacted, and the preview says the model is off and who turned it off.</td><td>First match wins (<code>modelUse()</code> in <code>lib/model-fetch.js</code>): policy <code>privacyModel.use</code>, which sets and locks it; policy <code>privacyModel.required: true</code>, which keeps it on; the library’s <code>privacy.json</code> <code>"use": { "on": …, "lock": true }</code>; the caseworker’s switch in Settings; the library’s choice without a lock; the default, on.</td></tr>
+<tr><td><b>Requiring the privacy model</b> before any AI request, while it is used</td><td>Policy <code>privacyModel.required</code>, on by default</td></tr>
+<tr><td><b>The AI gateway’s address and model</b></td><td>Policy <code>gateway.baseUrl</code>, <code>gateway.model</code>, shown locked in Settings. The caseworker still enters the gateway key and ticks the acknowledgement themselves.</td></tr>
+<tr><td><b>The acknowledgement wording</b> the caseworker ticks before AI is turned on</td><td>Fixed in the extension (<code>AI_ACK_TEXT</code> in <code>lib/ai/settings.js</code>), not set by policy. When the wording changes, the caseworker is asked again.</td></tr>
+<tr><td><b>Turning the on-device profile assistant off</b></td><td>Policy <code>assistModel.enabled: false</code> for everyone, or the author’s own switch in the profile editor</td></tr>
+<tr><td><b>Where the models come from</b>, and their pinned revisions and hashes</td><td>Policy <code>privacyModel.*</code> and <code>assistModel.*</code>; the library’s <code>privacy.json</code> can name a model server too</td></tr>
+<tr><td><b>The activity log</b>: how long kept logs stay, timestamps to the minute, notes in exports</td><td>Policy <code>activityLog.retentionDays</code> (default 90), <code>activityLog.coarseTimestamps</code>, <code>activityLog.notes</code></td></tr>
+<tr><td><b>The library pin</b>: which library, which branch, holding everyone on one commit, and how the library is signed in to</td><td>Policy <code>library.baseUrl</code>, <code>library.branch</code>, <code>library.pinCommit</code>, <code>library.auth</code>, <code>library.token</code></td></tr>
+<tr><td><b>A case left open</b> asks the caseworker to confirm it is still theirs</td><td>Policy <code>workstation.idleConfirmMinutes</code> (default 120)</td></tr>
+</tbody>
+</table>
+</div>
+<p>IT can also use Firefox’s own <code>ExtensionSettings</code> policy, such as <code>restricted_domains</code>, to keep every extension off certain sites. That is separate from Power Loader’s rules.</p>
+
+<h3 id="policy-keys">Every policy key</h3>
+<p>Policy goes under <code>3rdparty → Extensions → {{ID}}</code> in <code>policies.json</code>. This table is generated from <code>POLICY_DEFAULTS</code> in <code>lib/policy.js</code> when the page is built, so it lists every key Power Loader reads. Setting a key also locks it. Firefox reads policy at start-up, so a change needs a browser restart.</p>
+<p>An organisation can also build its own version of Power Loader with the same keys in a <b>policy file</b> built into the signed package, under its own add-on ID. That version ignores <code>policies.json</code>: its rules change when the organisation ships a new version. A policy file can also constrain a setting by pattern (<code>allowed</code>), and limit the sites the build may ever connect to, which Firefox grants at install and enforces. See <code>docs/organisation-builds.md</code> in the repository.</p>
+<div class="scroll">
+{{HIW_POLICY_KEYS}}
+</div>
+
+<h3 id="samples">Samples</h3>
+<p>These two files are in the repository under <code>site/how-it-works/</code>. The site build, and a test, run them through the extension’s own validators: <code>validateAccess()</code> for <code>access.json</code>, and the policy keys and site rules for <code>policies.json</code>.</p>
+<p id="sample-access"><b>A library’s <code>access.json</code>:</b> a locked allow for fetching message pages only, a locked deny for the finance system, a delegated rule the caseworker may turn off, and background reading left on but unlocked.</p>
+<pre><code>{{HIW_SAMPLE_ACCESS}}</code></pre>
+<p id="sample-policy"><b>A <code>policies.json</code> fragment:</b> the library, gateway and model server set for everyone, the profile assistant off, stricter redaction with no pictures, minute timestamps in the log, and an organisation-wide allow and deny list.</p>
+<pre><code>{{HIW_SAMPLE_POLICY}}</code></pre>
+
+<h2 id="leaves">What leaves the browser, and when</h2>
+<p>This is every destination the extension’s code sends requests to. The extension contains no other network code, and every library it uses is packaged with it, so nothing is loaded from the internet at runtime.</p>
+</div>
+{{HIW_FLOWS_DIAGRAM}}
+<div class="prose">
+<div class="scroll">
+<table>
+<thead><tr><th scope="col">Destination</th><th scope="col">What is sent</th><th scope="col">Triggered by</th><th scope="col">Controlled by</th></tr></thead>
+<tbody>
+<tr><td><b>Casework systems</b></td><td>The caseworker’s own page views, as without Power Loader: reading a page that is already open sends nothing. <b>Fetch steps</b> send GET requests from the caseworker’s tab, to the same site, with that site’s own cookies and one fixed <code>Accept</code> header. Values Power Loader fills into a page’s boxes are visible to that page’s own scripts, as typed text would be.</td><td>The caseworker: opening pages, pressing Fetch, approving a fill plan. Power Loader never submits a form.</td><td>Site rules, the approved systems, the background-reading switch, the fetch caps</td></tr>
+<tr><td><b>Your library host</b></td><td>GET requests for <code>library.json</code> and each file it lists, with a bearer token or the browser’s cookies if policy says so. No case data.</td><td>Connect and Sync, and automatically when the sidebar opens if the last sync was more than an hour ago</td><td>Policy <code>library.*</code>, or the caseworker’s Settings</td></tr>
+<tr><td><b>The model server</b>: Hugging Face by default, or the server set in policy, the library or Settings</td><td>GET requests for the model files at the pinned revision. No case data.</td><td>The caseworker downloading or checking the privacy model (about 920 MB), or the author first using the profile assistant (about 785 MB). Never for a model that is switched off.</td><td>Policy <code>privacyModel.*</code>, <code>assistModel.*</code>; the library’s <code>privacy.json</code>; Settings</td></tr>
+<tr><td><b>Your AI gateway</b> (optional)</td><td>The request exactly as approved in the preview, with the gateway key. Browser cookies are not sent, and redirects are refused (<code>lib/ai/client.js</code>). A picture, if sent, goes as it is, after an explicit tick. <b>Test the connection</b> sends only “Reply with OK.”</td><td>The caseworker pressing Send in the preview</td><td>Policy <code>gateway.*</code>, <code>redaction.*</code>, <code>privacyModel.use</code>, <code>privacyModel.required</code>; the library’s <code>privacy.json</code>; the acknowledgement</td></tr>
+<tr><td><b>Your email app</b></td><td>Nothing is sent. An email step opens a <code>mailto:</code> link, and the caseworker sends the email from their own app.</td><td>The caseworker</td><td>The library’s steps</td></tr>
+<tr><td><b>This website</b>, {{HOST}}</td><td>Firefox’s own update check: a GET request for <code>/updates.json</code>, and the signed XPI when a newer version is listed. The extension’s code makes no request here.</td><td>Firefox, normally about once a day</td><td>Firefox, and its own enterprise policies for add-on updates</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>Nothing is sent to Surprisingly Ltd.</b> The extension has no analytics, telemetry or crash reporting, and its code makes no request to this website or to any other address of ours. The only contact with this website is Firefox’s update check, which Firefox makes itself from the manifest’s <code>update_url</code>, <code>{{SITE}}/updates.json</code>. That address contains none of Firefox’s substitution placeholders, so the request names no add-on, version or user. Like any web request, it reaches our host, GitHub Pages, with the computer’s IP address and the browser’s user agent. If a caseworker connects the public demo library, the same is true of those requests.</p>
+
+<h2 id="stored">What is stored, where and for how long</h2>
+<p>Everything is in the Firefox profile on the caseworker’s computer. Power Loader doesn’t encrypt it itself, so it is protected as the profile is: by the computer’s user account and disk encryption.</p>
+<div class="scroll">
+<table>
+<thead><tr><th scope="col">What</th><th scope="col">Where</th><th scope="col">How long, and how to delete it</th></tr></thead>
+<tbody>
+<tr><td><b>The active case</b>: its clips, values, quotes, decisions, notes and its activity so far</td><td>Extension storage (<code>case</code>), and the browser session for open views</td><td>Until <b>Finish</b> or <b>Discard</b>, or until it is cleared: by default when Firefox closes (at the next start) and after 24 hours without use. The caseworker can change both in Settings unless policy sets them (<code>workstation.clearCaseOnClose</code>, <code>clearCaseAfterHours</code>, <code>clearCaseMaxHours</code>). If Firefox closes part-way through a deletion, it completes at the next start (<code>lib/teardown.js</code>). A receipt with counts only stays until the next case starts.</td></tr>
+<tr><td><b>Flows</b>, with their pages and forms</td><td>Extension storage (<code>flows</code>)</td><td>Until the author deletes them. They hold selectors, field names and test results as counts, never values from pages.</td></tr>
+<tr><td><b>Library copies</b></td><td>Extension storage (<code>library</code>)</td><td>The current commit, the previous one (the last known good copy) and the one the open case is pinned to. Older ones are removed at each sync.</td></tr>
+<tr><td><b>Settings</b>, including the caseworker’s own site rules</td><td>Extension storage (<code>settings</code>)</td><td>Until changed, or <b>Delete all Power Loader data</b>.</td></tr>
+<tr><td><b>The gateway key</b></td><td>The browser session, or extension storage if the caseworker ticks <b>Remember the key in this browser</b></td><td>Until Firefox closes, or until forgotten in Settings.</td></tr>
+<tr><td><b>The activity log</b></td><td>Extension storage: the open case’s events in the case, kept logs in <code>processLog</code></td><td>Kept logs have no field values and no real page addresses, only the library’s link patterns. They are deleted after <code>activityLog.retentionDays</code> (90 by default). The caseworker can remove events and add notes. See <code>lib/activity.js</code>.</td></tr>
+<tr><td><b>Model files</b></td><td>The browser’s Cache API, inside the extension</td><td>Until removed. The privacy model has <b>Remove the downloaded model</b> on the Privacy tab. The profile assistant has no button: its files stay until the extension is removed.</td></tr>
+<tr><td><b>Data from Power Loader 0.5</b>, if any</td><td>Extension storage</td><td>Until the caseworker downloads or deletes it.</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>Delete all Power Loader data</b> in Settings discards any open case and clears extension storage. Removing the extension removes everything it stored. The <a href="/privacy#extension">privacy policy</a> describes the same from the caseworker’s side.</p>
+
+<h2 id="limits">What the controls don’t do</h2>
+<ul>
+<li><b>They guard against mistaken or poisoned flows and libraries, not against the caseworker.</b> A caseworker controls their own browser. They can read and copy anything they can see. Unless policy locks the library address, they can connect another library, and they can build their own flows. They can turn off or change delegated rules. Rules your organisation must enforce belong in policy, or locked in the library.</li>
+<li><b>Firefox grants host permissions for a whole origin</b> (a scheme and host), not for paths. Power Loader removes permissions for sites the rules block entirely, but rules about paths and actions are enforced by Power Loader’s own checks, not by Firefox.</li>
+<li><b>The library’s hashes check integrity, not authorship.</b> They make sure a sync is one complete, unchanged set from one commit. They are not a signature: whoever can change the files on the library host can change <code>library.json</code> too. Trust in the library comes from who can commit to it and from HTTPS.</li>
+<li><b>Redaction is not guaranteed.</b> It finds what the case, the library’s patterns and the privacy model recognise, and only the first two if the model is switched off. The caseworker’s acknowledgement says that personal data could still be sent, and the preview shows exactly what will be. A picture can’t be redacted at all, so it is sent only after a separate tick, and never if policy sets <code>redaction.blockImages</code>.</li>
+<li><b>Filled values reach the page.</b> Once a value is in a box, the casework system’s own scripts can read it, as they could if it were typed. The fill plan warns when a form is known to react to changes.</li>
+<li><b>Some things are tested only with a simulated browser so far, not yet in real Firefox.</b> The automated Firefox suite, run in CI on the latest Firefox and the latest ESR, covers library verification, clipping, filling, the AI preview and what is actually sent, deletion after a browser restart, OCR, model hash checks, and conflicts, a reveal rule and a fetch step’s boxes and excerpts on demo pages under a strict CSP. A separate local suite runs an organisation build in Firefox ESR, including region capture (<code>captureVisibleTab</code>) and clearing the case. Neither covers the site rules’ permission handling or notes yet; those are covered by unit tests with a simulated browser. In particular, <b>whether a fetch step’s request carries the casework system’s session cookies in real Firefox is not yet verified</b>: it is made from the content script’s isolated world (<code>FETCH_WORLD</code> in <code>lib/core.js</code>).</li>
+</ul>
+
+<h2 id="check">How to check this yourself</h2>
+<ul>
+<li><b>The source</b> is public, under the Apache-2.0 licence: <a href="{{REPO}}">{{REPO}}</a>. Power Loader’s own code is not minified or bundled.</li>
+<li><b>Reproducible builds.</b> CI rebuilds the extension from its source archive, as Mozilla’s reviewers do, and compares every packaged file with the CI build. Third-party files are listed with their SHA-256 in the <a href="/reviewers">reviewer notes</a>.</li>
+<li><b>The tests.</b> <code>pnpm test</code> runs the unit tests, including those for this page’s samples and examples. <code>pnpm test:firefox</code> runs the Firefox suite described above.</li>
+<li><b>Mozilla’s review notes</b> are in <code>REVIEWERS.md</code> and on the <a href="/reviewers">reviewers page</a>.</li>
+</ul>
+<div class="scroll">
+<table>
+<thead><tr><th scope="col">Claim</th><th scope="col">Where it is implemented</th></tr></thead>
+<tbody>
+<tr><td>Every message to the in-page agent is checked against the site rules first</td><td><code>lib/core.js</code> <code>ask()</code>, <code>MESSAGE_ACTIONS</code></td></tr>
+<tr><td>The agent listens only to the extension, and refuses if the address has changed</td><td><code>lib/agent.js</code>, its <code>runtime.onMessage</code> listener and <code>atUrl</code></td></tr>
+<tr><td>Rules only narrow; deny wins; <code>fetch-post</code> is closed</td><td><code>lib/access.js</code> <code>allowed()</code>, <code>accessLayers()</code></td></tr>
+<tr><td>Links in notes are checked as <code>navigate</code></td><td><code>lib/annotations.js</code> <code>guardNoteLinks()</code>, <code>sidebar/annotate.js</code></td></tr>
+<tr><td>Fetch steps: GET, same site, no redirects, checked before and after</td><td><code>lib/fetch-steps.js</code> <code>planRun()</code>, <code>responseProblem()</code>, <code>fetchInPage()</code></td></tr>
+<tr><td>The library is checked by hash and schema; a bad set is refused</td><td><code>lib/library-sync.js</code> <code>fetchLibrary()</code>, <code>lib/library.js</code> <code>indexLibrary()</code>, <code>validateAccess()</code></td></tr>
+<tr><td>Every policy key and its default</td><td><code>lib/policy.js</code> <code>POLICY_DEFAULTS</code></td></tr>
+<tr><td>Nothing is sent to AI without the preview</td><td><code>lib/ai/boundary.js</code> <code>previewBeforeSend()</code>; <code>lib/ai/client.js</code> refuses any payload not approved</td></tr>
+<tr><td>Models are pinned and hash-checked</td><td><code>lib/model-fetch.js</code> <code>verifyingFetch()</code>, <code>DEFAULT_MODEL</code></td></tr>
+<tr><td>Finish and Discard delete the case; the log keeps no values</td><td><code>lib/teardown.js</code>, <code>lib/activity.js</code> <code>archiveLog()</code></td></tr>
+<tr><td>Permissions and the update address</td><td><code>extension/manifest.json</code></td></tr>
+<tr><td>This page’s samples, examples and policy table</td><td><code>tools/how-it-works.mjs</code>, <code>tests/js/how-it-works.test.js</code></td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="glossary">Glossary</h2>
+<dl class="glossary">
+<dt>Flow</dt><dd>The instructions for one kind of case: the forms it fills, the pages it reads from, and the steps between them. Exported as one <code>powerloader-flow/1</code> file.</dd>
+<dt>Profile</dt><dd>Where each value is on a page, as selectors. A page profile reads a page; a fill profile says which box gets which case field.</dd>
+<dt>Clip</dt><dd>The values read from one page or document, each with the text it was read from.</dd>
+<dt>Library</dt><dd>Your organisation’s forms library: static files at one commit, with a manifest listing each file’s SHA-256.</dd>
+<dt>Step</dt><dd>One stage of a case, such as a page to visit, a page to clip, a form to fill or an email to send.</dd>
+<dt>Fetch step</dt><dd>A step that requests pages the caseworker isn’t on, from the system they are on, when they press its button.</dd>
+<dt>Note</dt><dd>Guidance a flow draws on a casework page, next to a box or a heading.</dd>
+<dt>Redaction preview</dt><dd>The exact AI request, with personal data found on this computer replaced by placeholders, shown to the caseworker before anything is sent.</dd>
+<dt>Gateway</dt><dd>Your organisation’s own AI service, which Power Loader sends approved requests to. Power Loader never talks to an AI provider directly.</dd>
+<dt>Policy</dt><dd>Firefox enterprise policy, in <code>policies.json</code> or Group Policy. Settings set by policy are locked.</dd>
+<dt>Origin</dt><dd>A scheme and host, such as <code>https://cases.council.example</code>. Firefox grants an extension access one origin at a time.</dd>
+</dl>
+</div>
+</main>
+{{FOOTER}}
+</body>
+</html>

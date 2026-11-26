@@ -1,0 +1,65 @@
+[
+  {
+    "url": "https://records.example.gov.uk/clients/1",
+    "action": "read",
+    "allowed": true
+  },
+  {
+    "url": "https://records.example.gov.uk/clients/1",
+    "action": "fill",
+    "allowed": true
+  },
+  {
+    "url": "https://records.example.gov.uk/clients/1",
+    "action": "fetch-get",
+    "allowed": true
+  },
+  {
+    "url": "https://records.example.gov.uk/clients/1",
+    "action": "fetch-post",
+    "allowed": false
+  },
+  {
+    "url": "http://records.example.gov.uk/clients/1",
+    "action": "read",
+    "allowed": false
+  },
+  {
+    "url": "https://records.elsewhere.example/clients/1",
+    "action": "read",
+    "allowed": false
+  },
+  {
+    "url": "https://records.elsewhere.example/clients/1",
+    "action": "navigate",
+    "allowed": false
+  },
+  {
+    "setting": "gateway.baseUrl",
+    "value": "https://ai.example.gov.uk/v1",
+    "allowed": false
+  },
+  {
+    "setting": "library.baseUrl",
+    "value": "https://gitlab.example.gov.uk/other/-/raw/{ref}/",
+    "allowed": false
+  },
+  {
+    "setting": "workstation.clearCaseAfterHours",
+    "value": 4,
+    "allowed": true
+  },
+  {
+    "setting": "workstation.clearCaseAfterHours",
+    "value": 8,
+    "allowed": false
+  },
+  {
+    "tool": "capture",
+    "on": false
+  },
+  {
+    "tool": "reader",
+    "on": true
+  }
+]

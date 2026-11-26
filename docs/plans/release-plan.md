@@ -1,6 +1,6 @@
 # First release plan and design-review response
 
-Created: 2026-10-19. Status: proposal. This is the entry point for building the case-journeys design into the extension. It records:
+Created: 2026-10-19. Status: built and released as 1.0.0 (submitted to AMO on 24 November 2026; see `../releasing.md`). This is the entry point for building the case-journeys design into the extension. It records:
 
 - what the first release includes;
 - how each finding from the design review was handled;
@@ -15,6 +15,11 @@ Feature plans:
 | `library-and-profiles.md` | Library sync, the Library page, drafts, export contract, publishing, profile safety |
 | `case-activity-log.md` | Data classification, collection scope, event schema, notes, retention |
 | `magic-reader.md` | Document sources, Firefox capabilities, reader states |
+| [`site-access-lists.md`](site-access-lists.md) | Site rules: allow and deny lists from the library, policy and Settings, and where they're enforced |
+| [`fetch-steps.md`](fetch-steps.md) | Steps that fetch pages in the background under a parent step, governed by the site rules |
+| [`json-clips.md`](json-clips.md) | JSON responses read like pages: a synthetic document for the same DSL, quotes as paths, authoring from a sample |
+| [`how-it-works-page.md`](how-it-works-page.md) | A website page for security architects, compliance officers and DPOs: boundaries, two sequence diagrams, library controls |
+| [`chrome-version.md`](chrome-version.md) | A Chrome and Edge version from the same source: side panel, service worker, compatibility layer, distribution |
 
 The clickable prototype is `prototype/case-journeys.html`. Its scenario steps 1 to 9 show the journeys. Its jsdom checks are in `prototype/tests/` (`pnpm test:prototype`); `review-test.mjs` covers the review fixes. The extension's own tests are listed under each plan.
 

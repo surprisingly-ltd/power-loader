@@ -9,13 +9,19 @@
 //   profiles/pages/…     extraction profiles (schema powerloader-profile/1, kind extract), field keys are case field keys
 //   profiles/fill/…      fill profiles (kind fill), { selector: 'CaseData.key' }
 //   privacy.json         detection patterns and categories (see lib/privacy-detect.js)
-//   steps.json           the steps a case takes, page by page, with templated links (lib/journey.js)
+//   steps.json           the steps a case takes, page by page, with templated links (lib/journey.js). Only in
+//                        the set a flow compiles to: steps belong to a flow, so a team library's own is reported
+//                        as a file it shouldn't have, and not read
 //   timelines.json       timelines: series of bars and pointers from the case's dates (lib/journey.js)
+//   access.json          site rules, locked or delegated to the caseworker (lib/access.js)
+//   flows/…              flows the library offers, in the format Flows → Export writes (lib/flows.js): listed
+//                        on the Flows tab, read-only, started or copied as an imported flow is
 import { validateFieldDefs } from './fields.js';
-import { canonical } from './hash.js';
 import { validatePrivacy } from './privacy-detect.js';
 import { validateDocumentProfile } from './reader/match.js';
 import { validateSteps, validateTimelines } from './journey.js';
+import { accessOf, globVerdict, validateAccess } from './access.js';
+import { isFlowCommit, libraryFlowErrors } from './flows.js';
 
 const E = () => globalThis.PowerLoaderExtract;
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -37,6 +43,13 @@ export function hostApproved(host, approved = []) {
 }
 
 const patterns = (match) => (Array.isArray(match) ? match : match ? [match] : []);
+
+// Are a profile's match and link pattern on approved hosts? A tested draft is used only when they are:
+// the library's own profiles are checked when it's indexed, and a draft mustn't get round that.
+export function profileHostsApproved(profile, approvedHosts = []) {
+  const pats = [...patterns(profile?.match), profile?.urlPattern].filter(Boolean);
+  return pats.length > 0 && pats.every((p) => hostApproved(hostOf(p), approvedHosts));
+}
 
 export function validateForm(form, fields) {
   const errors = [];
@@ -89,8 +102,8 @@ export function validateLibraryProfile(profile, { approvedHosts = [], fields = {
   return errors;
 }
 
-const kindOfPath = (p) => (p === 'fields.json' ? 'fields' : p === 'privacy.json' ? 'privacy' : p === 'steps.json' ? 'steps' : p === 'timelines.json' ? 'timelines' : p.startsWith('forms/') ? 'form'
-  : p.startsWith('profiles/pages/') ? 'page' : p.startsWith('profiles/fill/') ? 'fill' : p.startsWith('profiles/documents/') ? 'document' : 'other');
+const kindOfPath = (p) => (p === 'fields.json' ? 'fields' : p === 'privacy.json' ? 'privacy' : p === 'access.json' ? 'access' : p === 'steps.json' ? 'steps' : p === 'timelines.json' ? 'timelines' : p.startsWith('forms/') ? 'form'
+  : p.startsWith('flows/') ? 'flow' : p.startsWith('profiles/pages/') ? 'page' : p.startsWith('profiles/fill/') ? 'fill' : p.startsWith('profiles/documents/') ? 'document' : 'other');
 
 /**
  * Index a stored set. Invalid forms and profiles are skipped and reported in `problems`, so a bad file
@@ -108,14 +121,24 @@ export function indexLibrary(set, manifest = set.manifest || {}) {
   const lib = {
     commit: set.commit, message: set.message || '', syncedAt: set.syncedAt || null, approvedHosts,
     fields, identifierTypes: fieldsDoc?.identifierTypes || {}, privacy: privacyErrors.length ? null : set.files['privacy.json'] || null,
-    forms: {}, profiles: [], fill: [], documents: [], steps: [], timelines: [], problems,
+    forms: {}, profiles: [], fill: [], documents: [], steps: [], timelines: [], flows: [], problems, access: null,
   };
+  // Site rules. A bad access.json is a problem like any other, so a sync keeps the last good library.
+  if (set.files['access.json'] !== undefined) {
+    const errors = validateAccess(set.files['access.json']);
+    if (errors.length) problems.push({ path: 'access.json', errors });
+    else lib.access = { ...accessOf(set.files['access.json']), doc: set.files['access.json'] };
+  }
   for (const [path, doc] of Object.entries(set.files)) {
     const kind = kindOfPath(path);
     if (kind === 'form') {
       const errors = validateForm(doc, fields);
       if (errors.length) problems.push({ path, errors });
       else lib.forms[doc.id] = doc;
+    } else if (kind === 'flow') {
+      const errors = libraryFlowErrors(doc, approvedHosts);
+      if (errors.length) problems.push({ path, errors });
+      else lib.flows.push({ path, id: doc.id, name: String(doc.name || 'Flow'), guidance: String(doc.guidance || ''), doc });
     } else if (kind === 'document') {
       const errors = validateDocumentProfile(doc, fields);
       if (errors.length) problems.push({ path, errors });
@@ -127,8 +150,14 @@ export function indexLibrary(set, manifest = set.manifest || {}) {
       else (kind === 'fill' ? lib.fill : lib.profiles).push({ ...doc, path });
     }
   }
+  // Steps belong to a flow. A team's library (a set with a commit that isn't a flow's) has no steps of its own:
+  // its steps.json is reported and not read. A flow's compiled files, checked with or without a commit, are.
+  const teamLibrary = !!set.commit && !isFlowCommit(set.commit) && !set.flow;
+  if (teamLibrary && set.files['steps.json'] !== undefined) {
+    problems.push({ path: 'steps.json', errors: ['A library doesn’t have steps of its own: steps belong to a flow, so put them in a flow under flows/. This file isn’t read.'] });
+  }
   // Steps and timelines refer to forms and profiles, so they are checked once those are indexed.
-  if (set.files['steps.json'] !== undefined) {
+  if (!teamLibrary && set.files['steps.json'] !== undefined) {
     const doc = set.files['steps.json'];
     const errors = validateSteps(doc, fields);
     if (!errors.length) {
@@ -136,6 +165,7 @@ export function indexLibrary(set, manifest = set.manifest || {}) {
         if (s.role === 'output' && !lib.forms[s.formId]) errors.push(`steps[${i}]: form "${s.formId}" isn’t in the library`);
         if (s.role === 'input' && !lib.profiles.some((p) => p.id === s.profileId)) errors.push(`steps[${i}]: page profile "${s.profileId}" isn’t in the library`);
         for (const m of s.match || []) if (!hostApproved(hostOf(m), approvedHosts)) errors.push(`steps[${i}]: "match" host ${hostOf(m) || m} isn’t on the approved systems list`);
+        if (s.role === 'fetch') for (const e of fetchIndexErrors(s, lib.profiles, approvedHosts)) errors.push(`steps[${i}]: ${e}`);
       });
     }
     if (errors.length) problems.push({ path: 'steps.json', errors });
@@ -155,6 +185,37 @@ export function indexLibrary(set, manifest = set.manifest || {}) {
   return lib;
 }
 
+/**
+ * A fetch step's requests against the library: each reads a page profile it has, on an approved host, and
+ * its address (with sample values) is one that profile matches, so a request only fetches a page its profile
+ * is for. Phase 1 fetches only from the trigger page's own site.
+ */
+export function fetchIndexErrors(step, profiles, approvedHosts) {
+  const out = [];
+  const trigger = (step.match || []).map((m) => /^(https?):\/\/([^/*]+)/i.exec(m)).find(Boolean);
+  for (const [j, r] of (step.fetch?.requests || []).entries()) {
+    const at = `requests[${j}]`;
+    const p = profiles.find((x) => x.id === r.profileId);
+    if (!p) { out.push(`${at}: page profile "${r.profileId}" isn’t in the library`); continue; }
+    if (r.each) {
+      // A list of links: the page with the links has its profile here, and that profile has the list, with an
+      // href for each row. Each address is checked against p's match when the run reads the page.
+      const lp = profiles.find((x) => x.id === r.each.profileId);
+      if (!lp) { out.push(`${at}: page profile "${r.each.profileId}" isn’t in the library`); continue; }
+      const spec = lp.fields?.[r.each.list];
+      if (!Array.isArray(spec) || !(spec[1] && typeof spec[1] === 'object' && typeof spec[1].href === 'string')) out.push(`${at}: ${lp.name || lp.id} has no list "${r.each.list}" with an href for each row`);
+      if (!patterns(p.match).every((m) => hostApproved(hostOf(m), approvedHosts))) out.push(`${at}: ${p.name || p.id} reads pages that aren’t on the approved systems list`);
+      continue;
+    }
+    const host = hostOf(r.url);
+    if (!hostApproved(host, approvedHosts)) { out.push(`${at}: host ${host || r.url} isn’t on the approved systems list`); continue; }
+    const sample = String(r.url).replace(/\{[A-Za-z][A-Za-z0-9_]*\}/g, 'sample1');
+    if (!E().matchUrl(p.match, sample)) out.push(`${at}: the address doesn’t match its page profile ${p.name || p.id}`);
+    if (trigger && `${trigger[1]}://${trigger[2]}`.toLowerCase() !== /^https?:\/\/[^/?#]*/i.exec(r.url)?.[0].toLowerCase()) out.push(`${at}: the address must be on the same site as the step’s page`);
+  }
+  return out;
+}
+
 export const formList = (lib) => Object.values(lib.forms).sort((a, b) => a.name.localeCompare(b.name));
 
 // The fill profile for a form: the form names it, or the profile names the form.
@@ -163,14 +224,15 @@ export function fillProfileFor(lib, formId) {
   return lib.fill.find((p) => p.id === form?.fill) || lib.fill.find((p) => p.form?.id === formId) || null;
 }
 
-// Page profiles that may read this URL, specific ones (with a `when` test) first. Drafts in use replace
-// the published profile they are based on.
-export function pageProfiles(lib, url, drafts = []) {
-  // Only a draft that passed its test, with nothing changed since, is used.
-  const inUse = drafts.filter((d) => d.use && d.kind !== 'fill' && d.tested?.ok && d.tested.snapshot === canonical(d.profile));
-  const replaced = new Set(inUse.map((d) => d.base?.id).filter(Boolean));
-  const list = [...inUse.map((d) => ({ ...d.profile, draft: d.id })), ...lib.profiles.filter((p) => !replaced.has(p.id))];
-  const hits = list.filter((p) => E().matchUrl(p.match, url));
+// Page profiles that may read this URL, specific ones (with a `when` test) first. A case's library is its
+// flow's set, so a template changed in the flow is the one used: there are no drafts beside it.
+export function pageProfiles(lib, url) {
+  const list = lib.profiles;
+  // A profile that reads JSON is read only by fetch steps in this version, never offered for a tab: an HTML
+  // page never matches it (docs/plans/json-clips.md, JSON tabs are phase 2).
+  // A fetch-only profile (fetchOnly: true) is read only by the fetch step that names it, never offered for a tab:
+  // on a message page opened by hand, "Inbox message" (one row for a triage) isn't a choice.
+  const hits = list.filter((p) => (p.format || 'html') === 'html' && !p.fetchOnly && E().matchUrl(p.match, url));
   return [...hits.filter((p) => p.when), ...hits.filter((p) => !p.when)];
 }
 
@@ -183,4 +245,34 @@ export function confirmationFor(lib, url, text) {
     if (m) return { formId: form.id, ref: m[0] };
   }
   return null;
+}
+
+/**
+ * Profiles, forms and pages to visit that the site rules block, judged by their patterns' fixed start (the
+ * real address is checked again when Power Loader acts). Not part of indexLibrary()'s problems: indexing is
+ * cached per commit, and the caseworker's rules change without the commit changing.
+ * [{ path, id, kind: 'page' | 'fill' | 'form' | 'step', level: 'error' | 'warn', text }]
+ */
+export function accessIssues(lib, layers) {
+  const out = [];
+  if (!lib) return out;
+  const check = (item, globs, action) => {
+    for (const g of globs) {
+      const v = globVerdict(layers, g, action);
+      if (v.verdict === 'blocked') { out.push({ ...item, level: 'error', text: `Power Loader can’t work on ${item.name}: the site rules block ${g}` }); return; }
+      if (v.verdict === 'some') { out.push({ ...item, level: 'warn', text: `Some pages ${item.name} matches are blocked by the site rules` }); return; }
+    }
+  };
+  for (const p of lib.profiles) check({ path: p.path, id: p.id, kind: 'page', name: p.name }, [p.urlPattern, ...patterns(p.match)].filter(Boolean), 'read');
+  for (const p of lib.fill) check({ path: p.path, id: p.id, kind: 'fill', name: p.name, formId: p.form?.id }, patterns(p.match), 'fill');
+  for (const f of Object.values(lib.forms)) if (f.url) check({ path: `forms/${f.id}.json`, id: f.id, kind: 'form', name: f.name, formId: f.id }, [f.url], 'fill');
+  for (const s of lib.steps || []) if (s.role === 'guide' && s.url) check({ path: 'steps.json', id: s.id, kind: 'step', name: s.name }, [s.url], 'navigate');
+  return out;
+}
+
+/** Forms the site rules stop Power Loader filling: { formId: text }. */
+export function blockedForms(lib, layers) {
+  const out = {};
+  for (const i of accessIssues(lib, layers)) if (i.level === 'error' && i.formId) out[i.formId] = out[i.formId] || i.text;
+  return out;
 }

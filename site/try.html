@@ -27,8 +27,9 @@
 <ol>
 <li>In the sidebar, open <b>Settings</b>. Under <b>Forms library</b>, enter this <b>Library address</b>:<br><code>{{DEMO_LIBRARY}}</code></li>
 <li>Leave <b>Branch</b> as <code>main</code> and press <b>Connect</b>.</li>
-<li>Firefox asks whether Power Loader may access <code>{{HOST}}</code>. Choose <b>Allow</b>. Power Loader downloads the library, checks every file against <a href="/demo/library/library.json">its manifest</a> and lists three forms.</li>
+<li>Firefox asks whether Power Loader may access <code>{{HOST}}</code>. Choose <b>Allow</b>. Power Loader downloads the library, checks every file against <a href="/demo/library/library.json">its manifest</a> and lists four forms.</li>
 </ol>
+<p>The library’s flows are then already listed on the <b>Case</b> tab, ready to start, and in <b>Build</b> (the switch at the top of the sidebar) on the <b>Flows</b> tab, under <b>From your library</b>: you don’t need to download them. They’re read-only there; <b>Make a copy to edit</b> puts one on your computer to change.</p>
 
 <h3>Option B: import a flow file</h3>
 <ol>
@@ -36,26 +37,28 @@
   <div class="download actions">
     <a class="button ghost" href="/flows/discretionary-housing-payment.flow.json" download>Discretionary housing payment.flow.json</a>
     <a class="button ghost" href="/flows/housing-support-referral.flow.json" download>Housing support referral.flow.json</a>
+    <a class="button ghost" href="/flows/rent-support-review.flow.json" download>Rent support review.flow.json</a>
+    <a class="button ghost" href="/flows/rent-support-review-messages-as-data.flow.json" download>Rent support review (messages as data).flow.json</a>
+    <a class="button ghost" href="/flows/inbox-triage.flow.json" download>Inbox triage.flow.json</a>
   </div>
 </li>
-<li>In the sidebar, open <b>Flows</b> and press <b>Import a flow…</b>. Choose the file you downloaded.</li>
+<li>In the sidebar, switch to <b>Build</b> and press <b>Import a flow…</b> on the <b>Flows</b> tab. Choose the file you downloaded.</li>
 <li>The flow appears in the list, marked with problems: <b>hasn’t been tested on its page</b>. That’s expected, and it doesn’t stop you starting a case. A flow’s pages are always tested on the computer that uses them. Level 3 shows you how.</li>
 </ol>
 <p class="muted">The files are plain JSON. Open one to see what a flow is: the fields, each page’s address pattern, and for each field the element it’s read from or the box it goes into. They were made from the demo library, so options A and B give you the same flow.</p>
 
 <h2>2. Start a case</h2>
 <ul>
-<li><b>From the library:</b> on the <b>Case</b> tab, tick <b>Discretionary housing payment</b> (and <b>Housing support referral</b> if you like) and press <b>Start case</b>.</li>
-<li><b>From an imported flow:</b> on the <b>Flows</b> tab, press <b>Start case</b> next to it. Power Loader says which pages haven’t been tested on this computer; press <b>Start case</b> again to carry on.</li>
+<li>Every case is a run of a flow. On the <b>Case</b> tab, the flows from your library and on this computer are listed together: press <b>Start</b> next to <b>Discretionary housing payment</b>. Star the flows you work and they come first. Power Loader says which pages haven’t been tested on this computer; press <b>Start case</b> again to carry on. A flow that starts by choosing a case, such as the rent support review, needs no case reference: open the case in the work queue and Power Loader takes its number.</li>
 </ul>
 <p>The case lists every field the form needs, all empty for now.</p>
 
 <h2>3. Clip the client’s details</h2>
 <ol>
 <li>Open <a href="/demo/client-1042.html">Client NC-1042: Maria Kowalska</a>, the council’s case system. The first time, the sidebar asks for access to this site: press <b>Allow on {{HOST}}</b>.</li>
-<li>Press <b>Clip this page</b>. Her name, date of birth, NI number and address fill the case, each linked to where it came from.</li>
-<li>Open her <a href="/demo/rent-account-1042.html">rent account</a> at Harbour Homes and clip it. Its phone number disagrees with the client record, so the sidebar shows <b>1 conflict to decide</b>. Press <b>Use this</b> next to the one you trust.</li>
-<li>Clip <a href="/demo/employment-1042.html">employment and income</a> too.</li>
+<li>The sidebar lists every step of the flow, and opens the one for this page. Its green button is always the next thing to do: here, <b>Clip this page</b>. Her name, date of birth, NI number and address fill the case, each linked to where it came from. Then the green button is <b>Next</b>, to the next step’s page.</li>
+<li>Open her <a href="/demo/rent-account-1042.html">rent account</a> at Harbour Homes and clip it.</li>
+<li>Clip <a href="/demo/employment-1042.html">employment and income</a> too. It spells her surname differently, so the sidebar shows <b>1 conflict to decide</b>. Press <b>Use this</b> next to the one you trust.</li>
 </ol>
 
 <h2>4. Catch the wrong person</h2>
@@ -86,6 +89,16 @@
 <li><b>Privacy → Check this page</b> and <b>Highlight on page</b> show the personal data that would be redacted before an AI request.</li>
 </ul>
 
+<h2>Try it by hand first</h2>
+<p>The fictional council has its own <a href="/demo/intranet/rent-support-review.html">procedure for a rent support review</a> on its staff intranet. Work one case by hand with it, as a new caseworker would, and note the time you start and finish. Then do the next case with the flow below and compare.</p>
+
+<h2>A bigger case: the rent support review</h2>
+<p>The <a href="/demo/cm/queue.html">work queue</a> has 100 cases. Start a case from <b>Rent support review</b> (listed from the library, or imported above). There’s no case reference to type: its first step, <b>Choose a case</b>, sends you to the work queue, and when you open a case Power Loader takes the case reference from its address. Then the flow takes you to the case, its rent account and income record, then to the client’s messages. There one <b>fetch step</b> reads all six messages in the background, 4 at a time, and clips a change of circumstances from whichever online form has it. The demo library allows fetching only from the messages service, so the same step pointed at another system is refused by the library’s rule.</p>
+<p>If a case has no tenancy reference, the step <b>Ask the client for a missing reference</b> opens an email to the client in your email app, already written from the case with their name and the case reference. Writing it from a template takes one click rather than several minutes, and the wording is the same every time. When the review is submitted, the flow’s last email tells the income team; mark the case done on its case page and pick up the next one.</p>
+
+<h2>Triage the team inbox</h2>
+<p>The <a href="/demo/messages/index.html">team inbox</a> doesn’t say which messages are referrals, how urgent they are, or whether anyone has picked them up. Start a case from <b>Inbox triage</b> (from the library, or <a href="/flows/inbox-triage.flow.json" download>download it</a>): it fills no form. On the inbox, press <b>Fetch 25 messages</b>. Power Loader reads every message on the page in the background and lists the 4 open urgent referrals in the sidebar, marked in the inbox too. Open one, finish the triage, then start the rent support review for its client: two of them, cases 1012 and 1020, are in the work queue.</p>
+
 <h2>The demo pages</h2>
 <div class="scroll">
 <table>
@@ -98,6 +111,12 @@
 <tr><td><a href="/demo/client-2077.html">Client NC-2077</a></td><td>A different person, which triggers the identity warning</td></tr>
 <tr><td><a href="/demo/dhp.html">Discretionary housing payment</a></td><td>A form to fill, with a confirmation page</td></tr>
 <tr><td><a href="/demo/referral.html">Housing support referral</a></td><td>An ordinary form to fill</td></tr>
+<tr><td><a href="/demo/cm/index.html">Case Manager</a></td><td>The council’s case system: my work, and the <a href="/demo/cm/queue.html">work queue</a> of 100 cases, each with records in three other systems; mark a case done and the queue offers the next</td></tr>
+<tr><td><a href="/demo/biv/index.html">Benefits and Income Verification</a></td><td>Employment and income for each person</td></tr>
+<tr><td><a href="/demo/harbour/index.html">Harbour Homes</a></td><td>A housing association’s partner portal: rent accounts</td></tr>
+<tr><td><a href="/demo/messages/index.html">Customer Messages</a></td><td>The team inbox: clients’ messages, and referrals from partner organisations that only opening tells apart</td></tr>
+<tr><td><a href="/demo/intranet/rent-support-review.html">Staff intranet</a></td><td>The council’s own procedure for a rent support review, to work a case by hand</td></tr>
+<tr><td><a href="/demo/rent-review.html">Rent support review</a></td><td>The form the rent support review flow fills</td></tr>
 <tr><td><a href="/demo/library/library.json">Forms library</a></td><td>The library manifest: every file with its SHA-256</td></tr>
 </tbody>
 </table>

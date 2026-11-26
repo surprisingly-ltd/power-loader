@@ -15,6 +15,8 @@
 
   const SKIP_TYPES = new Set(['hidden', 'submit', 'button', 'reset', 'image', 'file', 'password']);
   const esc = (s) => (root.CSS && root.CSS.escape ? root.CSS.escape(s) : String(s).replace(/[^\w-]/g, (c) => `\\${c}`));
+  // A CSS string in double quotes: backslashes and quotes escaped, and line breaks, which can't appear raw.
+  const quoted = (s) => `"${String(s).replace(/[\\"]/g, '\\$&').replace(/\r\n?|\n|\f/g, '\\a ')}"`;
   const clean = (s) => (s || '').replace(/\s+/g, ' ').trim();
 
   function isControl(el) {
@@ -68,10 +70,10 @@
     if (el.id && unique(`#${esc(el.id)}`, scope)) return `#${esc(el.id)}`;
     const name = el.getAttribute('name');
     if (name) {
-      let s = `${tag}[name="${name.replace(/"/g, '\\"')}"]`;
+      let s = `${tag}[name=${quoted(name)}]`;
       if (unique(s, scope)) return s;
       if (el.getAttribute('type') === 'radio' && el.value) {
-        s += `[value="${el.value.replace(/"/g, '\\"')}"]`;
+        s += `[value=${quoted(el.value)}]`;
         if (unique(s, scope)) return s;
       }
     }
@@ -177,7 +179,7 @@
       if (want === null) return false;
       el.checked = want;
     } else if (type === 'radio') {
-      const group = el.name ? Array.from((el.form || document).querySelectorAll(`input[type=radio][name="${el.name.replace(/"/g, '\\"')}"]`)) : [el];
+      const group = el.name ? Array.from((el.form || document).querySelectorAll(`input[type=radio][name=${quoted(el.name)}]`)) : [el];
       const want = text.trim().toLowerCase();
       const hit = group.find((r) => r.value.toLowerCase() === want || labelFor(r).toLowerCase() === want);
       if (!hit) return false;
@@ -677,11 +679,195 @@
     });
   }
 
+  // ---------------------------------------------------------------- notes from a flow
+
+  // Each note is a host element with a closed shadow root, so the page's styles don't reach in and the page's
+  // scripts can't reach the note's insides. Notes are built from a tree of tags and text made in the sidebar
+  // (lib/annotations.js): never from HTML. Each says it is from Power Loader, so it can't pass as the page's own.
+  const NOTE_TAGS = new Set(['b', 'strong', 'i', 'em', 'u', 's', 'br', 'p', 'div', 'span', 'ul', 'ol', 'li', 'code', 'small', 'h3', 'h4', 'hr', 'a']);
+  let notes = { list: [], hosts: [], observer: null, timer: null, at: null, watch: null };
+  const noHash = (u) => String(u || '').split('#')[0];
+
+  function buildNote(nodes, parent) {
+    for (const n of nodes || []) {
+      if (typeof n === 'string') { parent.append(document.createTextNode(n)); continue; }
+      if (!n || !NOTE_TAGS.has(n.tag)) continue;
+      const el = document.createElement(n.tag);
+      if (n.tag === 'a' && typeof n.href === 'string' && /^(https?:|mailto:)/i.test(n.href)) {
+        el.href = n.href;
+        el.target = '_blank';
+        el.rel = 'noopener noreferrer';
+      }
+      buildNote(n.children, el);
+      parent.append(el);
+    }
+  }
+
+  // Where a note goes: inside a cell or list item (so a table keeps its shape), after anything else.
+  function placeNote(target, host) {
+    if (/^(td|th|dd|li)$/.test(target.localName)) target.append(host);
+    else target.after(host);
+  }
+
+  // A note goes at its selector; a marker at the row whose attribute has its value (compared, never put in
+  // the page), in the row's first cell.
+  function noteTarget(note) {
+    if (note.at) {
+      let rows = [];
+      try { rows = [...document.querySelectorAll(String(note.at.row))]; } catch { return null; }
+      const row = rows.find((r) => r.getAttribute(String(note.at.attr)) === String(note.at.value));
+      return row ? row.querySelector('td, th') || row : null;
+    }
+    return root.PowerLoaderExtract.locate(document, note.selector)[0];
+  }
+
+  function drawMarker(note, target) {
+    const host = document.createElement('powerloader-note');
+    host.setAttribute('data-powerloader-ui', 'note');
+    host.setAttribute('data-note', note.id);
+    host.style.cssText = 'display:inline-block;margin-left:6px;vertical-align:middle';
+    const shadow = host.attachShadow({ mode: 'closed' });
+    const badge = document.createElement('span');
+    badge.setAttribute('role', 'note');
+    badge.setAttribute('aria-label', `Note from Power Loader: ${note.nodes.filter((n) => typeof n === 'string').join(' ')}`);
+    badge.style.cssText = 'all:initial;display:inline-block;font:bold 12px/1.3 Arial,sans-serif;color:#fff;background:#4c2c92;border-radius:3px;padding:1px 6px';
+    badge.textContent = note.nodes.filter((n) => typeof n === 'string').join(' ');
+    if (note.style && !/url\s*\(|expression|[\\<>{}@]/i.test(note.style)) badge.style.cssText += `;${note.style}`;
+    shadow.append(badge);
+    placeNote(target, host);
+    return host;
+  }
+
+  function drawNote(note) {
+    const target = noteTarget(note);
+    if (!target) return null;
+    if (note.type === 'marker') return drawMarker(note, target);
+    const host = document.createElement('powerloader-note');
+    host.setAttribute('data-powerloader-ui', 'note');
+    host.setAttribute('data-note', note.id);
+    const compact = note.type === 'compact';
+    host.style.cssText = compact ? 'display:inline-block;position:relative;vertical-align:middle;margin-left:4px' : 'display:block;margin:6px 0';
+    const shadow = host.attachShadow({ mode: 'closed' });
+    const panel = document.createElement('div');
+    panel.setAttribute('role', 'note');
+    panel.setAttribute('aria-label', 'Note from Power Loader');
+    panel.style.cssText = 'all:initial;display:block;box-sizing:border-box;font:14px/1.45 Arial,sans-serif;color:#0b0c0c;background:#f3f2f1;border-left:5px solid #4c2c92;padding:6px 10px;max-width:40em';
+    const tag = document.createElement('div');
+    tag.textContent = 'Power Loader';
+    tag.style.cssText = 'font:bold 11px/1.3 Arial,sans-serif;color:#4c2c92;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px';
+    const body = document.createElement('div');
+    buildNote(note.nodes, body);
+    panel.append(tag, body);
+    // The flow's own look, on top of the default; the sidebar has already limited it to how the note looks.
+    if (note.style && !/url\s*\(|expression|[\\<>{}@]/i.test(note.style)) panel.style.cssText += `;${note.style}`;
+    if (compact) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = 'ⓘ';
+      btn.setAttribute('aria-expanded', 'false');
+      btn.setAttribute('aria-label', 'Note from Power Loader');
+      btn.style.cssText = 'all:initial;cursor:pointer;display:inline-block;font:bold 13px/1 Arial,sans-serif;color:#fff;background:#4c2c92;border-radius:50%;width:18px;height:18px;text-align:center;line-height:18px';
+      panel.style.cssText += ';position:absolute;z-index:2147483646;left:0;top:22px;min-width:16em;box-shadow:0 2px 6px rgba(0,0,0,.3)';
+      panel.hidden = true;
+      const toggle = (open) => { panel.hidden = !open; btn.setAttribute('aria-expanded', String(open)); };
+      btn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); toggle(panel.hidden); });
+      btn.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggle(false); });
+      shadow.append(btn, panel);
+    } else shadow.append(panel);
+    placeNote(target, host);
+    return host;
+  }
+
+  function clearNotes() {
+    notes.observer?.disconnect();
+    clearTimeout(notes.timer);
+    clearInterval(notes.watch);
+    document.querySelectorAll('powerloader-note[data-powerloader-ui="note"]').forEach((n) => n.remove());
+    notes = { list: [], hosts: [], observer: null, timer: null, at: null, watch: null };
+  }
+
+  // Draw the notes; a page that redraws itself (a single-page app) gets them back where they still fit.
+  function annotate(list) {
+    clearNotes();
+    notes.list = Array.isArray(list) ? list.slice(0, 20) : [];
+    const draw = () => {
+      notes.hosts.forEach((h) => h.remove());
+      notes.hosts = notes.list.map(drawNote);
+      return { shown: notes.list.filter((n, i) => notes.hosts[i]).map((n) => n.id), missing: notes.list.filter((n, i) => !notes.hosts[i]).map((n) => n.id) };
+    };
+    const out = draw();
+    // Notes belong to the address they were drawn for. A single-page app that moves on with pushState
+    // doesn't reload this script, and the new address may be one the site rules block: take them away.
+    notes.at = noHash(location.href);
+    if (notes.list.length) notes.watch = setInterval(() => { if (noHash(location.href) !== notes.at) clearNotes(); }, 400);
+    if (notes.list.length && root.MutationObserver) {
+      notes.observer = new MutationObserver((records) => {
+        if (noHash(location.href) !== notes.at) { clearNotes(); return; }
+        if (records.every((r) => [...r.addedNodes, ...r.removedNodes].every((n) => n.nodeType === 1 && n.localName === 'powerloader-note'))) return;
+        clearTimeout(notes.timer);
+        notes.timer = setTimeout(() => {
+          if (notes.hosts.every((h, i) => (h ? h.isConnected : !noteTarget(notes.list[i])))) return;
+          notes.observer.disconnect();
+          draw();
+          notes.observer.observe(document.body, { childList: true, subtree: true });
+        }, 300);
+      });
+      notes.observer.observe(document.body, { childList: true, subtree: true });
+    }
+    return out;
+  }
+
+  // Choose where a note goes: outline what's under the pointer; a click gives its selector, Esc cancels.
+  function pickTarget() {
+    return new Promise((resolve) => {
+      const box = document.createElement('div');
+      box.setAttribute('data-powerloader-ui', 'override');
+      box.style.cssText = 'position:fixed;z-index:2147483647;pointer-events:none;border:3px solid #4c2c92;background:rgba(76,44,146,.10);display:none';
+      const hint = document.createElement('div');
+      hint.setAttribute('data-powerloader-ui', 'override');
+      hint.textContent = 'Click where the note goes. Esc cancels.';
+      hint.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:2147483647;background:#0b0c0c;color:#fff;padding:6px 11px;font:13px/1.4 Arial,sans-serif;pointer-events:none';
+      document.documentElement.append(box, hint);
+      let target = null;
+      const move = (e) => {
+        const el = e.target;
+        if (!el || el.nodeType !== 1 || el === document.body || el === document.documentElement || el.closest('[data-powerloader-ui]')) return;
+        target = el;
+        const r = el.getBoundingClientRect();
+        Object.assign(box.style, { display: 'block', left: `${r.left - 3}px`, top: `${r.top - 3}px`, width: `${r.width + 6}px`, height: `${r.height + 6}px` });
+      };
+      const finish = (out) => {
+        document.removeEventListener('mouseover', move, true);
+        document.removeEventListener('click', click, true);
+        document.removeEventListener('keydown', key, true);
+        box.remove();
+        hint.remove();
+        resolve(out);
+      };
+      const click = (e) => {
+        if (!e.isTrusted) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const el = target || e.target;
+        if (!el || el === document.body) return;
+        // A selector by label or structure, never by what the page shows: a note's place mustn't hold a value.
+        finish({ selector: pickSelector(el), label: describeValue(el).label || el.localName });
+      };
+      const key = (e) => { if (e.key === 'Escape') { e.preventDefault(); finish(null); } };
+      document.addEventListener('mouseover', move, true);
+      document.addEventListener('click', click, true);
+      document.addEventListener('keydown', key, true);
+    });
+  }
+
   // ---------------------------------------------------------------- messages
 
   browser.runtime.onMessage.addListener((msg) => {
     if (!msg || typeof msg.type !== 'string' || !msg.type.startsWith('powerloader:')) return undefined;
     const E = root.PowerLoaderExtract;
+    // The moment of acting: the sidebar checked the site rules for atUrl. A page that has moved on since
+    // (a redirect, pushState) may be one they block, so nothing is read, filled, drawn or captured.
+    if (msg.atUrl !== undefined && noHash(msg.atUrl) !== noHash(location.href)) return Promise.reject(new Error('The page changed: try again.'));
     switch (msg.type) {
       case 'powerloader:ping':
         return Promise.resolve(true);
@@ -737,6 +923,13 @@
       case 'powerloader:cancelRegion':
         region?.cancel();
         return Promise.resolve(true);
+      case 'powerloader:annotate':
+        return Promise.resolve(annotate(msg.notes));
+      case 'powerloader:clearNotes':
+        clearNotes();
+        return Promise.resolve(true);
+      case 'powerloader:pickTarget':
+        return pickTarget();
       case 'powerloader:fill':
         if ((msg.documentId && msg.documentId !== root.__powerloaderDocumentId) || (msg.url && msg.url !== location.href)) return Promise.reject(new Error('The page changed before filling; try again'));
         return Promise.resolve(fill({ items: (msg.plan?.items || []).map(({ target, value }) => ({ target: String(target), value })) }));

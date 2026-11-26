@@ -6,11 +6,45 @@
 <ol>
 <li>Install Power Loader in Firefox on a desktop computer and open its sidebar with the toolbar button.</li>
 <li>On the <strong>Case</strong> tab, under <strong>Connect your team’s forms library</strong>, enter this library address and press <strong>Connect</strong>:<br><code id="library-address">https://powerloader.surprisingly.ltd/demo/library/</code></li>
-<li>When Firefox asks whether Power Loader may access this site, choose <strong>Allow</strong>. The sidebar then lists the demo forms.</li>
+<li>When Firefox asks whether Power Loader may access this site, choose <strong>Allow</strong>. The sidebar then lists the demo flows: start one to begin a case.</li>
 </ol>
 <p>Already using another library? Change the address under <strong>Settings → Forms library</strong> instead. The <a href="library/library.json">library manifest</a> lists every form and profile with its checksum.</p>
 <p>New to Power Loader? <a href="https://powerloader.surprisingly.ltd/try">The demo guide</a> walks through these pages step by step.</p>
 <script>document.getElementById('library-address').textContent = new URL('library/', location.href).href;</script>
+<h2>The casework systems: 100 cases</h2>
+<p>Five fictional places with 100 cases and the people behind them, generated from a fixed seed (<code>tools/build-demo-systems.mjs</code>). Everything in them is made up. Start at a system’s homepage, as a caseworker would:</p>
+<ul>
+<li><a href="cm/index.html">Case Manager</a>: the council’s case system. My work, the <a href="cm/queue.html">work queue</a> of 100 cases and a page per case. Mark a case done on its case page; done cases are kept in this browser only, and <a href="cm/queue.html?reset">reset the demo</a> starts again.</li>
+<li><a href="biv/index.html">Benefits and Income Verification</a>: employment and income for each person, listed by surname.</li>
+<li><a href="harbour/index.html">Harbour Homes</a>: the housing association’s partner portal, a rent account for each tenancy.</li>
+<li><a href="messages/index.html">Customer Messages</a>: the Housing Support Team’s inbox. Each client has six messages; only some online forms (<em>Tell us about a change</em>) carry an effective date, a new weekly income or a tenancy end date, and the list doesn’t say which. Partner organisations send <strong>referrals</strong>, urgent or routine, open or already picked up, and emails asking about them, all with the subject <em>Referral received</em>: only opening each one tells you which are urgent and open. The messages are also served as data, for example <a href="messages/api/NC-5347.json">NC-5347.json</a>.</li>
+<li><a href="intranet/index.html">Staff intranet</a>: the council’s own procedure for a rent support review, with the checks for every case you might meet.</li>
+</ul>
+<p>A few cases don’t agree across systems: case 1003’s rent account has an old address, case 1007’s income record spells the surname differently, and case 1005’s income record is a different person under the same reference. The form is <a href="rent-review.html">Rent support review</a> (open it from a case so it knows which one).</p>
+<h3>Try it by hand first</h3>
+<p>Open the team’s <a href="intranet/rent-support-review.html">rent support review procedure</a> and work one case by hand, as a new caseworker would: note the time you start, follow the steps through every system, and note the time you finish. Then do another case with the <em>Rent support review</em> flow and compare.</p>
+<h3>The rent support review flow</h3>
+<p>With the demo library connected, the flow is already listed on the <strong>Case</strong> tab; without it, download <a href="library/flows/rent-support-review.flow.json" download>Rent support review.flow.json</a> from this copy of the demo, so it points at these pages, and open it in <strong>Build</strong> with <strong>Flows → Import a flow…</strong>. Start a case: there’s no reference to type. Go to the work queue and open the case you’re picking up, and Power Loader takes the case reference from its address. Clip the case, the rent account and the income record; on the client’s messages one <strong>fetch step</strong> reads all six message pages, 4 at a time, and clips the change from the one that has it. Then it fills the review and opens an email to the income team.</p>
+<p>If the case had no tenancy reference, the step <em>Ask the client for a missing reference</em> opens an email to the client, written from the case: their name, the case reference and the words the team always uses, ready to check and send. It takes a click instead of a few minutes’ typing, and every client gets the same clear request.</p>
+<p>The demo library has a site rule for reading pages in the background: fetching is allowed only for the messages service; try a fetch step elsewhere to see the library’s rule refuse it. <strong>Settings → Sites Power Loader works on</strong> shows the rule, locked by the library. A second flow, <em>Rent support review (messages as data)</em>, fetches the same messages as one JSON response instead.</p>
+<h3>Triage the team inbox</h3>
+<p>The <a href="library/flows/inbox-triage.flow.json" download>Inbox triage</a> flow fills no form. Start it, open the <a href="messages/index.html">team inbox</a> and press <strong>Fetch 25 messages</strong>: Power Loader reads every message on the page in the background and lists the 4 urgent referrals nobody has picked up, marked in the inbox too. Two of them are for cases 1012 and 1020: finish the triage, then start a rent support review for one of them.</p>
+<p><label for="systems-guidance"><strong>Guidance for the rent support review</strong></label></p>
+<textarea id="systems-guidance" readonly rows="14" style="width:100%;font:inherit;font-size:14px">This flow fills the Rent support review for a Harbour Homes tenant whose case is in the Case Manager work queue.
+
+Start at the work queue (cm/queue.html) and open the case you're picking up: Power Loader takes the case reference from the case page's address (cm/case-{ref}.html). Clip the case page, then the Harbour Homes rent account and the employment and income record it links to. Stop if a record may be a different person. If the case has no tenancy reference, email the client to ask for it.
+
+Then open the client's messages (messages/client/{clientId}.html). A change of circumstances can be in any online form, so fetch every message (messages/message/{clientId}-1.html to -6.html) and collect the effective date, the new weekly income and any tenancy end date from the ones that have them.
+
+Collect:
+- From the case: client ID, first name, last name, date of birth, NI number, address, postcode and landlord reference.
+- From the rent account: monthly rent and arrears.
+- From the income record: current employer and weekly income.
+
+Fill the Rent support review, write the recommendation yourself, submit it, email the income team, and mark the case done on its case page.</textarea>
+<p><button type="button" id="copy-systems-guidance">Copy the guidance</button> <span id="copied-systems" role="status"></span></p>
+<h2>The first demo</h2>
+<p>The hand-written pages the Discretionary housing payment and Housing support referral flows use:</p>
 <ul>
 <li><a href="cases.html">My cases</a>: the work queue a case starts from</li>
 <li><a href="client-1042.html">Client NC-1042: Maria Kowalska</a></li>
@@ -24,7 +58,7 @@
 <ol>
 <li>In the Power Loader sidebar, open <strong>Flows</strong> and choose <strong>New flow</strong> (or <strong>Or make a flow → New flow</strong> on the Case tab).</li>
 <li>Name it, and paste the guidance below into <strong>Guidance</strong>.</li>
-<li>Open <strong>Form to fill 1</strong>, go to the <a href="dhp.html">Discretionary housing payment</a> form in the same tab and choose <strong>Use this form</strong>. Then choose <strong>✦ Generate the extraction profile with AI</strong> (needs ✦ Remote AI in Settings) or <strong>Make it by hand</strong>: type a field’s name and click its box.</li>
+<li>Open <strong>Form to fill 1</strong>, go to the <a href="dhp.html">Discretionary housing payment</a> form in the same tab and choose <strong>Use this form</strong>. Then choose <strong>✦ Make the template with AI</strong> (needs ✦ Remote AI in Settings) or <strong>Make it by hand</strong>: type a field’s name and click its box.</li>
 <li>Open <strong>Page to clip 1</strong> and use the <a href="client-1042.html">client record</a>. Add two more pages to clip for the <a href="rent-account-1042.html">rent account</a> and <a href="employment-1042.html">employment and income</a>, and do the same on each.</li>
 <li>Test each page. Test the client record on <a href="client-2077.html">the other client</a> too, then go back to the flow, fix anything under <strong>Checks</strong>, and choose <strong>Export</strong>.</li>
 <li>Optional: under <strong>3. Pages to visit</strong>, add one and use <a href="cases.html">My cases</a>. Then, under <strong>The caseworker’s steps</strong>, put it first and choose <strong>✦ Write the steps from the guidance</strong>, or edit each step: what to do there, and links to the next page. A link can carry a value from the case, such as <code>client-{ref}.html</code>.</li>
@@ -44,10 +78,12 @@ The caseworker writes the reason for the application themselves; it isn't on any
 
 Every box on the form is required except tenancy start, current employer and Universal Credit. Dates are dates, and rent, arrears and income are amounts of money.</textarea>
 <p><button type="button" id="copy-guidance">Copy the guidance</button> <span id="copied" role="status"></span></p>
-<script>document.getElementById('copy-guidance').addEventListener('click', async () => {
-  const t = document.getElementById('flow-guidance');
-  try { await navigator.clipboard.writeText(t.value); document.getElementById('copied').textContent = 'Copied'; } catch { t.select(); document.getElementById('copied').textContent = 'Press Ctrl+C to copy'; }
-});</script>
+<script>for (const [button, box, said] of [['copy-guidance', 'flow-guidance', 'copied'], ['copy-systems-guidance', 'systems-guidance', 'copied-systems']]) {
+  document.getElementById(button).addEventListener('click', async () => {
+    const t = document.getElementById(box);
+    try { await navigator.clipboard.writeText(t.value); document.getElementById(said).textContent = 'Copied'; } catch { t.select(); document.getElementById(said).textContent = 'Press Ctrl+C to copy'; }
+  });
+}</script>
 <h2>Final form</h2>
 <p><a href="dhp.html">Discretionary housing payment</a>: submitting it opens a confirmation page with a reference.</p>
 <p><a href="referral.html">Housing support referral</a>: an ordinary web form. Collect a client's details, then open this page and use the Power Loader sidebar to fill it.</p>

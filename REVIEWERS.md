@@ -13,7 +13,11 @@ pnpm install --frozen-lockfile
 pnpm build:ext        # tools/vendor.mjs copies the npm libraries into extension/vendor/, then web-ext build
 ```
 
-The output is `dist/power-loader-<version>.zip`. Power Loader's own code in `extension/` is not minified, bundled or transpiled.
+The output is `dist/power-loader-<version>.zip`. `tools/build-ext.mjs` runs both steps. `extension/policy.json` is the
+built-in policy file; in this build it sets nothing, so the extension reads managed storage as before. (An
+organisation can build its own version with its own file and add-on ID, with `--policy`; see
+`docs/organisation-builds.md`. That is a separate add-on, signed by the organisation. With fixed hosts it also asks for `activeTab` and `menus`, and
+has an Alt+Shift+R command, for screen capture only.) Power Loader's own code in `extension/` is not minified, bundled or transpiled.
 `extension/vendor/SOURCES.tsv` lists the packaged files and SHA-256 hashes. Except for `transformers.min.js`, these are unmodified npm files. To check a copied file against the published release:
 
 ```sh
@@ -34,14 +38,22 @@ local caches, `node_modules` and generated files. Rebuilding needs no git checko
 
 ## Permissions and data
 
+The design, site rules, every policy key and every destination are described in depth at
+https://powerloader.surprisingly.ltd/how-it-works.
+
 Firefox 140 or newer is required for built-in data consent. Required data declarations cover website
 content, personally identifying information, financial/payment information and health information,
 which can occur in approved case text. AI remains separately enabled in Settings and every case-data
 request needs approval of a redaction preview; redaction does not guarantee removal of all sensitive data.
-Images cannot be sent to AI in this release. The gateway test sends only the fixed text “Reply with OK.”
+A picture can be sent to the AI gateway in one place only: the reader's ✦ Enhanced mode, after the user chooses
+"Send the picture itself". A picture can't be redacted, so the preview won't send it until the user ticks that they
+understand it goes as it is (`needsAck` in `lib/ai/boundary.js`), and it is refused outright when policy sets
+`redaction.blockImages`. The gateway test sends only the fixed text “Reply with OK.”
 
-There are no permanent host permissions. Access to individual library, gateway and casework origins is
+There are no permanent host permissions. The `alarms` permission (no prompt) runs the hourly library sync and the timer that deletes a case left without use. Access to individual library, gateway and casework origins is
 requested on user action through `optional_host_permissions`; enterprise policy may grant those origins.
+`<all_urls>` is requested only when the user presses ⬚ Select a region in the reader, to capture the visible
+tab, and not at all while site rules are set.
 The extension ID is `powerloader@surprisingly.ltd`, which is a valid ID and must remain stable after signing.
 This is a self-distributed (unlisted) add-on. Its `update_url` is
 `https://powerloader.surprisingly.ltd/updates.json`, served by GitHub Pages from this repository: it lists
@@ -49,11 +61,50 @@ only Mozilla-signed XPIs, each with its SHA-256, served from the same site. Ente
 from `https://powerloader.surprisingly.ltd/download/power-loader-latest.xpi`. `web-ext lint` is run with
 `--self-hosted` for that reason; without it, the only error is that `update_url` is present.
 
+Fetch steps: when the caseworker presses a fetch step's button, Power Loader requests the pages the library
+names from the same casework site the tab is on, using GET, reads them with the library's page profiles and
+adds the values to the case on this computer. Nothing is sent anywhere else. The request is made by a packaged
+function passed to `scripting.executeScript` in that tab (no remote code: templates and profiles are data), with
+`redirect: 'manual'` and redirects refused, and the response is parsed in the extension with `DOMParser`.
+Requests are limited by the site rules, the library's approved hosts and fixed caps (6 a step, 60 a case in
+10 minutes, 4 at a time), and a setting, policy or the library can turn them off. No new permissions are used.
+A fetch step can also take up to 25 addresses from links on the page the caseworker is on; each must be on the
+same site, match the library's page profile and pass the site rules.
+
+While a fetch step runs, each request gets a box on the trigger page showing what came back as **text only**:
+`lib/fetch-view.js` turns the parsed response into lines (a page's readable text, or JSON one key to a line) in the
+extension, and `lib/gather.js` puts those lines on the page as text nodes, never as markup, so no script, image,
+style or link from the response is used. Each fetched clip keeps excerpts of the response (the text around each
+value it read, at most 500 characters a value and 20 KB a clip) in the case, shown on the extension's own case
+page (the fetched view); they are in no log and are deleted with the case.
+
+What Power Loader draws on a page (outlines of the values a template reads, a conflict's ⚠, a fetch step's boxes
+and their strip) is in one element with a closed shadow root, `pointer-events: none` and `aria-hidden`, styled with
+CSSOM properties and animated with the Web Animations API, so it works under a strict page CSP; it clicks nothing,
+dispatches no event and runs no page script. A template may carry **reveal rules** to show a value in a closed
+part of the page: a rule may only add or remove class names on the elements its selector matches that contain the
+value, set `open` on a `<details>`, or remove the `hidden` attribute (plain HTML `<details>` and `hidden` are
+opened that way without a rule). Nothing else is allowed (`validateReveal()` in `lib/extract.js`, checked again in
+the page), and every change is put back when the outlines are cleared. The page's own code can see these changes
+(a `toggle` event when a `<details>` opens, a `MutationObserver` on class names), as it would see the user opening
+the section; Power Loader never triggers the page's click handlers. Reveal is checked under the site rules as a
+`read` (`MESSAGE_ACTIONS` in `lib/core.js`).
+
+Clearing a case: besides Finish and Discard, the open case is deleted, as Discard deletes it, when it is still open
+at the next browser start after Firefox closed (`runtime.onStartup`, `clearCaseAtStart()` in `lib/teardown.js`), and
+when it has been left without use for 24 hours (an `alarms` timer, `clearExpiredCase()`). Both are on by default; the
+user can change them in Settings unless policy sets `workstation.clearCaseOnClose`, `clearCaseAfterHours` or
+`clearCaseMaxHours`. An update or reload of the extension never clears the case.
+
+Flows: a flow is data (forms, page profiles, steps), made in the sidebar, imported from a file, or published in the
+forms library under `flows/`. A library's flows are validated when the library is indexed, opened through the same
+code as an imported file (`importFlow()`), and listed read-only; nothing in a flow is code.
+
 ## Try it
 
 The hosted demo has fictional casework pages and a forms library, with a step-by-step guide at
 <https://powerloader.surprisingly.ltd/try>. In the sidebar's Settings, enter the library address
-`https://powerloader.surprisingly.ltd/demo/library/`, press **Connect** and allow access. Then start a case and clip the demo pages.
+`https://powerloader.surprisingly.ltd/demo/library/`, press **Connect** and allow access. Then start the *Discretionary housing payment* flow and clip the demo pages.
 
 The same demo also runs offline:
 

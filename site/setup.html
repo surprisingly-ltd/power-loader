@@ -15,7 +15,8 @@
 <h1>Setup</h1>
 <p class="lede">Install the add-on, download the privacy model that runs on your own computer, and connect your organisation’s AI gateway if you have one. It takes about ten minutes, most of it waiting for the model to download.</p>
 
-<div class="note"><p><b>You need</b> Firefox 140 or newer on a desktop or laptop (Windows, macOS or Linux), and about 1 GB of free space for the privacy model. The AI gateway is optional: everything except the ✦ AI buttons works without it.</p></div>
+<div class="note"><p><b>You need</b> Firefox 140 or newer on a desktop or laptop (Windows, macOS or Linux), and about 1 GB of free space if you use the privacy model. The AI gateway is optional: everything except the ✦ AI buttons works without it.</p>
+<p>Your organisation decides what Power Loader may send where, and some of these settings may already be made for you. Anything it has set shows <b>🔒 Set by your organisation</b>.</p></div>
 
 <h2 id="install">1. Install the add-on</h2>
 <p>Power Loader is signed by Mozilla and distributed from this site rather than the public add-ons store, because organisations deploy it to their own staff.</p>
@@ -46,7 +47,7 @@
 <h2 id="sidebar">2. Open the sidebar</h2>
 <p>Press the Power Loader button in the toolbar (the striped amber mark). If you can’t see it, open the <b>Extensions</b> menu (the jigsaw piece) and pin it. The sidebar opens on the left. The first time, it opens at <b>Settings</b> with a list of what still needs setting up.</p>
 
-<h2 id="privacy-model">3. Download the privacy model</h2>
+<h2 id="privacy-model">3. Download the privacy model (recommended if you use the ✦ AI)</h2>
 <p>Before anything goes to an AI, Power Loader finds personal data such as names, addresses, dates of birth and reference numbers, and swaps them for placeholders. Part of that is a small AI model that runs entirely on your computer: <b>OpenAI Privacy Filter</b>, about 920 MB, downloaded once.</p>
 <ol class="steps">
 <li><h3>Open Settings → On-device privacy model</h3><p>It says where the model comes from. By default that’s Hugging Face, at a fixed version (<code>{{MODEL_REVISION}}</code>). Every file is checked against a known SHA-256 hash as it downloads, so a changed file is refused.</p></li>
@@ -54,13 +55,14 @@
 <li><h3>Check it works</h3><p>Open the <b>Privacy</b> tab, choose <b>Check some text</b>, paste a made-up sentence such as “Maria Kowalska of 14 Dock Road, born 3 March 1984, called about her rent” and press <b>Check text</b>. The name and address are highlighted, and the redacted text shows what an AI would receive instead.</p></li>
 </ol>
 <div class="warn">
-<p><b>If huggingface.co is blocked</b> at work, IT can host the same files on an internal server. Under <b>Privacy → Where the model comes from</b>, choose <b>Another model server</b> and enter its <b>Model server address</b>. The files must be at the same paths as on Hugging Face, and the same hashes are checked.</p>
-<p><b>If it says WebGPU isn’t available,</b> Firefox can’t use this computer’s graphics card for the model. Update Firefox and your graphics drivers, or ask IT. Without the model, Power Loader still redacts what it knows from the case and from the library’s patterns, and policy decides whether AI requests may go ahead.</p>
+<p><b>If huggingface.co is blocked</b> at work, IT can put the model’s files in a folder on any internal web server: <code>config.json</code>, <code>tokenizer.json</code>, <code>tokenizer_config.json</code>, <code>onnx/model_q4.onnx</code> and <code>onnx/model_q4.onnx_data</code>. The server must allow requests from the browser (CORS). Under <b>Privacy → Where the model comes from</b>, choose <b>A folder with the model’s files</b>, enter the folder’s address and press <b>Test connection</b>. It says which files it found and which are missing. The same hashes are checked when the files download. A mirror with Hugging Face’s own paths, such as an Artifactory remote, works too: choose <b>A Hugging Face mirror</b>.</p>
+<p><b>If it says WebGPU isn’t available,</b> Firefox can’t use this computer’s graphics card for the model. Update Firefox and your graphics drivers, or ask IT. While the model is switched on but not ready, AI requests wait for it, unless your organisation has said they needn’t or you switch the model off.</p>
 </div>
-<p>To free the space later, use <b>Remove the downloaded model</b> in the same place.</p>
+<p><b>You can switch the model off.</b> It’s on by default. If you won’t use the ✦ AI, or your organisation says so, untick <b>Use the on-device privacy model before anything goes to the AI</b> in the same card. Off, nothing is downloaded, and Power Loader still redacts what it knows from the case and from the library’s patterns. If the box shows 🔒, your organisation or your library has made the choice.</p>
+<p>To free the space later, open the <b>Privacy</b> tab and use <b>Remove the downloaded model</b> under <b>Where the model comes from</b>.</p>
 
 <h2 id="ai">4. Connect your AI gateway (optional)</h2>
-<p>The ✦ buttons use AI to help build flows: to work out what a form collects and where each value is on a page. Power Loader only talks to an AI through an <b>OpenAI-compatible chat completions endpoint</b> that your organisation controls, such as a <a href="https://docs.litellm.ai/docs/simple_proxy">LiteLLM</a> proxy or a cloud provider’s gateway. You never use a personal AI account.</p>
+<p>The ✦ buttons use AI. When you build a flow, they work out what a form collects, where each value is on a page, and the steps. In a case, they read values from a page, a document or a picture, and answer questions about the amounts and the timeline. Each one is optional, and Power Loader works without them. Power Loader only talks to an AI through an <b>OpenAI-compatible chat completions endpoint</b> that your organisation controls, such as a <a href="https://docs.litellm.ai/docs/simple_proxy">LiteLLM</a> proxy or a cloud provider’s gateway. You never use a personal AI account.</p>
 <ol class="steps">
 <li><h3>Get the details from IT</h3><p>You need three things: the <b>endpoint address</b> (ending in <code>/v1</code>), a <b>model name</b> (often an alias such as <code>fast</code>), and an <b>API key</b> made for Power Loader alone, ideally with a spending limit and an expiry date.</p></li>
 <li><h3>Open Settings → ✦ Remote AI</h3><p>Fill in <b>Endpoint address (including /v1)</b>, <b>Model name</b> and <b>API key</b>. Tick <b>Remember the key in this browser</b> if you don’t want to enter it again after Firefox restarts. Otherwise it lasts for this session.</p></li>
@@ -68,7 +70,7 @@
 <li><h3>Press <b>Turn on the remote AI</b></h3><p>Firefox asks whether Power Loader may contact the gateway’s site. Choose <b>Allow</b>.</p></li>
 <li><h3>Press <b>Test the connection</b></h3><p>This sends only the fixed text “Reply with OK.” It should say <b>Gateway reachable</b> and name the model. If it fails, the message says what to check: the address, the key, or the network path to the gateway.</p></li>
 </ol>
-<div class="tip"><p><b>What the AI sees.</b> Every ✦ request opens a preview first. Personal data is replaced by placeholders such as <code>&lt;redacted:person_name|ref:…&gt;</code>, and you can switch any item between redacted and sent as written. Nothing is sent until you approve the preview. When the answer comes back, the real values are put back on your computer.</p></div>
+<div class="tip"><p><b>What the AI sees.</b> Every ✦ request opens a preview first. Personal data is replaced by placeholders such as <code>&lt;redacted:person_name|ref:…&gt;</code>, and you can switch any item between redacted and sent as written, unless your organisation has turned that off. A picture can’t be redacted, so the reader sends one only if you choose to and tick that you understand. Nothing is sent until you approve the preview. When the answer comes back, the real values are put back on your computer.</p></div>
 
 <h2 id="library">5. Connect a forms library (if your team has one)</h2>
 <p>A forms library is where a team keeps its approved flows: forms, fields and page profiles, each checked against a hash. Under <b>Settings → Forms library</b>, enter the <b>Library address</b> and press <b>Connect</b>. Level 2 does this with our demo library. You don’t need a library to build your own flows.</p>
@@ -85,7 +87,7 @@
         "{{ID}}": {
           "library": { "baseUrl": "https://git.example.org/casework/flows/-/raw/{ref}/", "branch": "main" },
           "gateway": { "baseUrl": "https://ai-gateway.example.org/v1", "model": "fast" },
-          "privacyModel": { "baseUrl": "https://models.example.org/huggingface/" },
+          "privacyModel": { "filesUrl": "https://models.example.org/privacy-filter/" },
           "activityLog": { "retentionDays": 90 }
         }
       }
@@ -93,6 +95,7 @@
   }
 }</code></pre>
 <p>Each person still enters the gateway API key themselves. The full list of policy settings is in the <a href="{{REPO}}#policy">README</a>.</p>
+<p class="muted">For your security team: <a href="/how-it-works">how it works</a>.</p>
 </div>
 
 {{NEXT_LEVEL}}

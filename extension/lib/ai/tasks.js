@@ -230,7 +230,10 @@ export function parseAnswer(purpose, payload, text, { lib, request, input }) {
         if (label.bad.length || (!urlOk && !to)) continue;
         links.push({ label: label.text, url: urlOk ? url : '', to });
       }
-      steps.push({ page: page.id, text: text.text, links });
+      // An "only if" in the guidance, as a condition on one known name: missing or present.
+      const w = st.when;
+      const when = w && typeof w === 'object' && vars.has(w.field) && ['missing', 'present'].includes(w.is) ? { field: w.field, is: w.is } : null;
+      steps.push({ page: page.id, text: text.text, links, ...(when ? { when } : {}) });
     }
     return { steps, notes: typeof reply.notes === 'string' ? free(reply.notes.slice(0, 500)).text : '' };
   }

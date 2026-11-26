@@ -1,0 +1,24 @@
+{
+  "schema": "powerloader-access/1",
+  "allow": {
+    "lock": true,
+    "rules": [
+      {
+        "id": "fetch-messages-pages",
+        "pattern": "http://localhost:8787/demo/messages/message/*",
+        "actions": [
+          "fetch-get"
+        ],
+        "note": "Fetch steps may read the Customer Messages service’s message pages, so one step on a client's messages can read all six, and every message on a page of the team inbox. Nothing else in the demo is fetched in the background."
+      },
+      {
+        "id": "fetch-messages-data",
+        "pattern": "http://localhost:8787/demo/messages/api/*",
+        "actions": [
+          "fetch-get"
+        ],
+        "note": "The same messages as data (JSON), for a fetch step that reads one response instead of six pages."
+      }
+    ]
+  }
+}

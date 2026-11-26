@@ -8,7 +8,7 @@
     },
     {
       "category": "reference",
-      "pattern": "\\b(?:HSG/\\d{4}/\\d{4}|HH-\\d{5}|DHP-\\d{5})\\b",
+      "pattern": "\\b(?:HSG/\\d{4}/\\d{4}|HH-\\d{5}|DHP-\\d{5}|RSR-\\d{5}|MSG-\\d{6})\\b",
       "score": 0.95
     }
   ]

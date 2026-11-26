@@ -1,6 +1,6 @@
 # Redact before sending to AI
 
-Created: 2026-10-19. Revised the same day after design review (see `release-plan.md`). Status: proposal. See `prototype/case-journeys.html`, step 5 and the sidebar's Privacy tab. This builds on the Privacy tab in `../powerloader-pii`.
+Created: 2026-10-19. Revised the same day after design review (see `release-plan.md`). Status: built (1.0.0). This plan records the design and its decisions; the code and README describe what ships. See `prototype/case-journeys.html`, step 5 and the sidebar's Privacy tab. It built on the Privacy tab of an earlier PII prototype.
 
 ## What it does
 
@@ -101,7 +101,7 @@ Restored values go through the normal review and are added as a clip of kind `ai
 | On-device model | OpenAI Privacy Filter via Transformers.js, as in the earlier PII prototype. Finds names and addresses not in the case. | Its score |
 | You | "Redact something else" | 100% |
 
-- **Overlaps: cover the union.** Process findings from the strongest down. Each keeps its own label. Any part of a weaker finding that the stronger ones don't cover stays a finding of its own, with its own label and score. For example, a person-name finding for "Maria Kowalska" plus a stronger first-name finding for "Maria" gives `first_name` + `person_name` for "Kowalska", never `[NAME] Kowalska`. This replaces `normalize()` in `powerloader-pii/extension/lib/pii.js`, which keeps only the higher-scoring span.
+- **Overlaps: cover the union.** Process findings from the strongest down. Each keeps its own label. Any part of a weaker finding that the stronger ones don't cover stays a finding of its own, with its own label and score. For example, a person-name finding for "Maria Kowalska" plus a stronger first-name finding for "Maria" gives `first_name` + `person_name` for "Kowalska", never `[NAME] Kowalska`. This replaces `normalize()` in the earlier PII prototype's `lib/pii.js`, which kept only the higher-scoring span.
 - **Threshold.** Findings scored at or above the threshold (70% by default) are redacted. Lower ones are listed as "sent as written" and can be ticked.
   - Policy sets a **maximum** threshold, because a lower threshold redacts more. Policy can also stop caseworkers from un-ticking a finding.
   - Validate the default on representative documents before rollout.

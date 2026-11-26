@@ -28,16 +28,35 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Pages serves only deployments made from the default branch, not from a release's tag, so a published
+  # release redeploys from main (where fetch-releases picks it up) instead of deploying here.
+  redeploy-from-main:
+    name: redeploy from main
+    if: github.event_name == 'release'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - run: gh workflow run pages.yml --ref main -R "$GITHUB_REPOSITORY"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
   build:
+    # Actions minutes: CI runs on the public repo only (free there); see tools/ci-local.sh.
+    if: github.repository == 'surprisingly-ltd/power-loader'
     name: build
+    if: github.event_name != 'release'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    outputs:
+      latest: ${{ steps.expected.outputs.latest }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: main
           persist-credentials: false
-      - uses: ./.github/actions/setup
+      - uses: $/.github/actions/setup
       - name: Signed releases (published only)
         run: node tools/fetch-releases.mjs
         env:
@@ -45,6 +64,14 @@ jobs:
       - run: pnpm build:site
       - name: Every link, anchor and site address resolves
         run: pnpm check:site
+      - id: expected
+        name: The latest release this build serves
+        run: |
+          node -e '
+            const list = Object.values(require("./dist/site/updates.json").addons)[0].updates;
+            const last = list[list.length - 1];
+            console.log("latest=" + (last ? `${last.version} ${last.update_hash.replace("sha256:", "")}` : ""));
+          ' >> "$GITHUB_OUTPUT"
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: dist/site
@@ -66,32 +93,29 @@ jobs:
 
   smoke:
     name: smoke
-    needs: deploy
+    needs: [build, deploy]
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
-      - name: The live site answers, and updates.json matches the served XPI
+      - name: The live site serves this build (pages, updates.json and the latest XPI)
+        env:
+          LATEST: ${{ needs.build.outputs.latest }}
         run: |
           set -euo pipefail
           site=https://powerloader.surprisingly.ltd
-          for path in / /setup /try /create /play /privacy /reviewers /demo/ /demo/library/library.json /updates.json /game/; do
-            for attempt in 1 2 3 4 5 6; do
-              code=$(curl -s -o /dev/null -w '%{http_code}' "$site$path") || code=000
-              [ "$code" = 200 ] && break
-              sleep 20
+          # Pages' CDN caches for up to 10 minutes, including 404s from before the deploy: wait for it.
+          live() {
+            for path in / /setup /try /create /play /privacy /reviewers /demo/ /demo/library/library.json /updates.json /game/; do
+              [ "$(curl -s -o /dev/null -w '%{http_code}' "$site$path")" = 200 ] || { echo "not yet: $path"; return 1; }
             done
-            echo "$code $site$path"
-            [ "$code" = 200 ]
+            [ -z "$LATEST" ] && return 0
+            read -r version hash <<< "$LATEST"
+            curl -sf "$site/updates.json" | grep -q "\"version\": \"$version\"" || { echo "not yet: updates.json lists $version"; return 1; }
+            curl -sf "$site/download/power-loader-latest.xpi" -o latest.xpi || { echo "not yet: latest XPI"; return 1; }
+            echo "$hash  latest.xpi" | sha256sum -c --quiet - || { echo "not yet: latest XPI hash"; return 1; }
+          }
+          for attempt in $(seq 1 24); do
+            if live; then echo "Live: ${LATEST:-no signed releases yet}"; exit 0; fi
+            sleep 30
           done
-          curl -sf "$site/updates.json" -o updates.json
-          node -e '
-            const u = require("./updates.json"), list = Object.values(u.addons)[0].updates;
-            if (!list.length) { console.log("No signed releases listed yet"); process.exit(0) }
-            const latest = list[list.length - 1];
-            require("fs").writeFileSync("latest.txt", latest.update_link + " " + latest.update_hash.replace("sha256:", ""));
-          '
-          if [ -f latest.txt ]; then
-            read -r link hash < latest.txt
-            curl -sf "$link" -o latest.xpi
-            echo "$hash  latest.xpi" | sha256sum -c -
-          fi
+          echo "The live site didn't serve this build within 12 minutes"; exit 1

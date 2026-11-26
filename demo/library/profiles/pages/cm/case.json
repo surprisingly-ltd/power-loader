@@ -1,0 +1,26 @@
+{
+  "schema": "powerloader-profile/1",
+  "id": "cm/case",
+  "kind": "extract",
+  "name": "Case",
+  "version": "v1",
+  "match": [
+    "http://localhost:8787/demo/cm/case-*.html*"
+  ],
+  "urlPattern": "http://localhost:8787/demo/cm/case-{ref}.html",
+  "when": "#case-header",
+  "fields": {
+    "clientId": "#client label(Client ID)",
+    "title": "#client label(Title)",
+    "firstName": "#client label(First name)",
+    "lastName": "#client label(Last name)",
+    "dob": "#client label(Date of birth) | date",
+    "nino": "#client label(NI number)",
+    "phone": "#client label(Telephone)",
+    "email": "#client label(Email)",
+    "address": "#client label(Address)",
+    "postcode": "#client label(Address) | regex:([A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2})$",
+    "landlord": "#client label(Landlord)",
+    "tenancyRef": "#client label(Landlord reference)"
+  }
+}

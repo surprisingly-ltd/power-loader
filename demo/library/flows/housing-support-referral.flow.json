@@ -1,0 +1,647 @@
+{
+  "schema": "powerloader-flow/1",
+  "id": "housing-support-referral",
+  "name": "Housing support referral",
+  "guidance": "A demo flow made from the Power Loader demo library. It fills the Housing support referral form from the fictional Northshire pages.",
+  "hosts": [
+    "localhost:8787"
+  ],
+  "fields": {
+    "title": {
+      "label": "Title",
+      "section": "Client"
+    },
+    "firstName": {
+      "label": "First name",
+      "identity": true,
+      "accepts": [
+        "first_name",
+        "person_name"
+      ],
+      "section": "Client"
+    },
+    "lastName": {
+      "label": "Last name",
+      "identity": true,
+      "accepts": [
+        "last_name",
+        "person_name"
+      ],
+      "section": "Client"
+    },
+    "dob": {
+      "label": "Date of birth",
+      "type": "date",
+      "identity": "strong",
+      "accepts": [
+        "date_of_birth",
+        "date"
+      ],
+      "section": "Client"
+    },
+    "nino": {
+      "label": "National Insurance number",
+      "type": "nino",
+      "identity": "strong",
+      "accepts": [
+        "nino"
+      ],
+      "section": "Client"
+    },
+    "clientId": {
+      "label": "Client ID",
+      "identity": "strong",
+      "accepts": [
+        "client_id",
+        "reference"
+      ],
+      "section": "Client"
+    },
+    "language": {
+      "label": "Preferred language",
+      "section": "Client"
+    },
+    "phone": {
+      "label": "Telephone",
+      "type": "phone",
+      "accepts": [
+        "phone"
+      ],
+      "section": "Contact"
+    },
+    "email": {
+      "label": "Email",
+      "type": "email",
+      "accepts": [
+        "email"
+      ],
+      "section": "Contact"
+    },
+    "contactPref": {
+      "label": "Preferred contact",
+      "options": [
+        "Phone",
+        "Email",
+        "Letter"
+      ],
+      "section": "Contact"
+    },
+    "address": {
+      "label": "Address",
+      "long": true,
+      "accepts": [
+        "address",
+        "postcode"
+      ],
+      "section": "Contact"
+    },
+    "postcode": {
+      "label": "Postcode",
+      "type": "postcode",
+      "accepts": [
+        "postcode"
+      ],
+      "section": "Contact"
+    },
+    "riskLevel": {
+      "label": "Risk level",
+      "options": [
+        "Low",
+        "Medium",
+        "High"
+      ],
+      "manual": true,
+      "section": "Your assessment"
+    },
+    "consent": {
+      "label": "Consent to share with partners",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "manual": true,
+      "section": "Your assessment"
+    },
+    "reason": {
+      "label": "Reason for application",
+      "long": true,
+      "manual": true,
+      "section": "Your assessment"
+    }
+  },
+  "journey": [
+    "p-00000001",
+    "p-00000002"
+  ],
+  "timelines": [],
+  "pages": [
+    {
+      "id": "p-00000002",
+      "role": "output",
+      "name": "Housing support referral",
+      "url": "http://localhost:8787/demo/referral.html",
+      "required": [
+        "firstName",
+        "lastName",
+        "dob",
+        "nino",
+        "phone",
+        "address",
+        "postcode",
+        "riskLevel",
+        "consent"
+      ],
+      "step": {
+        "text": "Open Housing support referral, fill it from the case, check every box, then submit it yourself.",
+        "links": []
+      },
+      "formId": "hsr",
+      "form": {
+        "version": "v4",
+        "short": "HSR",
+        "category": "Housing",
+        "sideEffects": []
+      },
+      "kind": "fill",
+      "profile": {
+        "schema": "powerloader-profile/1",
+        "id": "fill/housing-referral",
+        "kind": "fill",
+        "name": "Housing support referral",
+        "version": "v4",
+        "form": {
+          "id": "hsr",
+          "version": "v4"
+        },
+        "match": [
+          "http://localhost:8787/demo/referral.html*"
+        ],
+        "urlPattern": "http://localhost:8787/demo/referral.html",
+        "when": "form#referral",
+        "fields": {
+          "#title": "CaseData.title",
+          "#firstName": "CaseData.firstName",
+          "#lastName": "CaseData.lastName",
+          "#dob": "CaseData.dob",
+          "#nino": "CaseData.nino",
+          "#clientId": "CaseData.clientId",
+          "#language": "CaseData.language",
+          "#phone": "CaseData.phone",
+          "#email": "CaseData.email",
+          "#contactPref": "CaseData.contactPref",
+          "#address": "CaseData.address",
+          "#postcode": "CaseData.postcode",
+          "#consent": "CaseData.consent",
+          "#risk": "CaseData.riskLevel",
+          "#reason": "CaseData.reason"
+        }
+      },
+      "picks": [
+        {
+          "box": "#title",
+          "key": "title"
+        },
+        {
+          "box": "#firstName",
+          "key": "firstName"
+        },
+        {
+          "box": "#lastName",
+          "key": "lastName"
+        },
+        {
+          "box": "#dob",
+          "key": "dob"
+        },
+        {
+          "box": "#nino",
+          "key": "nino"
+        },
+        {
+          "box": "#clientId",
+          "key": "clientId"
+        },
+        {
+          "box": "#language",
+          "key": "language"
+        },
+        {
+          "box": "#phone",
+          "key": "phone"
+        },
+        {
+          "box": "#email",
+          "key": "email"
+        },
+        {
+          "box": "#contactPref",
+          "key": "contactPref"
+        },
+        {
+          "box": "#address",
+          "key": "address"
+        },
+        {
+          "box": "#postcode",
+          "key": "postcode"
+        },
+        {
+          "box": "#consent",
+          "key": "consent"
+        },
+        {
+          "box": "#risk",
+          "key": "riskLevel"
+        },
+        {
+          "box": "#reason",
+          "key": "reason"
+        }
+      ]
+    },
+    {
+      "id": "p-00000001",
+      "role": "input",
+      "name": "Client record",
+      "url": "http://localhost:8787/demo/client-{clientId}.html",
+      "required": [],
+      "step": {
+        "text": "Open the client’s client record and clip it.",
+        "links": []
+      },
+      "profileId": "cm/client-record",
+      "kind": "extract",
+      "profile": {
+        "schema": "powerloader-profile/1",
+        "id": "cm/client-record",
+        "kind": "extract",
+        "name": "Client record",
+        "version": "v3",
+        "match": [
+          "http://localhost:8787/demo/client-*.html*"
+        ],
+        "urlPattern": "http://localhost:8787/demo/client-{clientId}.html",
+        "when": "#client-header",
+        "fields": {
+          "title": "table.details label(Title)",
+          "firstName": "table.details label(First name)",
+          "lastName": "table.details label(Last name)",
+          "dob": "table.details label(Date of birth) | date",
+          "nino": "table.details label(NI number)",
+          "clientId": "#client-header label(Client ID)",
+          "language": "table.details label(Preferred language)",
+          "phone": "#c-phone",
+          "email": "#c-email",
+          "contactPref": "#c-contact",
+          "address": "#c-address | oneline",
+          "postcode": "#c-address | regex:([A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2})"
+        }
+      },
+      "picks": [
+        {
+          "key": "title",
+          "selector": "table.details label(Title)",
+          "part": "all"
+        },
+        {
+          "key": "firstName",
+          "selector": "table.details label(First name)",
+          "part": "all"
+        },
+        {
+          "key": "lastName",
+          "selector": "table.details label(Last name)",
+          "part": "all"
+        },
+        {
+          "key": "dob",
+          "selector": "table.details label(Date of birth) | date",
+          "part": "all"
+        },
+        {
+          "key": "nino",
+          "selector": "table.details label(NI number)",
+          "part": "all"
+        },
+        {
+          "key": "clientId",
+          "selector": "#client-header label(Client ID)",
+          "part": "all"
+        },
+        {
+          "key": "language",
+          "selector": "table.details label(Preferred language)",
+          "part": "all"
+        },
+        {
+          "key": "phone",
+          "selector": "#c-phone",
+          "part": "all"
+        },
+        {
+          "key": "email",
+          "selector": "#c-email",
+          "part": "all"
+        },
+        {
+          "key": "contactPref",
+          "selector": "#c-contact",
+          "part": "all"
+        },
+        {
+          "key": "address",
+          "selector": "#c-address | oneline",
+          "part": "all"
+        },
+        {
+          "key": "postcode",
+          "selector": "#c-address | regex:([A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2})",
+          "part": "all"
+        }
+      ]
+    }
+  ],
+  "problems": [],
+  "files": {
+    "fields.json": {
+      "schema": "powerloader-fields/1",
+      "fields": {
+        "title": {
+          "section": "Client",
+          "label": "Title"
+        },
+        "firstName": {
+          "section": "Client",
+          "label": "First name",
+          "identity": true,
+          "accepts": [
+            "first_name",
+            "person_name"
+          ]
+        },
+        "lastName": {
+          "section": "Client",
+          "label": "Last name",
+          "identity": true,
+          "accepts": [
+            "last_name",
+            "person_name"
+          ]
+        },
+        "dob": {
+          "section": "Client",
+          "label": "Date of birth",
+          "type": "date",
+          "identity": "strong",
+          "accepts": [
+            "date_of_birth",
+            "date"
+          ]
+        },
+        "nino": {
+          "section": "Client",
+          "label": "National Insurance number",
+          "type": "nino",
+          "identity": "strong",
+          "accepts": [
+            "nino"
+          ]
+        },
+        "clientId": {
+          "section": "Client",
+          "label": "Client ID",
+          "identity": "strong",
+          "accepts": [
+            "client_id",
+            "reference"
+          ]
+        },
+        "language": {
+          "section": "Client",
+          "label": "Preferred language"
+        },
+        "phone": {
+          "section": "Contact",
+          "label": "Telephone",
+          "type": "phone",
+          "accepts": [
+            "phone"
+          ]
+        },
+        "email": {
+          "section": "Contact",
+          "label": "Email",
+          "type": "email",
+          "accepts": [
+            "email"
+          ]
+        },
+        "contactPref": {
+          "section": "Contact",
+          "label": "Preferred contact",
+          "options": [
+            "Phone",
+            "Email",
+            "Letter"
+          ]
+        },
+        "address": {
+          "section": "Contact",
+          "label": "Address",
+          "long": true,
+          "accepts": [
+            "address",
+            "postcode"
+          ]
+        },
+        "postcode": {
+          "section": "Contact",
+          "label": "Postcode",
+          "type": "postcode",
+          "accepts": [
+            "postcode"
+          ]
+        },
+        "riskLevel": {
+          "section": "Your assessment",
+          "label": "Risk level",
+          "options": [
+            "Low",
+            "Medium",
+            "High"
+          ],
+          "manual": true
+        },
+        "consent": {
+          "section": "Your assessment",
+          "label": "Consent to share with partners",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "manual": true
+        },
+        "reason": {
+          "section": "Your assessment",
+          "label": "Reason for application",
+          "long": true,
+          "manual": true
+        }
+      }
+    },
+    "forms/hsr.json": {
+      "schema": "powerloader-form/1",
+      "id": "hsr",
+      "name": "Housing support referral",
+      "short": "HSR",
+      "category": "Housing",
+      "version": "v4",
+      "url": "http://localhost:8787/demo/referral.html",
+      "fill": "fill/hsr",
+      "fields": [
+        {
+          "key": "title"
+        },
+        {
+          "key": "firstName",
+          "required": true
+        },
+        {
+          "key": "lastName",
+          "required": true
+        },
+        {
+          "key": "dob",
+          "required": true
+        },
+        {
+          "key": "nino",
+          "required": true
+        },
+        {
+          "key": "clientId"
+        },
+        {
+          "key": "language"
+        },
+        {
+          "key": "phone",
+          "required": true
+        },
+        {
+          "key": "email"
+        },
+        {
+          "key": "contactPref"
+        },
+        {
+          "key": "address",
+          "required": true
+        },
+        {
+          "key": "postcode",
+          "required": true
+        },
+        {
+          "key": "consent",
+          "required": true
+        },
+        {
+          "key": "riskLevel",
+          "required": true
+        },
+        {
+          "key": "reason"
+        }
+      ]
+    },
+    "profiles/fill/hsr.json": {
+      "schema": "powerloader-profile/1",
+      "id": "fill/hsr",
+      "kind": "fill",
+      "name": "Housing support referral",
+      "version": "v4",
+      "basedOn": {
+        "version": "v4",
+        "commit": "8926ad0"
+      },
+      "form": {
+        "id": "hsr",
+        "version": "v4"
+      },
+      "match": [
+        "http://localhost:8787/demo/referral.html*"
+      ],
+      "urlPattern": "http://localhost:8787/demo/referral.html",
+      "when": "form#referral",
+      "fields": {
+        "#title": "CaseData.title",
+        "#firstName": "CaseData.firstName",
+        "#lastName": "CaseData.lastName",
+        "#dob": "CaseData.dob",
+        "#nino": "CaseData.nino",
+        "#clientId": "CaseData.clientId",
+        "#language": "CaseData.language",
+        "#phone": "CaseData.phone",
+        "#email": "CaseData.email",
+        "#contactPref": "CaseData.contactPref",
+        "#address": "CaseData.address",
+        "#postcode": "CaseData.postcode",
+        "#consent": "CaseData.consent",
+        "#risk": "CaseData.riskLevel",
+        "#reason": "CaseData.reason"
+      }
+    },
+    "profiles/pages/cm/client-record.json": {
+      "schema": "powerloader-profile/1",
+      "id": "cm/client-record",
+      "kind": "extract",
+      "name": "Client record",
+      "version": "v3",
+      "basedOn": {
+        "version": "v3",
+        "commit": "8926ad0"
+      },
+      "match": [
+        "http://localhost:8787/demo/client-*.html*"
+      ],
+      "urlPattern": "http://localhost:8787/demo/client-{clientId}.html",
+      "when": "#client-header",
+      "fields": {
+        "title": "table.details label(Title)",
+        "firstName": "table.details label(First name)",
+        "lastName": "table.details label(Last name)",
+        "dob": "table.details label(Date of birth) | date",
+        "nino": "table.details label(NI number)",
+        "clientId": "#client-header label(Client ID)",
+        "language": "table.details label(Preferred language)",
+        "phone": "#c-phone",
+        "email": "#c-email",
+        "contactPref": "#c-contact",
+        "address": "#c-address | oneline",
+        "postcode": "#c-address | regex:([A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2})"
+      }
+    },
+    "steps.json": {
+      "schema": "powerloader-steps/1",
+      "steps": [
+        {
+          "id": "p-00000001",
+          "name": "Client record",
+          "role": "input",
+          "text": "Open the client’s client record and clip it.",
+          "links": [],
+          "profileId": "cm/client-record"
+        },
+        {
+          "id": "p-00000002",
+          "name": "Housing support referral",
+          "role": "output",
+          "text": "Open Housing support referral, fill it from the case, check every box, then submit it yourself.",
+          "links": [],
+          "formId": "hsr"
+        }
+      ]
+    }
+  }
+}

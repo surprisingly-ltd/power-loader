@@ -1,0 +1,23 @@
+{
+  "schema": "powerloader-profile/1",
+  "id": "messages/inbox",
+  "kind": "extract",
+  "name": "Team inbox",
+  "version": "v1",
+  "fetchOnly": true,
+  "match": [
+    "http://localhost:8787/demo/messages/index*"
+  ],
+  "urlPattern": "http://localhost:8787/demo/messages/index.html",
+  "when": "#inbox",
+  "fields": {
+    "items": [
+      "#inbox tbody tr",
+      {
+        "@type": "inboxItem",
+        "href": "a @href | abs",
+        "messageId": "@data-message"
+      }
+    ]
+  }
+}

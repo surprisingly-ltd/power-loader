@@ -1,0 +1,1264 @@
+{
+  "schema": "powerloader-flow/1",
+  "id": "rent-support-review-messages-as-data",
+  "name": "Rent support review (messages as data)",
+  "guidance": "1. Choose a case. Go to the work queue at http://localhost:8787/demo/cm/queue.html and open the case you want to work on: Pick up the next case offers the oldest one that isn’t done. Power Loader takes the case reference from the case you open.\n2. Case. Clip the case page: the client’s details and the references for the other systems.\n3. Ask the client for a missing reference. Only if the case has no Harbour Homes tenancy reference: open the email, check it and send it, then wait for the reply. Power Loader passes over this step for a case that has one.\n4. Harbour Homes tenancy. Clip the rent account. If its address differs from the case, check which is current before you go on.\n5. Employment and income record. Clip it. If Power Loader says it may be a different person, stop: the reference has been reused, so don’t use the record.\n6. Customer messages. On the client’s messages, press Fetch: one request reads the messages as data and clips any change of circumstances (effective date, new weekly income, tenancy end date).\n7. Rent support review. Fill the form from the case, write your recommendation yourself, check every box and submit.\n8. Tell the income team. Open the email, check it and send it. Then mark the case done on its case page and pick up the next one.\nThe team’s own procedure, for doing the same review by hand, is on the staff intranet.",
+  "hosts": [
+    "localhost:8787"
+  ],
+  "fields": {
+    "clientId": {
+      "label": "Client ID",
+      "identity": "strong",
+      "accepts": [
+        "client_id",
+        "reference"
+      ],
+      "section": "Client"
+    },
+    "firstName": {
+      "label": "First name",
+      "identity": true,
+      "accepts": [
+        "first_name",
+        "person_name"
+      ],
+      "section": "Client"
+    },
+    "lastName": {
+      "label": "Last name",
+      "identity": true,
+      "accepts": [
+        "last_name",
+        "person_name"
+      ],
+      "section": "Client"
+    },
+    "dob": {
+      "label": "Date of birth",
+      "type": "date",
+      "identity": "strong",
+      "accepts": [
+        "date_of_birth",
+        "date"
+      ],
+      "section": "Client"
+    },
+    "nino": {
+      "label": "National Insurance number",
+      "type": "nino",
+      "identity": "strong",
+      "accepts": [
+        "nino"
+      ],
+      "section": "Client"
+    },
+    "address": {
+      "label": "Address",
+      "long": true,
+      "accepts": [
+        "address",
+        "postcode"
+      ],
+      "section": "Contact"
+    },
+    "postcode": {
+      "label": "Postcode",
+      "type": "postcode",
+      "accepts": [
+        "postcode"
+      ],
+      "section": "Contact"
+    },
+    "tenancyRef": {
+      "label": "Tenancy reference",
+      "accepts": [
+        "reference"
+      ],
+      "section": "Housing"
+    },
+    "monthlyRent": {
+      "label": "Monthly rent",
+      "type": "money",
+      "section": "Housing"
+    },
+    "arrears": {
+      "label": "Rent arrears",
+      "type": "money",
+      "section": "Housing"
+    },
+    "tenancyEndDate": {
+      "label": "Tenancy end date",
+      "type": "date",
+      "accepts": [
+        "date"
+      ],
+      "section": "Housing"
+    },
+    "currentEmployer": {
+      "label": "Current employer",
+      "section": "Income"
+    },
+    "weeklyIncome": {
+      "label": "Weekly income",
+      "type": "money",
+      "section": "Income"
+    },
+    "changeEffectiveDate": {
+      "label": "Change effective date",
+      "type": "date",
+      "accepts": [
+        "date"
+      ],
+      "section": "Income"
+    },
+    "newWeeklyIncome": {
+      "label": "New weekly income",
+      "type": "money",
+      "section": "Income"
+    },
+    "reason": {
+      "label": "Reason for application",
+      "long": true,
+      "manual": true,
+      "section": "Your assessment"
+    },
+    "email": {
+      "label": "Email",
+      "type": "email",
+      "accepts": [
+        "email"
+      ],
+      "section": "Contact"
+    }
+  },
+  "journey": [
+    "p-00000001",
+    "p-00000002",
+    "p-00000003",
+    "p-00000004",
+    "p-00000005",
+    "p-00000006",
+    "p-00000007",
+    "p-00000008"
+  ],
+  "timelines": [],
+  "pages": [
+    {
+      "id": "p-00000007",
+      "role": "output",
+      "name": "Rent support review",
+      "url": "http://localhost:8787/demo/rent-review.html",
+      "required": [
+        "clientId",
+        "firstName",
+        "lastName",
+        "dob",
+        "nino",
+        "address",
+        "postcode",
+        "tenancyRef",
+        "monthlyRent",
+        "arrears",
+        "weeklyIncome",
+        "reason"
+      ],
+      "step": {
+        "text": "Fill the review from the case. Write your recommendation yourself; check every box, then submit. Back on the case, mark it done and pick up the next one.",
+        "links": []
+      },
+      "formId": "rsr",
+      "form": {
+        "version": "v1",
+        "short": "RSR",
+        "category": "Housing",
+        "rules": [
+          {
+            "field": "changeEffectiveDate",
+            "before": "today",
+            "message": "The change must have happened already"
+          }
+        ],
+        "confirmation": {
+          "match": [
+            "http://localhost:8787/demo/rent-review-submitted.html*"
+          ],
+          "refPattern": "RSR-\\d{5}"
+        },
+        "sideEffects": []
+      },
+      "kind": "fill",
+      "profile": {
+        "schema": "powerloader-profile/1",
+        "id": "fill/rent-review",
+        "kind": "fill",
+        "name": "Rent support review",
+        "version": "v1",
+        "form": {
+          "id": "rsr",
+          "version": "v1"
+        },
+        "match": [
+          "http://localhost:8787/demo/rent-review.html*"
+        ],
+        "urlPattern": "http://localhost:8787/demo/rent-review.html",
+        "when": "form#rent-review",
+        "fields": {
+          "#r-client": "CaseData.clientId",
+          "#r-first": "CaseData.firstName",
+          "#r-last": "CaseData.lastName",
+          "#r-dob": "CaseData.dob",
+          "#r-nino": "CaseData.nino",
+          "#r-address": "CaseData.address",
+          "#r-postcode": "CaseData.postcode",
+          "#r-tenancy": "CaseData.tenancyRef",
+          "#r-rent": "CaseData.monthlyRent",
+          "#r-arrears": "CaseData.arrears",
+          "#r-end": "CaseData.tenancyEndDate",
+          "#r-employer": "CaseData.currentEmployer",
+          "#r-income": "CaseData.weeklyIncome",
+          "#r-change": "CaseData.changeEffectiveDate",
+          "#r-new-income": "CaseData.newWeeklyIncome",
+          "#r-reason": "CaseData.reason"
+        }
+      },
+      "picks": [
+        {
+          "box": "#r-client",
+          "key": "clientId"
+        },
+        {
+          "box": "#r-first",
+          "key": "firstName"
+        },
+        {
+          "box": "#r-last",
+          "key": "lastName"
+        },
+        {
+          "box": "#r-dob",
+          "key": "dob"
+        },
+        {
+          "box": "#r-nino",
+          "key": "nino"
+        },
+        {
+          "box": "#r-address",
+          "key": "address"
+        },
+        {
+          "box": "#r-postcode",
+          "key": "postcode"
+        },
+        {
+          "box": "#r-tenancy",
+          "key": "tenancyRef"
+        },
+        {
+          "box": "#r-rent",
+          "key": "monthlyRent"
+        },
+        {
+          "box": "#r-arrears",
+          "key": "arrears"
+        },
+        {
+          "box": "#r-end",
+          "key": "tenancyEndDate"
+        },
+        {
+          "box": "#r-employer",
+          "key": "currentEmployer"
+        },
+        {
+          "box": "#r-income",
+          "key": "weeklyIncome"
+        },
+        {
+          "box": "#r-change",
+          "key": "changeEffectiveDate"
+        },
+        {
+          "box": "#r-new-income",
+          "key": "newWeeklyIncome"
+        },
+        {
+          "box": "#r-reason",
+          "key": "reason"
+        }
+      ]
+    },
+    {
+      "id": "p-00000005",
+      "role": "input",
+      "name": "Employment and income record",
+      "url": "http://localhost:8787/demo/biv/income-{clientId}.html",
+      "required": [],
+      "step": {
+        "text": "Clip the income record. If Power Loader says this may be a different person, stop: the reference has been reused, so don’t use this record.",
+        "links": [
+          {
+            "id": "l-00000009",
+            "label": "Open the client’s messages",
+            "url": "",
+            "to": "p-00000006"
+          }
+        ]
+      },
+      "profileId": "biv/income",
+      "kind": "extract",
+      "profile": {
+        "schema": "powerloader-profile/1",
+        "id": "biv/income",
+        "kind": "extract",
+        "name": "Employment and income record",
+        "version": "v1",
+        "match": [
+          "http://localhost:8787/demo/biv/income-*.html*"
+        ],
+        "urlPattern": "http://localhost:8787/demo/biv/income-{clientId}.html",
+        "when": "#person",
+        "fields": {
+          "firstName": "#person label(First names)",
+          "lastName": "#person label(Surname)",
+          "nino": "#person label(NI number)",
+          "dob": "#person label(Date of birth) | date",
+          "clientId": "#person label(Council reference)",
+          "currentEmployer": "#person label(Current employer)",
+          "weeklyIncome": "#person label(Weekly income) | number",
+          "periods": [
+            "#history tbody tr",
+            {
+              "@type": "period",
+              "cat": "td:nth-child(1)",
+              "label": "td:nth-child(2)",
+              "start": "td:nth-child(3) | date",
+              "end": "td:nth-child(4) | date"
+            }
+          ]
+        }
+      },
+      "picks": [
+        {
+          "key": "firstName",
+          "selector": "#person label(First names)",
+          "part": "all"
+        },
+        {
+          "key": "lastName",
+          "selector": "#person label(Surname)",
+          "part": "all"
+        },
+        {
+          "key": "nino",
+          "selector": "#person label(NI number)",
+          "part": "all"
+        },
+        {
+          "key": "dob",
+          "selector": "#person label(Date of birth) | date",
+          "part": "all"
+        },
+        {
+          "key": "clientId",
+          "selector": "#person label(Council reference)",
+          "part": "all"
+        },
+        {
+          "key": "currentEmployer",
+          "selector": "#person label(Current employer)",
+          "part": "all"
+        },
+        {
+          "key": "weeklyIncome",
+          "selector": "#person label(Weekly income) | number",
+          "part": "all"
+        }
+      ]
+    },
+    {
+      "id": "p-00000002",
+      "role": "input",
+      "name": "Case",
+      "url": "http://localhost:8787/demo/cm/case-{ref}.html",
+      "required": [],
+      "step": {
+        "text": "Clip the case. It has the client’s details and the references for the other systems. Then open the rent account, the income record and the client’s messages.",
+        "links": [
+          {
+            "id": "l-00000010",
+            "label": "Open the rent account",
+            "url": "",
+            "to": "p-00000004"
+          },
+          {
+            "id": "l-00000011",
+            "label": "Open the income record",
+            "url": "",
+            "to": "p-00000005"
+          }
+        ]
+      },
+      "profileId": "cm/case",
+      "kind": "extract",
+      "profile": {
+        "schema": "powerloader-profile/1",
+        "id": "cm/case",
+        "kind": "extract",
+        "name": "Case",
+        "version": "v1",
+        "match": [
+          "http://localhost:8787/demo/cm/case-*.html*"
+        ],
+        "urlPattern": "http://localhost:8787/demo/cm/case-{ref}.html",
+        "when": "#case-header",
+        "fields": {
+          "clientId": "#client label(Client ID)",
+          "firstName": "#client label(First name)",
+          "lastName": "#client label(Last name)",
+          "dob": "#client label(Date of birth) | date",
+          "nino": "#client label(NI number)",
+          "address": "#client label(Address)",
+          "postcode": "#client label(Address) | regex:([A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2})$",
+          "tenancyRef": "#client label(Landlord reference)",
+          "email": "#client label(Email)"
+        }
+      },
+      "picks": [
+        {
+          "key": "clientId",
+          "selector": "#client label(Client ID)",
+          "part": "all"
+        },
+        {
+          "key": "firstName",
+          "selector": "#client label(First name)",
+          "part": "all"
+        },
+        {
+          "key": "lastName",
+          "selector": "#client label(Last name)",
+          "part": "all"
+        },
+        {
+          "key": "dob",
+          "selector": "#client label(Date of birth) | date",
+          "part": "all"
+        },
+        {
+          "key": "nino",
+          "selector": "#client label(NI number)",
+          "part": "all"
+        },
+        {
+          "key": "address",
+          "selector": "#client label(Address)",
+          "part": "all"
+        },
+        {
+          "key": "postcode",
+          "selector": "#client label(Address) | regex:([A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2})$",
+          "part": "all"
+        },
+        {
+          "key": "tenancyRef",
+          "selector": "#client label(Landlord reference)",
+          "part": "all"
+        },
+        {
+          "key": "email",
+          "selector": "#client label(Email)",
+          "part": "all"
+        }
+      ]
+    },
+    {
+      "id": "p-00000004",
+      "role": "input",
+      "name": "Harbour Homes tenancy",
+      "url": "http://localhost:8787/demo/harbour/tenancy-{tenancyRef}.html",
+      "required": [],
+      "step": {
+        "text": "Clip the rent account. If the address differs from the case, check which is current before you go on.",
+        "links": []
+      },
+      "profileId": "harbour-homes/tenancy",
+      "kind": "extract",
+      "profile": {
+        "schema": "powerloader-profile/1",
+        "id": "harbour-homes/tenancy",
+        "kind": "extract",
+        "name": "Harbour Homes tenancy",
+        "version": "v1",
+        "match": [
+          "http://localhost:8787/demo/harbour/tenancy-*.html*"
+        ],
+        "urlPattern": "http://localhost:8787/demo/harbour/tenancy-{tenancyRef}.html",
+        "when": "#tenancy",
+        "reveal": [
+          {
+            "selector": "#balance",
+            "addClass": [
+              "accordion--open"
+            ]
+          }
+        ],
+        "fields": {
+          "tenancyRef": "#tenancy label(Tenancy reference)",
+          "firstName": "dd.tenant | regex:^(\\S+)",
+          "lastName": "dd.tenant | regex:(\\S+)$",
+          "address": "#tenancy label(Property)",
+          "postcode": "#tenancy label(Property) | regex:([A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2})$",
+          "monthlyRent": "#tenancy label(Monthly rent) | number",
+          "arrears": "#tenancy label(Arrears) | number",
+          "payments": [
+            "#payments tbody tr",
+            {
+              "@type": "money",
+              "date": "td:nth-child(1) | date",
+              "label": "td:nth-child(2)",
+              "amount": "td:nth-child(3) | number"
+            }
+          ]
+        }
+      },
+      "picks": [
+        {
+          "key": "tenancyRef",
+          "selector": "#tenancy label(Tenancy reference)",
+          "part": "all"
+        },
+        {
+          "key": "firstName",
+          "selector": "dd.tenant | regex:^(\\S+)",
+          "part": "all"
+        },
+        {
+          "key": "lastName",
+          "selector": "dd.tenant | regex:(\\S+)$",
+          "part": "all"
+        },
+        {
+          "key": "address",
+          "selector": "#tenancy label(Property)",
+          "part": "all"
+        },
+        {
+          "key": "postcode",
+          "selector": "#tenancy label(Property) | regex:([A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2})$",
+          "part": "all"
+        },
+        {
+          "key": "monthlyRent",
+          "selector": "#tenancy label(Monthly rent) | number",
+          "part": "all"
+        },
+        {
+          "key": "arrears",
+          "selector": "#tenancy label(Arrears) | number",
+          "part": "all"
+        }
+      ]
+    },
+    {
+      "id": "p-00000001",
+      "role": "guide",
+      "name": "Choose a case",
+      "url": "http://localhost:8787/demo/cm/queue.html",
+      "required": [],
+      "match": "http://localhost:8787/demo/cm/queue*",
+      "choose": {
+        "label": "Choose a case",
+        "next": "p-00000002"
+      },
+      "step": {
+        "text": "Go to the work queue and open the case you’re picking up: Pick up the next case offers the oldest one that isn’t done. Power Loader takes the case reference from the case you open. The team’s procedure says what to check at each step.",
+        "links": [
+          {
+            "id": "l-00000012",
+            "label": "Go to the work queue",
+            "url": "http://localhost:8787/demo/cm/queue.html",
+            "to": ""
+          },
+          {
+            "id": "l-00000013",
+            "label": "Read the team’s procedure",
+            "url": "http://localhost:8787/demo/intranet/rent-support-review.html",
+            "to": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "p-00000003",
+      "role": "email",
+      "name": "Ask the client for a missing reference",
+      "url": "",
+      "required": [],
+      "email": {
+        "to": "{email}",
+        "cc": "",
+        "subject": "Your rent support review: case {ref}",
+        "body": "Dear {firstName} {lastName},\n\nWe are reviewing the help you get with your rent (case {ref}). To finish the review we need your Harbour Homes tenancy reference. You can find it on your tenancy agreement or on any letter from Harbour Homes, and it starts with HH-.\n\nPlease reply to this email with the reference, quoting case {ref}.\n\nThank you,\nHousing Support Team\nNorthshire Council"
+      },
+      "step": {
+        "when": {
+          "field": "tenancyRef",
+          "is": "missing"
+        },
+        "text": "Open this email in your email app, check it and send it, then wait for the client’s reply with their Harbour Homes tenancy reference.",
+        "links": []
+      }
+    },
+    {
+      "id": "p-00000006",
+      "role": "fetch",
+      "name": "Customer messages",
+      "url": "http://localhost:8787/demo/messages/client/{clientId}.html",
+      "required": [],
+      "match": "http://localhost:8787/demo/messages/client/*",
+      "fetch": {
+        "requests": [
+          {
+            "id": "r-00000014",
+            "name": "Messages (data)",
+            "pageId": "p-00000015",
+            "url": "http://localhost:8787/demo/messages/api/{clientId}.json",
+            "required": true
+          }
+        ],
+        "then": {
+          "to": "p-00000007",
+          "url": "",
+          "open": "ask"
+        }
+      },
+      "annotations": [
+        {
+          "id": "n-00000016",
+          "selector": "#messages",
+          "type": "expanded",
+          "style": "",
+          "html": "<p><strong>Read every message.</strong> A change of circumstances can be in any online form. Use the step’s Fetch button rather than opening each one.</p>"
+        }
+      ],
+      "step": {
+        "text": "The messages service also sends the client’s messages as data. Press Fetch to read them in one request: Power Loader clips the effective date, the new weekly income and any tenancy end date from the form that has them.",
+        "links": []
+      }
+    },
+    {
+      "id": "p-00000015",
+      "role": "input",
+      "name": "Messages (data)",
+      "url": "http://localhost:8787/demo/messages/api/{clientId}.json",
+      "required": [],
+      "parent": "p-00000006",
+      "profileId": "messages/messages-data",
+      "kind": "extract",
+      "profile": {
+        "schema": "powerloader-profile/1",
+        "id": "messages/messages-data",
+        "kind": "extract",
+        "format": "json",
+        "name": "Customer messages (data)",
+        "version": "v1",
+        "match": [
+          "http://localhost:8787/demo/messages/api/*"
+        ],
+        "urlPattern": "http://localhost:8787/demo/messages/api/{clientId}.json",
+        "when": ":root > [key='clientId']",
+        "fields": {
+          "clientId": ":root > [key='clientId']",
+          "changeEffectiveDate": ":root > [key='messages'] > * > [key='form'] > [key='answers'] > [key='effectiveDate'] | date",
+          "newWeeklyIncome": ":root > [key='messages'] > * > [key='form'] > [key='answers'] > [key='newWeeklyIncome'] | number",
+          "tenancyEndDate": ":root > [key='messages'] > * > [key='form'] > [key='answers'] > [key='tenancyEndDate'] | date",
+          "messages": [
+            ":root > [key='messages'] > *",
+            {
+              "@type": "message",
+              "date": ":scope > [key='received'] | date",
+              "label": ":scope > [key='subject']",
+              "cat": ":scope > [key='type']"
+            }
+          ]
+        }
+      },
+      "picks": [
+        {
+          "key": "clientId",
+          "selector": ":root > [key='clientId']",
+          "part": "all"
+        },
+        {
+          "key": "changeEffectiveDate",
+          "selector": ":root > [key='messages'] > * > [key='form'] > [key='answers'] > [key='effectiveDate'] | date",
+          "part": "all"
+        },
+        {
+          "key": "newWeeklyIncome",
+          "selector": ":root > [key='messages'] > * > [key='form'] > [key='answers'] > [key='newWeeklyIncome'] | number",
+          "part": "all"
+        },
+        {
+          "key": "tenancyEndDate",
+          "selector": ":root > [key='messages'] > * > [key='form'] > [key='answers'] > [key='tenancyEndDate'] | date",
+          "part": "all"
+        }
+      ]
+    },
+    {
+      "id": "p-00000008",
+      "role": "email",
+      "name": "Tell the income team",
+      "url": "",
+      "required": [],
+      "email": {
+        "to": "income.team@example.org",
+        "cc": "",
+        "subject": "Rent support review for {clientId}",
+        "body": "Case {ref}: a rent support review has been submitted for {firstName} {lastName} ({clientId}), tenancy {tenancyRef}. Arrears are {arrears}."
+      },
+      "step": {
+        "text": "Once the review is submitted, open this email in your email app, check the arrears and the tenancy reference in it, and send it. Then mark the case done on its case page.",
+        "links": []
+      }
+    }
+  ],
+  "problems": [],
+  "files": {
+    "fields.json": {
+      "schema": "powerloader-fields/1",
+      "fields": {
+        "clientId": {
+          "section": "Client",
+          "label": "Client ID",
+          "identity": "strong",
+          "accepts": [
+            "client_id",
+            "reference"
+          ]
+        },
+        "firstName": {
+          "section": "Client",
+          "label": "First name",
+          "identity": true,
+          "accepts": [
+            "first_name",
+            "person_name"
+          ]
+        },
+        "lastName": {
+          "section": "Client",
+          "label": "Last name",
+          "identity": true,
+          "accepts": [
+            "last_name",
+            "person_name"
+          ]
+        },
+        "dob": {
+          "section": "Client",
+          "label": "Date of birth",
+          "type": "date",
+          "identity": "strong",
+          "accepts": [
+            "date_of_birth",
+            "date"
+          ]
+        },
+        "nino": {
+          "section": "Client",
+          "label": "National Insurance number",
+          "type": "nino",
+          "identity": "strong",
+          "accepts": [
+            "nino"
+          ]
+        },
+        "address": {
+          "section": "Contact",
+          "label": "Address",
+          "long": true,
+          "accepts": [
+            "address",
+            "postcode"
+          ]
+        },
+        "postcode": {
+          "section": "Contact",
+          "label": "Postcode",
+          "type": "postcode",
+          "accepts": [
+            "postcode"
+          ]
+        },
+        "tenancyRef": {
+          "section": "Housing",
+          "label": "Tenancy reference",
+          "accepts": [
+            "reference"
+          ]
+        },
+        "monthlyRent": {
+          "section": "Housing",
+          "label": "Monthly rent",
+          "type": "money"
+        },
+        "arrears": {
+          "section": "Housing",
+          "label": "Rent arrears",
+          "type": "money"
+        },
+        "tenancyEndDate": {
+          "section": "Housing",
+          "label": "Tenancy end date",
+          "type": "date",
+          "accepts": [
+            "date"
+          ]
+        },
+        "currentEmployer": {
+          "section": "Income",
+          "label": "Current employer"
+        },
+        "weeklyIncome": {
+          "section": "Income",
+          "label": "Weekly income",
+          "type": "money"
+        },
+        "changeEffectiveDate": {
+          "section": "Income",
+          "label": "Change effective date",
+          "type": "date",
+          "accepts": [
+            "date"
+          ]
+        },
+        "newWeeklyIncome": {
+          "section": "Income",
+          "label": "New weekly income",
+          "type": "money"
+        },
+        "reason": {
+          "section": "Your assessment",
+          "label": "Reason for application",
+          "long": true,
+          "manual": true
+        },
+        "email": {
+          "section": "Contact",
+          "label": "Email",
+          "type": "email",
+          "accepts": [
+            "email"
+          ]
+        }
+      }
+    },
+    "forms/rsr.json": {
+      "schema": "powerloader-form/1",
+      "id": "rsr",
+      "name": "Rent support review",
+      "short": "RSR",
+      "category": "Housing",
+      "version": "v1",
+      "url": "http://localhost:8787/demo/rent-review.html",
+      "fill": "fill/rsr",
+      "fields": [
+        {
+          "key": "clientId",
+          "required": true
+        },
+        {
+          "key": "firstName",
+          "required": true
+        },
+        {
+          "key": "lastName",
+          "required": true
+        },
+        {
+          "key": "dob",
+          "required": true
+        },
+        {
+          "key": "nino",
+          "required": true
+        },
+        {
+          "key": "address",
+          "required": true
+        },
+        {
+          "key": "postcode",
+          "required": true
+        },
+        {
+          "key": "tenancyRef",
+          "required": true
+        },
+        {
+          "key": "monthlyRent",
+          "required": true
+        },
+        {
+          "key": "arrears",
+          "required": true
+        },
+        {
+          "key": "tenancyEndDate"
+        },
+        {
+          "key": "currentEmployer"
+        },
+        {
+          "key": "weeklyIncome",
+          "required": true
+        },
+        {
+          "key": "changeEffectiveDate"
+        },
+        {
+          "key": "newWeeklyIncome"
+        },
+        {
+          "key": "reason",
+          "required": true
+        }
+      ],
+      "rules": [
+        {
+          "field": "changeEffectiveDate",
+          "before": "today",
+          "message": "The change must have happened already"
+        }
+      ],
+      "confirmation": {
+        "match": [
+          "http://localhost:8787/demo/rent-review-submitted.html*"
+        ],
+        "refPattern": "RSR-\\d{5}"
+      }
+    },
+    "profiles/fill/rsr.json": {
+      "schema": "powerloader-profile/1",
+      "id": "fill/rsr",
+      "kind": "fill",
+      "name": "Rent support review",
+      "version": "v1",
+      "basedOn": {
+        "version": "v1",
+        "commit": "8926ad0"
+      },
+      "form": {
+        "id": "rsr",
+        "version": "v1"
+      },
+      "match": [
+        "http://localhost:8787/demo/rent-review.html*"
+      ],
+      "urlPattern": "http://localhost:8787/demo/rent-review.html",
+      "when": "form#rent-review",
+      "fields": {
+        "#r-client": "CaseData.clientId",
+        "#r-first": "CaseData.firstName",
+        "#r-last": "CaseData.lastName",
+        "#r-dob": "CaseData.dob",
+        "#r-nino": "CaseData.nino",
+        "#r-address": "CaseData.address",
+        "#r-postcode": "CaseData.postcode",
+        "#r-tenancy": "CaseData.tenancyRef",
+        "#r-rent": "CaseData.monthlyRent",
+        "#r-arrears": "CaseData.arrears",
+        "#r-end": "CaseData.tenancyEndDate",
+        "#r-employer": "CaseData.currentEmployer",
+        "#r-income": "CaseData.weeklyIncome",
+        "#r-change": "CaseData.changeEffectiveDate",
+        "#r-new-income": "CaseData.newWeeklyIncome",
+        "#r-reason": "CaseData.reason"
+      }
+    },
+    "profiles/pages/biv/income.json": {
+      "schema": "powerloader-profile/1",
+      "id": "biv/income",
+      "kind": "extract",
+      "name": "Employment and income record",
+      "version": "v1",
+      "basedOn": {
+        "version": "v1",
+        "commit": "8926ad0"
+      },
+      "match": [
+        "http://localhost:8787/demo/biv/income-*.html*"
+      ],
+      "urlPattern": "http://localhost:8787/demo/biv/income-{clientId}.html",
+      "when": "#person",
+      "fields": {
+        "firstName": "#person label(First names)",
+        "lastName": "#person label(Surname)",
+        "nino": "#person label(NI number)",
+        "dob": "#person label(Date of birth) | date",
+        "clientId": "#person label(Council reference)",
+        "currentEmployer": "#person label(Current employer)",
+        "weeklyIncome": "#person label(Weekly income) | number",
+        "periods": [
+          "#history tbody tr",
+          {
+            "@type": "period",
+            "cat": "td:nth-child(1)",
+            "label": "td:nth-child(2)",
+            "start": "td:nth-child(3) | date",
+            "end": "td:nth-child(4) | date"
+          }
+        ]
+      }
+    },
+    "profiles/pages/cm/case.json": {
+      "schema": "powerloader-profile/1",
+      "id": "cm/case",
+      "kind": "extract",
+      "name": "Case",
+      "version": "v1",
+      "basedOn": {
+        "version": "v1",
+        "commit": "8926ad0"
+      },
+      "match": [
+        "http://localhost:8787/demo/cm/case-*.html*"
+      ],
+      "urlPattern": "http://localhost:8787/demo/cm/case-{ref}.html",
+      "when": "#case-header",
+      "fields": {
+        "clientId": "#client label(Client ID)",
+        "firstName": "#client label(First name)",
+        "lastName": "#client label(Last name)",
+        "dob": "#client label(Date of birth) | date",
+        "nino": "#client label(NI number)",
+        "address": "#client label(Address)",
+        "postcode": "#client label(Address) | regex:([A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2})$",
+        "tenancyRef": "#client label(Landlord reference)",
+        "email": "#client label(Email)"
+      }
+    },
+    "profiles/pages/harbour-homes/tenancy.json": {
+      "schema": "powerloader-profile/1",
+      "id": "harbour-homes/tenancy",
+      "kind": "extract",
+      "name": "Harbour Homes tenancy",
+      "version": "v1",
+      "basedOn": {
+        "version": "v1",
+        "commit": "8926ad0"
+      },
+      "match": [
+        "http://localhost:8787/demo/harbour/tenancy-*.html*"
+      ],
+      "urlPattern": "http://localhost:8787/demo/harbour/tenancy-{tenancyRef}.html",
+      "when": "#tenancy",
+      "reveal": [
+        {
+          "selector": "#balance",
+          "addClass": [
+            "accordion--open"
+          ]
+        }
+      ],
+      "fields": {
+        "tenancyRef": "#tenancy label(Tenancy reference)",
+        "firstName": "dd.tenant | regex:^(\\S+)",
+        "lastName": "dd.tenant | regex:(\\S+)$",
+        "address": "#tenancy label(Property)",
+        "postcode": "#tenancy label(Property) | regex:([A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2})$",
+        "monthlyRent": "#tenancy label(Monthly rent) | number",
+        "arrears": "#tenancy label(Arrears) | number",
+        "payments": [
+          "#payments tbody tr",
+          {
+            "@type": "money",
+            "date": "td:nth-child(1) | date",
+            "label": "td:nth-child(2)",
+            "amount": "td:nth-child(3) | number"
+          }
+        ]
+      }
+    },
+    "profiles/pages/messages/messages-data.json": {
+      "schema": "powerloader-profile/1",
+      "id": "messages/messages-data",
+      "kind": "extract",
+      "name": "Messages (data)",
+      "version": "v1",
+      "basedOn": {
+        "version": "v1",
+        "commit": "8926ad0"
+      },
+      "format": "json",
+      "match": [
+        "http://localhost:8787/demo/messages/api/*"
+      ],
+      "urlPattern": "http://localhost:8787/demo/messages/api/{clientId}.json",
+      "when": ":root > [key='clientId']",
+      "fields": {
+        "clientId": ":root > [key='clientId']",
+        "changeEffectiveDate": ":root > [key='messages'] > * > [key='form'] > [key='answers'] > [key='effectiveDate'] | date",
+        "newWeeklyIncome": ":root > [key='messages'] > * > [key='form'] > [key='answers'] > [key='newWeeklyIncome'] | number",
+        "tenancyEndDate": ":root > [key='messages'] > * > [key='form'] > [key='answers'] > [key='tenancyEndDate'] | date",
+        "messages": [
+          ":root > [key='messages'] > *",
+          {
+            "@type": "message",
+            "date": ":scope > [key='received'] | date",
+            "label": ":scope > [key='subject']",
+            "cat": ":scope > [key='type']"
+          }
+        ]
+      }
+    },
+    "steps.json": {
+      "schema": "powerloader-steps/1",
+      "steps": [
+        {
+          "id": "p-00000001",
+          "name": "Choose a case",
+          "role": "guide",
+          "text": "Go to the work queue and open the case you’re picking up: Pick up the next case offers the oldest one that isn’t done. Power Loader takes the case reference from the case you open. The team’s procedure says what to check at each step.",
+          "links": [
+            {
+              "label": "Go to the work queue",
+              "url": "http://localhost:8787/demo/cm/queue.html"
+            },
+            {
+              "label": "Read the team’s procedure",
+              "url": "http://localhost:8787/demo/intranet/rent-support-review.html"
+            }
+          ],
+          "url": "http://localhost:8787/demo/cm/queue.html",
+          "match": [
+            "http://localhost:8787/demo/cm/queue*"
+          ],
+          "choose": {
+            "label": "Choose a case",
+            "next": "p-00000002",
+            "url": "http://localhost:8787/demo/cm/case-{ref}.html"
+          }
+        },
+        {
+          "id": "p-00000002",
+          "name": "Case",
+          "role": "input",
+          "text": "Clip the case. It has the client’s details and the references for the other systems. Then open the rent account, the income record and the client’s messages.",
+          "links": [
+            {
+              "label": "Open the rent account",
+              "url": "http://localhost:8787/demo/harbour/tenancy-{tenancyRef}.html",
+              "to": "p-00000004"
+            },
+            {
+              "label": "Open the income record",
+              "url": "http://localhost:8787/demo/biv/income-{clientId}.html",
+              "to": "p-00000005"
+            }
+          ],
+          "profileId": "cm/case"
+        },
+        {
+          "id": "p-00000003",
+          "name": "Ask the client for a missing reference",
+          "role": "email",
+          "text": "Open this email in your email app, check it and send it, then wait for the client’s reply with their Harbour Homes tenancy reference.",
+          "links": [],
+          "email": {
+            "to": "{email}",
+            "subject": "Your rent support review: case {ref}",
+            "body": "Dear {firstName} {lastName},\n\nWe are reviewing the help you get with your rent (case {ref}). To finish the review we need your Harbour Homes tenancy reference. You can find it on your tenancy agreement or on any letter from Harbour Homes, and it starts with HH-.\n\nPlease reply to this email with the reference, quoting case {ref}.\n\nThank you,\nHousing Support Team\nNorthshire Council"
+          },
+          "when": {
+            "field": "tenancyRef",
+            "is": "missing"
+          }
+        },
+        {
+          "id": "p-00000004",
+          "name": "Harbour Homes tenancy",
+          "role": "input",
+          "text": "Clip the rent account. If the address differs from the case, check which is current before you go on.",
+          "links": [],
+          "profileId": "harbour-homes/tenancy"
+        },
+        {
+          "id": "p-00000005",
+          "name": "Employment and income record",
+          "role": "input",
+          "text": "Clip the income record. If Power Loader says this may be a different person, stop: the reference has been reused, so don’t use this record.",
+          "links": [
+            {
+              "label": "Open the client’s messages",
+              "url": "http://localhost:8787/demo/messages/client/{clientId}.html",
+              "to": "p-00000006"
+            }
+          ],
+          "profileId": "biv/income"
+        },
+        {
+          "id": "p-00000006",
+          "name": "Customer messages",
+          "role": "fetch",
+          "text": "The messages service also sends the client’s messages as data. Press Fetch to read them in one request: Power Loader clips the effective date, the new weekly income and any tenancy end date from the form that has them.",
+          "links": [],
+          "url": "http://localhost:8787/demo/messages/client/{clientId}.html",
+          "match": [
+            "http://localhost:8787/demo/messages/client/*"
+          ],
+          "fetch": {
+            "requests": [
+              {
+                "id": "r-00000014",
+                "name": "Messages (data)",
+                "url": "http://localhost:8787/demo/messages/api/{clientId}.json",
+                "method": "GET",
+                "profileId": "messages/messages-data",
+                "required": true
+              }
+            ],
+            "then": {
+              "url": "http://localhost:8787/demo/rent-review.html",
+              "to": "p-00000007",
+              "open": "ask"
+            }
+          },
+          "annotations": [
+            {
+              "id": "n-00000016",
+              "selector": "#messages",
+              "type": "expanded",
+              "style": "",
+              "html": "<p><strong>Read every message.</strong> A change of circumstances can be in any online form. Use the step’s Fetch button rather than opening each one.</p>"
+            }
+          ]
+        },
+        {
+          "id": "p-00000007",
+          "name": "Rent support review",
+          "role": "output",
+          "text": "Fill the review from the case. Write your recommendation yourself; check every box, then submit. Back on the case, mark it done and pick up the next one.",
+          "links": [],
+          "formId": "rsr"
+        },
+        {
+          "id": "p-00000008",
+          "name": "Tell the income team",
+          "role": "email",
+          "text": "Once the review is submitted, open this email in your email app, check the arrears and the tenancy reference in it, and send it. Then mark the case done on its case page.",
+          "links": [],
+          "email": {
+            "to": "income.team@example.org",
+            "subject": "Rent support review for {clientId}",
+            "body": "Case {ref}: a rent support review has been submitted for {firstName} {lastName} ({clientId}), tenancy {tenancyRef}. Arrears are {arrears}."
+          }
+        }
+      ]
+    }
+  }
+}

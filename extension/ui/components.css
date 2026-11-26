@@ -16,10 +16,22 @@
 .fp-meta .r { color: var(--ok); font-weight: 700; }
 
 /* Conflicts */
-.conflicts { border: 5px solid var(--danger); background: var(--panel); padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; }
+.conflicts { border: 5px solid var(--conflict-edge); background: var(--panel); padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; }
 .conflicts > h3 { font-size: 17px; }
-.cf { border-left: 5px solid var(--danger); background: var(--surface); padding: 9px 10px; display: flex; flex-direction: column; gap: 6px; }
+.cf { border-left: 5px solid var(--conflict-edge); background: var(--surface); padding: 9px 10px; display: flex; flex-direction: column; gap: 6px; }
 .cf-title { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.cf-title > b > span { color: var(--conflict); }
+.cf:focus { outline: 3px solid var(--focus); outline-offset: 0; }
+/* A conflict's link from the step brings its card here, ringed for a moment. */
+.cf.ring { animation: cf-ring 1.6s ease-out; }
+@keyframes cf-ring { 0%, 30% { box-shadow: 0 0 0 4px var(--conflict-edge); } 100% { box-shadow: 0 0 0 4px transparent; } }
+@media (prefers-reduced-motion: reduce) { .cf.ring { animation: none; box-shadow: 0 0 0 4px var(--conflict-edge); } }
+.opt .s .link { font-size: inherit; }
+/* A clip's line: 3 matched · 2 new · ⚠ 2 conflicts: Address, Postcode. */
+.diff.tally { display: block; font-size: 12.5px; line-height: 1.5; }
+.diff.tally .sep { color: var(--muted); }
+.tally-cf { color: var(--conflict); font-weight: 700; }
+.tally-cf .link { color: var(--conflict); font-weight: 700; }
 .opt { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; align-items: center; border: 1px solid var(--border); background: var(--panel); padding: 6px 8px; }
 .opt .v { font-weight: 700; font-size: 13.5px; min-width: 0; overflow-wrap: anywhere; }
 .opt .s { grid-column: 1; color: var(--muted); font-size: 11.5px; }
@@ -92,6 +104,8 @@
 .px-grps { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; font-size: 13px; }
 .px-grps label { display: flex; gap: 6px; align-items: center; }
 .px-det { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; }
+.px-files { margin: 2px 0; padding-left: 18px; display: flex; flex-direction: column; gap: 2px; overflow-wrap: anywhere; }
+.px-files code { font-size: 11.5px; }
 
 
 /* The redaction preview */

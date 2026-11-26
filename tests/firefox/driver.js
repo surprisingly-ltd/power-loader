@@ -4,7 +4,8 @@ import { documents } from './documents.js';
 import { network } from './network.js';
 import { recovery, seedRecovery } from './recovery.js';
 import { privacyModel } from './model.js';
-import { profiles } from './profiles.js';
+import { build } from './build.js';
+import { conflicts } from './conflicts.js';
 
 const runtimeErrors = globalThis.PowerLoaderTestErrors;
 // Restored tabs from the previous browser run must not execute the next phase twice.
@@ -12,7 +13,8 @@ if (new URL(location.href).searchParams.get('testRun') === config.runId) {
   try {
     if (config.phase === 'main') {
       await workflow();
-      await profiles();
+      await build();
+      await conflicts();
       await network();
       await documents();
       await privacyModel();

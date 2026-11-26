@@ -1,0 +1,23 @@
+{
+  "schema": "powerloader-profile/1",
+  "id": "cm/notes",
+  "kind": "extract",
+  "name": "Case file notes",
+  "version": "v1",
+  "match": [
+    "http://localhost:8787/demo/cm/notes-*.html*"
+  ],
+  "urlPattern": "http://localhost:8787/demo/cm/notes-{ref}.html",
+  "when": "#notes",
+  "fields": {
+    "notes": [
+      ".note",
+      {
+        "@type": "note",
+        "date": "small .date | date",
+        "by": "small .by",
+        "text": "p"
+      }
+    ]
+  }
+}

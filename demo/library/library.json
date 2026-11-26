@@ -1,6 +1,6 @@
 {
   "schema": "powerloader-library/1",
-  "commit": "c8e1e9b",
+  "commit": "9b83d8a",
   "message": "Demo library for the fictional Northshire pages",
   "approvedHosts": [
     "localhost:8787",
@@ -8,8 +8,36 @@
   ],
   "files": [
     {
+      "path": "access.json",
+      "sha256": "232243c7bc234465000f61851805644dd856ec4b2a50830b9ab40474e04ad729"
+    },
+    {
       "path": "fields.json",
-      "sha256": "e3c9688bd6bd4e9976f8eb95d40686dc15d41296ca09930ca63dbd818fd2dbec"
+      "sha256": "8a9453ab617f85defb5e306732a640c6f0c62febbebaf8a0b5c4890410745886"
+    },
+    {
+      "path": "flows/change-of-circumstances.flow.json",
+      "sha256": "af92e28d3a6813a5fe3e399ba903fbb9228d67cea5fa14622e32e9ee044c8a34"
+    },
+    {
+      "path": "flows/discretionary-housing-payment.flow.json",
+      "sha256": "8ae847ba6c8eed064d4e1b119e73fc66ca661161ee2d16bab05a580f46f44523"
+    },
+    {
+      "path": "flows/housing-support-referral.flow.json",
+      "sha256": "07074b6f6cca7557130055cb7cf925a10b631dca2a549267c6c83892b4a149dd"
+    },
+    {
+      "path": "flows/inbox-triage.flow.json",
+      "sha256": "1b2f1adfe1fb6ff65eddfa0ad5678cab6b35f4ae3872eb759411fc38818f7b73"
+    },
+    {
+      "path": "flows/rent-support-review-messages-as-data.flow.json",
+      "sha256": "74dc20b8ba76dba81f206f549044959ce907bf22bed06f38b299ce8ad696ceef"
+    },
+    {
+      "path": "flows/rent-support-review.flow.json",
+      "sha256": "abf92015ff8a45685fbea333ca9521103851e4bbb817ea61c03ff47fe7adcdb2"
     },
     {
       "path": "forms/coc.json",
@@ -24,8 +52,12 @@
       "sha256": "3c6611e64acf4847a3405af4e586906a3723a361890c7087dd0ae63e612c731f"
     },
     {
+      "path": "forms/rsr.json",
+      "sha256": "f7d5d311c4ad2891ad452ebd95a1997563148599732f81646cf92c082c4bbfa8"
+    },
+    {
       "path": "privacy.json",
-      "sha256": "8cf2e4f84250679d589d98d510919d963df33def789d10faa2a27a925b1fcfa1"
+      "sha256": "62fae0bb38d0504fe9c23513bcee2a6a4db0598d0358dfe1a113a5afe18776b2"
     },
     {
       "path": "profiles/documents/payslip.json",
@@ -44,20 +76,60 @@
       "sha256": "5129cc0f1dae49be585d28e4213d8a4085281ff193fed90a8e1a3af6814792b4"
     },
     {
+      "path": "profiles/fill/rent-review.json",
+      "sha256": "145877218334c6c86a80d97b4ad0c10b18e4d072ce7a8c4b3939fa1e450cbad5"
+    },
+    {
       "path": "profiles/pages/biv/employment.json",
       "sha256": "1b34907e5567c1299b856de78cb5f95ce32cb8e352743975f23035add4bc3261"
+    },
+    {
+      "path": "profiles/pages/biv/income.json",
+      "sha256": "3b4574737754cf12af3d05f41127a6d70a9673ccc4eeac5e48e0d7912a0d3898"
     },
     {
       "path": "profiles/pages/cm/case-notes.json",
       "sha256": "a06d394db2630a299a3ecd7f6a73919cc1f034be64089fcf047fa05b3a30725d"
     },
     {
+      "path": "profiles/pages/cm/case.json",
+      "sha256": "d4cd7a1a4b452d52b5ad31fee3398df742a404a0aed3dc6a4d229674eef05b69"
+    },
+    {
       "path": "profiles/pages/cm/client-record.json",
       "sha256": "f62531075da761ba22cc89451fcde6225fb4843e90a607772978eb70f9ebb3fc"
     },
     {
+      "path": "profiles/pages/cm/notes.json",
+      "sha256": "72828e36e1e3c70d53ae0f1cb1adabf9dc11ce157dd4b6ed1f79ecebf9a6855a"
+    },
+    {
       "path": "profiles/pages/harbour-homes/rent-account.json",
       "sha256": "025fbe83531c0f4535feb318e75c19cad0d883f1343dadbfa6ab032c490059a5"
+    },
+    {
+      "path": "profiles/pages/harbour-homes/tenancy.json",
+      "sha256": "000aae27b07343a6ceca2ac9f22b342054de7bfd821beab257018c864c49dc3d"
+    },
+    {
+      "path": "profiles/pages/messages/inbox-message.json",
+      "sha256": "db5cb05ab3f57a3e095290599e8c3b2c31bc04b568408b98c4322ca82ea6b7b7"
+    },
+    {
+      "path": "profiles/pages/messages/inbox.json",
+      "sha256": "e28b657f60eec0a8e8340801c93ac98e6ece67f44d9e1e08e5896fd2c16b5198"
+    },
+    {
+      "path": "profiles/pages/messages/message.json",
+      "sha256": "8da4514396631bf7a2dbee0ce0e31de7b65427a9a27c3d48667c3677c9524a18"
+    },
+    {
+      "path": "profiles/pages/messages/messages-data.json",
+      "sha256": "d0096b626db28c1c1d983ec21b224de8dfdb522753d1c3122fc333231986769f"
+    },
+    {
+      "path": "profiles/pages/messages/referral.json",
+      "sha256": "c4dacb4e5b7718dd99cf8cbc96d99cf061c1c25edad28349a02b29166c8cc433"
     }
   ],
   "history": {

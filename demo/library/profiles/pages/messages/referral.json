@@ -1,0 +1,21 @@
+{
+  "schema": "powerloader-profile/1",
+  "id": "messages/referral",
+  "kind": "extract",
+  "name": "Referral",
+  "version": "v1",
+  "match": [
+    "http://localhost:8787/demo/messages/message/*"
+  ],
+  "urlPattern": "http://localhost:8787/demo/messages/message/{messageId}.html",
+  "when": "#referral",
+  "fields": {
+    "clientId": "#referral label(Client ID)",
+    "firstName": "#referral label(Client name) | regex:^(\\S+)",
+    "lastName": "#referral label(Client name) | regex:(\\S+)$",
+    "dob": "#referral label(Date of birth) | date",
+    "referralReason": "#referral label(Reason)",
+    "referralUrgency": "#referral label(Urgency)",
+    "referralRespondBy": "#referral label(Respond by) | date"
+  }
+}

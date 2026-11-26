@@ -42,7 +42,7 @@ const settle = (p) => p.waitForTimeout(250);
 
 async function libraryState(page) {
   const set = await page.evaluate(() => window.__previewLibrary());
-  return { library: { current: set.commit, sets: { [set.commit]: set }, lastSync: { at: new Date().toISOString(), ok: true, commit: set.commit } }, starred: ['hsr', 'dhp'], settings: { library: { baseUrl: 'http://localhost:8787/demo/library/', branch: 'main' } } };
+  return { library: { current: set.commit, sets: { [set.commit]: set }, lastSync: { at: new Date().toISOString(), ok: true, commit: set.commit } }, starred: ['flows/discretionary-housing-payment.flow.json'], settings: { library: { baseUrl: 'http://localhost:8787/demo/library/', branch: 'main' } } };
 }
 
 async function extPage(file, { width, height, local, session, url } = {}) {
@@ -62,10 +62,10 @@ async function extension() {
   await seed.close();
   const sb = await extPage('sidebar/sidebar.html', { width: 384, height: 900, local: lib, url: 'http://localhost:8787/demo/index.html' });
   await shot(sb, 'ext-1-start', { fullPage: true });
-  await sb.getByRole('checkbox', { name: 'Select Housing support referral' }).first().check();
-  await sb.getByRole('checkbox', { name: 'Select Discretionary housing payment' }).first().check();
+  // Every case is a case of a flow: start the library's, and confirm its pages are untested here.
+  await sb.locator('[data-key="start-flow-f-lib-discretionary-housing-payment"]').click();
   await settle(sb);
-  await sb.getByRole('button', { name: /^Start case: / }).click();
+  await sb.getByRole('dialog').getByRole('button', { name: 'Start case', exact: true }).click();
   await settle(sb);
   await sb.evaluate(() => window.__previewGo('client-1042.html')); await settle(sb);
   await shot(sb, 'ext-2-recognised');
@@ -77,6 +77,12 @@ async function extension() {
   await sb.evaluate(() => window.__previewGo('dhp.html')); await settle(sb);
   await shot(sb, 'ext-4-form');
   for (const tab of ['Tools', 'Privacy', 'Settings']) { await sb.getByRole('tab', { name: tab }).click(); await settle(sb); await shot(sb, `ext-5-${tab.toLowerCase()}`, { fullPage: true }); }
+  // Build: the flows, and the templates they use.
+  await sb.locator('[data-key="mode-build"]').click(); await settle(sb);
+  await shot(sb, 'ext-5-build', { fullPage: true });
+  await sb.getByRole('tab', { name: 'Templates' }).click(); await settle(sb);
+  await shot(sb, 'ext-5-templates', { fullPage: true });
+  await sb.locator('[data-key="mode-casework"]').click(); await settle(sb);
   await sb.getByRole('tab', { name: /^Case/ }).click(); await settle(sb);
   await click(sb, 'Finish case');
   await shot(sb, 'ext-6-finish');

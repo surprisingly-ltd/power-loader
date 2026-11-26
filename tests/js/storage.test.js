@@ -1,8 +1,8 @@
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { demoSet } from './helpers/library.js';
-import { startCase, updateCase, getCase } from '../../extension/lib/core.js';
+import { demoSet, startDemoFlow } from './helpers/library.js';
+import { updateCase, getCase } from '../../extension/lib/core.js';
 import { endCase, completeTeardown, CASE_ENDED } from '../../extension/lib/teardown.js';
 import { addClip, setManual } from '../../extension/lib/case.js';
 
@@ -51,18 +51,18 @@ beforeEach(() => {
 
 const clip = (values, source = 'p|u') => ({ source, kind: 'page', profile: { id: 'p', version: 'v1' }, name: 'Page', url: 'https://cm.example/clients/C-1', values, records: [], extra: {} });
 
-test('a case needs the library, and only one case is open at a time', async () => {
-  await assert.rejects(startCase([]), /at least one form/);
-  const c = await startCase(['hsr'], { ref: 'CM-1' });
+test('a case starts from a flow, needs it to be there, and only one case is open at a time', async () => {
+  await assert.rejects(startDemoFlow('Change of circumstances'), /Make a form to fill first/);
+  const c = await startDemoFlow('Housing support referral', { ref: 'CM-1' });
   assert.equal(state.case.id, c.id);
   assert.equal(state.case.log[0].activity, 'start_case');
-  await assert.rejects(startCase(['dhp']), /one case at a time/);
+  await assert.rejects(startDemoFlow('Discretionary housing payment'), /one case at a time/);
   state = {};
-  await assert.rejects(startCase(['hsr']), /Connect the forms library/);
+  await assert.rejects(startDemoFlow('Housing support referral'), /no longer in the library/);
 });
 
 test('overlapping updates from two contexts both land', async () => {
-  const c = await startCase(['hsr']);
+  const c = await startDemoFlow('Housing support referral');
   await Promise.all([
     updateCase(c.id, (cs, lib) => addClip(cs, lib, clip({ firstName: 'Maria' }))),
     secondClient.mutateStorage(({ case: cs }) => { cs.manual.reason = 'From another context'; return { patch: { case: cs } }; }, ['case']),
@@ -75,7 +75,7 @@ test('overlapping updates from two contexts both land', async () => {
 });
 
 test('a result that arrives after Finish is dropped, not written into storage', async () => {
-  const c = await startCase(['hsr']);
+  const c = await startDemoFlow('Housing support referral');
   await updateCase(c.id, (cs, lib) => addClip(cs, lib, clip({ firstName: 'Maria' })));
   const receipt = await endCase(c.id, 'finished');
   assert.deepEqual(receipt.counts, { clips: 1, values: 1, decisions: 0, workings: 0 });
@@ -86,7 +86,7 @@ test('a result that arrives after Finish is dropped, not written into storage', 
 });
 
 test('teardown archives the log without values or real links, and clears case view state', async () => {
-  const c = await startCase(['hsr'], { page: { type: 'cm/client-record@v3', pattern: 'https://cm.example/clients/{clientId}', url: 'https://cm.example/clients/C-1042' } });
+  const c = await startDemoFlow('Housing support referral', { page: { type: 'cm/client-record@v3', pattern: 'https://cm.example/clients/{clientId}', url: 'https://cm.example/clients/C-1042' } });
   await updateCase(c.id, (cs, lib) => addClip(cs, lib, clip({ firstName: 'Maria', nino: 'QQ123456C' })));
   await endCase(c.id, 'discarded');
   const [kept] = state.processLog;
@@ -103,7 +103,7 @@ test('teardown archives the log without values or real links, and clears case vi
 });
 
 test('a teardown interrupted by a closed browser completes at the next start', async () => {
-  const c = await startCase(['hsr']);
+  const c = await startDemoFlow('Housing support referral');
   state.teardown = { caseId: c.id, outcome: 'finished', startedAt: 'earlier' };
   assert.equal(await getCase(), null, 'a case being deleted is never offered again');
   await assert.rejects(updateCase(c.id, () => {}), { name: 'CaseEnded' });
@@ -116,7 +116,7 @@ test('a teardown interrupted by a closed browser completes at the next start', a
 });
 
 test('a failed commit leaves the case as it was, and later commits still run', async () => {
-  const c = await startCase(['hsr']);
+  const c = await startDemoFlow('Housing support referral');
   failWrite = true;
   await assert.rejects(updateCase(c.id, (cs) => setManual(cs, 'reason', 'lost')), /Disk full/);
   assert.equal(state.case.manual.reason, undefined);
@@ -125,7 +125,7 @@ test('a failed commit leaves the case as it was, and later commits still run', a
 });
 
 test('failed transient-data deletion remains recoverable and does not duplicate the archived log', async () => {
-  const c = await startCase(['hsr']);
+  const c = await startDemoFlow('Housing support referral');
   failSessionDelete = true;
   await assert.rejects(endCase(c.id, 'discarded'), /Session storage unavailable/);
   assert.equal(state.case, null);
@@ -139,7 +139,7 @@ test('failed transient-data deletion remains recoverable and does not duplicate 
 });
 
 test('wiping storage is serialised behind the writer', async () => {
-  await startCase(['hsr']);
+  await startDemoFlow('Housing support referral');
   await secondClient.wipeStorage();
   assert.deepEqual(Object.keys(state), ['storageRevision']);
 });

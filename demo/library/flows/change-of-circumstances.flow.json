@@ -1,0 +1,425 @@
+{
+  "schema": "powerloader-flow/1",
+  "id": "change-of-circumstances",
+  "name": "Change of circumstances",
+  "guidance": "A demo flow made from the Power Loader demo library. It fills the Change of circumstances form from the fictional Northshire pages.",
+  "hosts": [
+    "localhost:8787"
+  ],
+  "fields": {
+    "firstName": {
+      "label": "First name",
+      "identity": true,
+      "accepts": [
+        "first_name",
+        "person_name"
+      ],
+      "section": "Client"
+    },
+    "lastName": {
+      "label": "Last name",
+      "identity": true,
+      "accepts": [
+        "last_name",
+        "person_name"
+      ],
+      "section": "Client"
+    },
+    "dob": {
+      "label": "Date of birth",
+      "type": "date",
+      "identity": "strong",
+      "accepts": [
+        "date_of_birth",
+        "date"
+      ],
+      "section": "Client"
+    },
+    "nino": {
+      "label": "National Insurance number",
+      "type": "nino",
+      "identity": "strong",
+      "accepts": [
+        "nino"
+      ],
+      "section": "Client"
+    },
+    "address": {
+      "label": "Address",
+      "long": true,
+      "accepts": [
+        "address",
+        "postcode"
+      ],
+      "section": "Contact"
+    },
+    "postcode": {
+      "label": "Postcode",
+      "type": "postcode",
+      "accepts": [
+        "postcode"
+      ],
+      "section": "Contact"
+    },
+    "phone": {
+      "label": "Telephone",
+      "type": "phone",
+      "accepts": [
+        "phone"
+      ],
+      "section": "Contact"
+    },
+    "currentEmployer": {
+      "label": "Current employer",
+      "section": "Income"
+    },
+    "weeklyIncome": {
+      "label": "Weekly income",
+      "type": "money",
+      "section": "Income"
+    },
+    "reason": {
+      "label": "Reason for application",
+      "long": true,
+      "manual": true,
+      "section": "Your assessment"
+    }
+  },
+  "journey": [
+    "p-00000001",
+    "p-00000002",
+    "p-00000003"
+  ],
+  "timelines": [],
+  "pages": [
+    {
+      "id": "p-00000003",
+      "role": "output",
+      "name": "Change of circumstances",
+      "url": "",
+      "required": [
+        "firstName",
+        "lastName",
+        "dob",
+        "nino",
+        "address",
+        "postcode",
+        "currentEmployer",
+        "weeklyIncome",
+        "reason"
+      ],
+      "step": {
+        "text": "Open Change of circumstances, fill it from the case, check every box, then submit it yourself.",
+        "links": []
+      },
+      "formId": "coc",
+      "form": {
+        "version": "v6",
+        "short": "CoC",
+        "category": "Benefits"
+      }
+    },
+    {
+      "id": "p-00000001",
+      "role": "input",
+      "name": "Employment and income",
+      "url": "http://localhost:8787/demo/employment-{clientId}.html",
+      "required": [],
+      "step": {
+        "text": "Open the client’s employment and income and clip it.",
+        "links": []
+      },
+      "profileId": "biv/employment",
+      "kind": "extract",
+      "profile": {
+        "schema": "powerloader-profile/1",
+        "id": "biv/employment",
+        "kind": "extract",
+        "name": "Employment and income",
+        "version": "v2",
+        "match": [
+          "http://localhost:8787/demo/employment-*.html*"
+        ],
+        "urlPattern": "http://localhost:8787/demo/employment-{clientId}.html",
+        "fields": {
+          "lastName": "#person label(Surname)",
+          "nino": "#person label(NI number)",
+          "dob": "#person label(Date of birth) | date",
+          "currentEmployer": "#person label(Current employer)",
+          "weeklyIncome": "#person label(Weekly income) | number",
+          "periods": [
+            "#history tbody tr",
+            {
+              "@type": "period",
+              "cat": "td:nth-child(1)",
+              "label": "td:nth-child(2)",
+              "start": "td:nth-child(3) | date",
+              "end": "td:nth-child(4) | date"
+            }
+          ]
+        }
+      },
+      "picks": [
+        {
+          "key": "lastName",
+          "selector": "#person label(Surname)",
+          "part": "all"
+        },
+        {
+          "key": "nino",
+          "selector": "#person label(NI number)",
+          "part": "all"
+        },
+        {
+          "key": "dob",
+          "selector": "#person label(Date of birth) | date",
+          "part": "all"
+        },
+        {
+          "key": "currentEmployer",
+          "selector": "#person label(Current employer)",
+          "part": "all"
+        },
+        {
+          "key": "weeklyIncome",
+          "selector": "#person label(Weekly income) | number",
+          "part": "all"
+        }
+      ]
+    },
+    {
+      "id": "p-00000002",
+      "role": "input",
+      "name": "Client record",
+      "url": "http://localhost:8787/demo/client-{clientId}.html",
+      "required": [],
+      "step": {
+        "text": "Open the client’s client record and clip it.",
+        "links": []
+      },
+      "profileId": "cm/client-record",
+      "kind": "extract",
+      "profile": {
+        "schema": "powerloader-profile/1",
+        "id": "cm/client-record",
+        "kind": "extract",
+        "name": "Client record",
+        "version": "v3",
+        "match": [
+          "http://localhost:8787/demo/client-*.html*"
+        ],
+        "urlPattern": "http://localhost:8787/demo/client-{clientId}.html",
+        "when": "#client-header",
+        "fields": {
+          "firstName": "table.details label(First name)",
+          "lastName": "table.details label(Last name)",
+          "dob": "table.details label(Date of birth) | date",
+          "nino": "table.details label(NI number)",
+          "phone": "#c-phone",
+          "address": "#c-address | oneline",
+          "postcode": "#c-address | regex:([A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2})"
+        }
+      },
+      "picks": [
+        {
+          "key": "firstName",
+          "selector": "table.details label(First name)",
+          "part": "all"
+        },
+        {
+          "key": "lastName",
+          "selector": "table.details label(Last name)",
+          "part": "all"
+        },
+        {
+          "key": "dob",
+          "selector": "table.details label(Date of birth) | date",
+          "part": "all"
+        },
+        {
+          "key": "nino",
+          "selector": "table.details label(NI number)",
+          "part": "all"
+        },
+        {
+          "key": "phone",
+          "selector": "#c-phone",
+          "part": "all"
+        },
+        {
+          "key": "address",
+          "selector": "#c-address | oneline",
+          "part": "all"
+        },
+        {
+          "key": "postcode",
+          "selector": "#c-address | regex:([A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2})",
+          "part": "all"
+        }
+      ]
+    }
+  ],
+  "problems": [],
+  "files": {
+    "fields.json": {
+      "schema": "powerloader-fields/1",
+      "fields": {
+        "firstName": {
+          "section": "Client",
+          "label": "First name",
+          "identity": true,
+          "accepts": [
+            "first_name",
+            "person_name"
+          ]
+        },
+        "lastName": {
+          "section": "Client",
+          "label": "Last name",
+          "identity": true,
+          "accepts": [
+            "last_name",
+            "person_name"
+          ]
+        },
+        "dob": {
+          "section": "Client",
+          "label": "Date of birth",
+          "type": "date",
+          "identity": "strong",
+          "accepts": [
+            "date_of_birth",
+            "date"
+          ]
+        },
+        "nino": {
+          "section": "Client",
+          "label": "National Insurance number",
+          "type": "nino",
+          "identity": "strong",
+          "accepts": [
+            "nino"
+          ]
+        },
+        "address": {
+          "section": "Contact",
+          "label": "Address",
+          "long": true,
+          "accepts": [
+            "address",
+            "postcode"
+          ]
+        },
+        "postcode": {
+          "section": "Contact",
+          "label": "Postcode",
+          "type": "postcode",
+          "accepts": [
+            "postcode"
+          ]
+        },
+        "phone": {
+          "section": "Contact",
+          "label": "Telephone",
+          "type": "phone",
+          "accepts": [
+            "phone"
+          ]
+        },
+        "currentEmployer": {
+          "section": "Income",
+          "label": "Current employer"
+        },
+        "weeklyIncome": {
+          "section": "Income",
+          "label": "Weekly income",
+          "type": "money"
+        },
+        "reason": {
+          "section": "Your assessment",
+          "label": "Reason for application",
+          "long": true,
+          "manual": true
+        }
+      }
+    },
+    "profiles/pages/biv/employment.json": {
+      "schema": "powerloader-profile/1",
+      "id": "biv/employment",
+      "kind": "extract",
+      "name": "Employment and income",
+      "version": "v2",
+      "basedOn": {
+        "version": "v2",
+        "commit": "8926ad0"
+      },
+      "match": [
+        "http://localhost:8787/demo/employment-*.html*"
+      ],
+      "urlPattern": "http://localhost:8787/demo/employment-{clientId}.html",
+      "fields": {
+        "lastName": "#person label(Surname)",
+        "nino": "#person label(NI number)",
+        "dob": "#person label(Date of birth) | date",
+        "currentEmployer": "#person label(Current employer)",
+        "weeklyIncome": "#person label(Weekly income) | number",
+        "periods": [
+          "#history tbody tr",
+          {
+            "@type": "period",
+            "cat": "td:nth-child(1)",
+            "label": "td:nth-child(2)",
+            "start": "td:nth-child(3) | date",
+            "end": "td:nth-child(4) | date"
+          }
+        ]
+      }
+    },
+    "profiles/pages/cm/client-record.json": {
+      "schema": "powerloader-profile/1",
+      "id": "cm/client-record",
+      "kind": "extract",
+      "name": "Client record",
+      "version": "v3",
+      "basedOn": {
+        "version": "v3",
+        "commit": "8926ad0"
+      },
+      "match": [
+        "http://localhost:8787/demo/client-*.html*"
+      ],
+      "urlPattern": "http://localhost:8787/demo/client-{clientId}.html",
+      "when": "#client-header",
+      "fields": {
+        "firstName": "table.details label(First name)",
+        "lastName": "table.details label(Last name)",
+        "dob": "table.details label(Date of birth) | date",
+        "nino": "table.details label(NI number)",
+        "phone": "#c-phone",
+        "address": "#c-address | oneline",
+        "postcode": "#c-address | regex:([A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2})"
+      }
+    },
+    "steps.json": {
+      "schema": "powerloader-steps/1",
+      "steps": [
+        {
+          "id": "p-00000001",
+          "name": "Employment and income",
+          "role": "input",
+          "text": "Open the client’s employment and income and clip it.",
+          "links": [],
+          "profileId": "biv/employment"
+        },
+        {
+          "id": "p-00000002",
+          "name": "Client record",
+          "role": "input",
+          "text": "Open the client’s client record and clip it.",
+          "links": [],
+          "profileId": "cm/client-record"
+        }
+      ]
+    }
+  }
+}

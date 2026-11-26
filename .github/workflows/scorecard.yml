@@ -11,6 +11,8 @@ permissions: read-all
 
 jobs:
   analysis:
+    # Actions minutes: CI runs on the public repo only (free there); see tools/ci-local.sh.
+    if: github.repository == 'surprisingly-ltd/power-loader'
     name: scorecard
     runs-on: ubuntu-24.04
     timeout-minutes: 15

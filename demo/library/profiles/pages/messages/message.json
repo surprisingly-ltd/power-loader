@@ -1,0 +1,18 @@
+{
+  "schema": "powerloader-profile/1",
+  "id": "messages/message",
+  "kind": "extract",
+  "name": "Customer message",
+  "version": "v2",
+  "match": [
+    "http://localhost:8787/demo/messages/message/*"
+  ],
+  "urlPattern": "http://localhost:8787/demo/messages/message/{clientId}-1.html",
+  "when": "#message:not(:has(~ #referral))",
+  "fields": {
+    "clientId": "#message label(Client ID)",
+    "changeEffectiveDate": "#form label(Effective date) | date",
+    "newWeeklyIncome": "#form label(New weekly income) | number",
+    "tenancyEndDate": "#form label(Tenancy end date) | date"
+  }
+}

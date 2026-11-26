@@ -1,0 +1,23 @@
+{
+  "schema": "powerloader-policy/1",
+  "name": "Example Council",
+  "build": {
+    "id": "powerloader@example.gov.uk",
+    "updateUrl": "https://addons.example.gov.uk/powerloader/updates.json"
+  },
+  "policy": {
+    "siteAccess": {
+      "rules": [
+        {
+          "id": "no-post",
+          "effect": "deny",
+          "pattern": "*://*",
+          "actions": [
+            "fetch-post"
+          ],
+          "note": "Fetch steps never send a POST."
+        }
+      ]
+    }
+  }
+}

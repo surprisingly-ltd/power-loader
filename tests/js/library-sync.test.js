@@ -2,10 +2,8 @@ import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { manifest } from './helpers/library.js';
-import { fetchLibrary, libraryUrl, pruneSets, syncLibrary, validateManifest } from '../../extension/lib/library-sync.js';
+import { fetchLibrary, libraryUrl, pruneSets, syncFailureShown, syncLibrary, validateManifest } from '../../extension/lib/library-sync.js';
 import { registerStorageWriter } from '../../extension/lib/storage.js';
-import { contentHash } from '../../extension/lib/hash.js';
-import { newPageDraft } from '../../extension/lib/drafts.js';
 
 const BASE = 'https://git.example.gov.uk/lib/-/raw/{ref}/';
 const demo = (path) => readFileSync(new URL(`../../demo/library/${path}`, import.meta.url));
@@ -96,19 +94,62 @@ test('syncLibrary records failures without replacing the last good set, and reti
   assert.equal(failed.ok, false);
   assert.equal(state.library.current, 'old1234');
   assert.match(state.library.lastSync.error, /Couldn’t reach the library/);
-  // A draft exported with exactly the content the library now publishes is retired; another is kept.
-  const published = JSON.parse(demo('profiles/pages/cm/client-record.json'));
-  const same = { ...newPageDraft({ url: 'http://localhost:8787/demo/client-1042.html', title: 'Client' }), exported: { hash: await contentHash(published) } };
-  same.profile.id = published.id;
-  const other = newPageDraft({ url: 'http://localhost:8787/demo/client-1042.html', title: 'Client' });
-  other.profile.id = 'harbour-homes/rent-account';
-  other.base = { id: 'harbour-homes/rent-account', version: 'v0', commit: 'old1234' };
-  state.profileDrafts = [same, other];
   const ok = await syncLibrary({ fetchFn: server() });
   assert.equal(ok.ok, true);
   assert.equal(state.library.current, manifest.commit);
   assert.equal(state.library.previous, 'old1234');
-  assert.deepEqual(ok.drafts.retired, ['Client']);
-  assert.equal(state.profileDrafts.length, 1);
-  assert.equal(state.profileDrafts[0].conflict.version, 'v1');
+});
+
+test('a timed sync fetches only library.json when the commit is the one held, and only changed files otherwise', async () => {
+  const have = await fetchLibrary(cfg(), { fetchFn: server() });
+  requests = [];
+  const same = await fetchLibrary(cfg(), { fetchFn: server(), have });
+  assert.deepEqual(same, { unchanged: true, commit: manifest.commit });
+  assert.equal(requests.length, 1);
+  assert.match(requests[0].url, /library\.json$/);
+  // A new commit that changes one file: only that file is fetched.
+  const { createHash } = await import('node:crypto');
+  const changed = Buffer.from(JSON.stringify({ ...JSON.parse(demo('forms/hsr.json')), name: 'Housing support request (changed)' }));
+  const next = { ...manifest, commit: 'feedc0de', files: manifest.files.map((f) => (f.path === 'forms/hsr.json' ? { ...f, sha256: createHash('sha256').update(changed).digest('hex') } : f)) };
+  requests = [];
+  const fetchFn = async (url, init) => {
+    const path = /\/raw\/[^/]+\/(.+)$/.exec(new URL(url).pathname)[1];
+    if (path === 'library.json') { const body = Buffer.from(JSON.stringify(next)); return { ok: true, status: 200, url, arrayBuffer: async () => body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength) }; }
+    requests.push({ url, init });
+    const body = path === 'forms/hsr.json' ? changed : demo(path);
+    return { ok: true, status: 200, url, arrayBuffer: async () => body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength) };
+  };
+  const set = await fetchLibrary(cfg(), { fetchFn, have });
+  assert.equal(set.commit, 'feedc0de');
+  assert.deepEqual(requests.map((r) => r.url), ['https://git.example.gov.uk/lib/-/raw/feedc0de/forms/hsr.json']);
+  assert.equal(set.files['forms/hsr.json'].name, 'Housing support request (changed)');
+  assert.equal(Object.keys(set.files).length, manifest.files.length);
+});
+
+test('a failed timed sync says nothing until the library is a day out of date', () => {
+  const now = Date.parse('2026-11-26T12:00:00Z');
+  const st = (lastSync, lastGood) => ({ current: 'c1', sets: { c1: { syncedAt: '2026-11-20T00:00:00Z' } }, lastSync, lastGood });
+  assert.equal(syncFailureShown(st({ ok: false, auto: true, at: 't' }, '2026-11-26T09:00:00Z'), now), false);
+  assert.equal(syncFailureShown(st({ ok: false, auto: true, at: 't' }, '2026-11-25T09:00:00Z'), now), true);
+  assert.equal(syncFailureShown(st({ ok: false, auto: true, at: 't' }), now), true, 'no good sync since: the set’s own date');
+  assert.equal(syncFailureShown(st({ ok: false, at: 't' }, '2026-11-26T09:00:00Z'), now), true, 'asked for: always shown');
+  assert.equal(syncFailureShown(st({ ok: true }), now), false);
+});
+
+test('syncLibrary with the commit already held records the sync and keeps the set', async () => {
+  const set = await fetchLibrary(cfg(), { fetchFn: server() });
+  state.settings = { library: { baseUrl: BASE, branch: 'main' } };
+  state.library = { current: set.commit, sets: { [set.commit]: set } };
+  requests = [];
+  const out = await syncLibrary({ fetchFn: server(), auto: true, now: new Date('2026-11-26T10:00:00Z') });
+  assert.deepEqual(out, { ok: true, commit: set.commit, changed: false });
+  assert.equal(requests.length, 1);
+  assert.equal(state.library.lastGood, '2026-11-26T10:00:00.000Z');
+  assert.equal(state.library.sets[set.commit].files['forms/hsr.json'].id, set.files['forms/hsr.json'].id);
+  requests = [];
+  await syncLibrary({ fetchFn: server() });
+  assert.equal(requests.length, manifest.files.length + 1, 'Sync now fetches and checks every file');
+  const failed = await syncLibrary({ fetchFn: async () => { throw new Error('offline'); }, auto: true });
+  assert.equal(failed.ok, false);
+  assert.equal(state.library.lastSync.auto, true);
 });

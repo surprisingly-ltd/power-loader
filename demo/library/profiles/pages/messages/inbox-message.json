@@ -1,0 +1,30 @@
+{
+  "schema": "powerloader-profile/1",
+  "id": "messages/inbox-message",
+  "kind": "extract",
+  "name": "Inbox message",
+  "version": "v1",
+  "fetchOnly": true,
+  "match": [
+    "http://localhost:8787/demo/messages/message/*"
+  ],
+  "urlPattern": "http://localhost:8787/demo/messages/message/{messageId}.html",
+  "when": "#message",
+  "fields": {
+    "item": [
+      "main",
+      {
+        "@type": "inboxItem",
+        "messageId": "#message label(Message ID)",
+        "type": "#message label(Type)",
+        "client": "#message label(Client ID)",
+        "from": "#message label(From)",
+        "received": "#message label(Received) | date",
+        "urgency": "#referral label(Urgency)",
+        "status": "#referral label(Referral status)",
+        "reason": "#referral label(Reason)",
+        "respondBy": "#referral label(Respond by) | date"
+      }
+    ]
+  }
+}

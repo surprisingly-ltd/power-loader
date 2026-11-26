@@ -13,9 +13,22 @@ test('the demo library manifest lists every file with its current hash', async (
 test('the demo library is valid and complete', () => {
   const lib = demoLibrary();
   assert.deepEqual(lib.problems, []);
-  assert.deepEqual(Object.keys(lib.forms).sort(), ['coc', 'dhp', 'hsr']);
+  assert.deepEqual(Object.keys(lib.forms).sort(), ['coc', 'dhp', 'hsr', 'rsr']);
+  assert.equal(fillProfileFor(lib, 'rsr').id, 'fill/rent-review');
   assert.equal(fillProfileFor(lib, 'hsr').id, 'fill/housing-referral');
   assert.equal(fillProfileFor(lib, 'coc'), null);
+});
+
+test('a library’s own steps.json is reported as a file it shouldn’t have, and not read: steps belong to a flow', () => {
+  const set = demoSet();
+  const step = { id: 'g', name: 'Queue', role: 'guide', text: '', url: 'http://localhost:8787/demo/cases.html', match: ['http://localhost:8787/demo/cases.html*'] };
+  const lib = indexLibrary({ ...set, files: { ...set.files, 'steps.json': { schema: 'powerloader-steps/1', steps: [step] } } });
+  assert.match(lib.problems.find((p) => p.path === 'steps.json').errors[0], /A library doesn’t have steps of its own: steps belong to a flow/);
+  assert.deepEqual(lib.steps, []);
+  // The set a flow compiles to keeps its steps: that is how a case's steps are stored.
+  const flowLib = indexLibrary({ ...set, commit: 'flow-abc-123', flow: { id: 'f-abc', name: 'Queue' }, files: { ...set.files, 'steps.json': { schema: 'powerloader-steps/1', steps: [step] } } });
+  assert.equal(flowLib.problems.find((p) => p.path === 'steps.json'), undefined);
+  assert.deepEqual(flowLib.steps.map((s) => s.id), ['g']);
 });
 
 test('library profiles are untrusted: bad hosts, clicking and broken forms are skipped and reported', () => {
@@ -52,17 +65,3 @@ test('pages are matched to profiles, specific ones first, and confirmations to f
   assert.equal(confirmationFor(lib, 'http://localhost:8787/demo/dhp-submitted.html', 'No reference here'), null);
 });
 
-test('a tested draft in use replaces the published profile it is based on, and only while unchanged', async () => {
-  const { draftFromProfile, judgeTest, recordTest, setUse, editDraft } = await import('../../extension/lib/drafts.js');
-  const lib = demoLibrary();
-  const d = draftFromProfile(lib.profiles.find((p) => p.id === 'cm/client-record'), lib.commit);
-  const url = 'http://localhost:8787/demo/client-1042.html';
-  assert.equal(pageProfiles(lib, url, [d])[0].draft, undefined);
-  recordTest(d, judgeTest(d, Object.fromEntries(Object.keys(d.profile.fields).map((k) => [k, { count: 1, value: k === 'dob' ? '1986-07-14' : k === 'nino' ? 'QQ123456C' : k === 'phone' ? '07700 900123' : k === 'email' ? 'a@b.cd' : k === 'postcode' ? 'NS1 4AB' : k === 'contactPref' ? 'Phone' : 'x' }])), { url, lib }));
-  setUse(d, true);
-  assert.equal(pageProfiles(lib, url, [d])[0].draft, d.id);
-  assert.equal(pageProfiles(lib, url, [d]).length, 1);
-  editDraft(d, (p) => { p.name = 'Changed'; });
-  d.use = true; // even if something left it switched on
-  assert.equal(pageProfiles(lib, url, [d])[0].draft, undefined);
-});

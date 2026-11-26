@@ -21,3 +21,19 @@ export function extractDemo(lib, page, profileId) {
   const res = globalThis.PowerLoaderExtract.extract(doc, profile, { baseUrl: url });
   return { profile, res: { ...res, url, title: doc.title } };
 }
+
+/** The demo library's flow file with this name: its path in the library (flows/…). */
+export function demoFlowPath(name) {
+  const path = manifest.files.map((f) => f.path).filter((p) => p.startsWith('flows/')).find((p) => JSON.parse(read(`demo/library/${p}`)).name === name);
+  if (!path) throw new Error(`The demo library has no flow called ${name}`);
+  return path;
+}
+
+/**
+ * Start a case from one of the demo library's flows, as the start screen does: every case is a case of a flow.
+ * Needs the demo library in browser.storage, as the tests that use it set up.
+ */
+export async function startDemoFlow(name, opts = {}) {
+  const { startFlowCase } = await import('../../../extension/lib/core.js');
+  return startFlowCase(null, { ...opts, libraryPath: demoFlowPath(name) });
+}

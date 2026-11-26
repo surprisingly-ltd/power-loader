@@ -61,9 +61,9 @@ function call(msg, { onProgress, signal } = {}) {
   });
 }
 
-/** Load and test the model from its source ({ baseUrl, modelId, revision, hashes }). */
+/** Load and test the model from its source ({ layout, baseUrl or filesUrl, modelId, revision, hashes }). */
 export async function loadModel(source) {
-  if (!source?.baseUrl || !source.revision || /PLACEHOLDER/.test(source.revision)) {
+  if (!(source?.baseUrl || source?.filesUrl) || !source.revision || /PLACEHOLDER/.test(source.revision)) {
     set({ state: 'failed', reason: 'config', message: 'No model server address and pinned revision are set yet' });
     return model;
   }

@@ -1,0 +1,12 @@
+[
+  {
+    "setting": "gateway.baseUrl",
+    "value": "https://ai.example.gov.uk/v1",
+    "allowed": false
+  },
+  {
+    "url": "https://records.example.gov.uk/clients/1",
+    "action": "read",
+    "allowed": true
+  }
+]

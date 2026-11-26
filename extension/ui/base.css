@@ -18,6 +18,10 @@
   --amber: #f47738;
   --danger: #d4351c;
   --danger-soft: #f4cdc6;
+  /* A conflict is a decision waiting, not something broken: orange, never red. Text 6.6:1 on white; the edge 4:1. */
+  --conflict: #a33c00;
+  --conflict-soft: #fdebe0;
+  --conflict-edge: #d55a00;
   --ok: #00703c;
   --ok-soft: #cce2d8;
   --btn: #f3f2f1;
@@ -83,6 +87,14 @@ button.link:hover:not(:disabled) { color: var(--link-hover); background: none; t
 button.link.danger { color: var(--danger); }
 button.link.magic { color: var(--magic); }
 button.icon { padding: 4px 8px 3px; }
+/* A link drawn as a button: for a mailto: link, which has to be a real link to open the email app. */
+a.button { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; cursor: pointer;
+  background: var(--btn); color: var(--text); border: 2px solid transparent; box-shadow: 0 2px 0 var(--btn-edge);
+  padding: 6px 12px 5px; margin-bottom: 2px; line-height: 1.25; }
+a.button.sm { padding: 3px 9px 2px; font-size: 13px; }
+a.button.primary { background: var(--ok); color: #fff; box-shadow: 0 2px 0 #002d18; }
+a.button.primary:hover { background: #005a30; }
+a.button:active { transform: translateY(2px); box-shadow: none; }
 .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -1px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 

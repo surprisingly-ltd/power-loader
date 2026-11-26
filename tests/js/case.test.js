@@ -2,9 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { demoLibrary, extractDemo } from './helpers/library.js';
 import {
-  addClip, addForm, caseKeys, caseText, clipDependents, clipFromExtract, clipImpact, conflictKeys, decide, excludeValue,
+  addClip, caseKeys, caseText, clipDependents, clipFromExtract, clipImpact, conflictKeys, decide, excludeValue,
   fieldState, fillStale, formProgress, identityWarnings, markSubmitted, neededBy, newCase, notNeededKeys, removeClip,
-  removeForm, setManual, unmarkSubmitted,
+  setManual, unmarkSubmitted,
 } from '../../extension/lib/case.js';
 import { validateValue, checkRules } from '../../extension/lib/fields.js';
 
@@ -135,16 +135,6 @@ test('a fill is stale when the case no longer holds what was filled', () => {
   assert.deepEqual(fillStale(c, lib, 'hsr'), { reason: 'changed', keys: ['phone'] });
 });
 
-test('removing a target form keeps evidence only it needed, marked not needed', () => {
-  const c = newCase(lib, ['hsr', 'dhp']);
-  addClip(c, lib, rent());
-  assert.throws(() => removeForm({ ...c, forms: [c.forms[0]] }, 'hsr'), /at least one form/);
-  removeForm(c, 'dhp');
-  assert.ok(notNeededKeys(c, lib).includes('landlord'));
-  addForm(c, lib, 'dhp');
-  assert.deepEqual(notNeededKeys(c, lib), ['tenancyType']);
-});
-
 test('observed submissions are not downgraded to reported', () => {
   const c = newCase(lib, ['hsr', 'dhp']);
   markSubmitted(c, 'dhp', { how: 'observed', ref: 'DHP-20417', at: 't1' });
@@ -179,4 +169,52 @@ test('field validators and rules', () => {
   assert.equal(validateValue({ options: ['Low', 'High'] }, 'Medium').ok, false);
   assert.deepEqual(checkRules([{ field: 'a', before: 'b', message: 'A first' }], { a: '2026-02-01', b: '2026-01-01' }, '2026-10-19'), [{ field: 'a', keys: ['a', 'b'], message: 'A first' }]);
   assert.deepEqual(checkRules([{ field: 'a', before: 'b' }], { a: '2026-02-01' }, '2026-10-19'), []);
+});
+
+// ------------------------------------------------------------------ a clip's line, worked out now
+
+test('a clip’s line is worked out from the case now: matched, new, used, overridden and conflicts', async () => {
+  const { clipTally, clipValueState, addTallies } = await import('../../extension/lib/case.js');
+  const c = newCase(lib, ['hsr', 'dhp']);
+  const m = addClip(c, lib, maria());
+  const r = addClip(c, lib, rent());
+  const mc = c.clips.find((x) => x.id === m.clipId);
+  const rc = c.clips.find((x) => x.id === r.clipId);
+  // The rent account agrees on the address, has the rent alone, and disagrees on the phone.
+  let t = clipTally(c, lib, rc);
+  assert.ok(t.matched.includes('postcode') && t.matched.includes('address'));
+  assert.ok(t.new.includes('monthlyRent'));
+  assert.deepEqual(t.conflicts, ['phone']);
+  assert.deepEqual([t.used, t.overridden], [[], []]);
+  assert.equal(t.records, 11);
+  assert.equal(clipValueState(c, lib, rc, 'phone'), 'conflict');
+  assert.equal(clipValueState(c, lib, rc, 'nope'), null);
+  // Decided for the rent account: used there, overridden on the client record.
+  decide(c, lib, 'phone', rc.values.phone);
+  t = clipTally(c, lib, rc);
+  assert.deepEqual([t.conflicts, t.used, t.overridden], [[], ['phone'], []]);
+  assert.deepEqual(clipTally(c, lib, mc).overridden, ['phone']);
+  assert.equal(clipValueState(c, lib, mc, 'phone'), 'overridden');
+  // Decided the other way.
+  decide(c, lib, 'phone', mc.values.phone);
+  assert.deepEqual(clipTally(c, lib, rc).overridden, ['phone']);
+  assert.deepEqual(clipTally(c, lib, mc).used, ['phone']);
+  // A value typed in the conflict card overrides both.
+  decide(c, lib, 'phone', '07700 900000');
+  assert.deepEqual([clipTally(c, lib, rc).overridden, clipTally(c, lib, mc).overridden], [['phone'], ['phone']]);
+  // Reopened by a third source: a conflict again on every page that has it.
+  decide(c, lib, 'phone', rc.values.phone);
+  addClip(c, lib, { ...maria(), source: 'manual-note', values: { phone: '07700 900999' } });
+  assert.deepEqual(clipTally(c, lib, rc).conflicts, ['phone']);
+  assert.deepEqual(clipTally(c, lib, mc).conflicts, ['phone']);
+  // Excluded values aren't counted; a value you typed over a single source overrides it.
+  excludeValue(c, rc.id, 'postcode');
+  assert.ok(!clipTally(c, lib, rc).matched.includes('postcode'));
+  assert.equal(clipValueState(c, lib, rc, 'postcode'), 'excluded');
+  setManual(c, 'monthlyRent', '800.00');
+  assert.ok(clipTally(c, lib, rc).overridden.includes('monthlyRent'));
+  // Added up for a step that read several pages: one conflict is one, whichever pages share it.
+  const sum = addTallies([clipTally(c, lib, rc), clipTally(c, lib, mc)]);
+  assert.deepEqual(sum.conflicts, ['phone']);
+  assert.equal(sum.records, 11 + (mc.records || []).length);
 });

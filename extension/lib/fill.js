@@ -3,12 +3,9 @@
 // Pure functions, no browser APIs.
 import { fieldState, settled } from './case.js';
 import { display, norm } from './fields.js';
-import { canonical } from './hash.js';
 
-// The fill profile for a form: a tested fill draft in use on this computer, or the library's.
-export function fillProfileForCase(lib, formId, drafts = []) {
-  const draft = drafts.find((d) => d.kind === 'fill' && d.use && d.profile.form?.id === formId && d.tested?.ok && d.tested.snapshot === canonical(d.profile));
-  if (draft) return { ...draft.profile, draft: draft.id };
+// The fill profile for a form, from the case's library (its flow's set).
+export function fillProfileForCase(lib, formId) {
   const form = lib.forms[formId];
   return lib.fill.find((p) => p.id === form?.fill) || lib.fill.find((p) => p.form?.id === formId) || null;
 }

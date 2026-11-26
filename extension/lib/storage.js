@@ -5,7 +5,7 @@ const COMMIT = 'powerloader:storage-commit';
 const WIPE = 'powerloader:storage-wipe';
 // case: the one active case. teardown: a Finish or Discard in progress, completed at the next start if interrupted.
 // cases, activeCaseId, profiles, profileSettings: data from Power Loader 0.5, kept until the caseworker downloads or deletes it.
-export const KEYS = ['case', 'teardown', 'receipt', 'starred', 'library', 'profileDrafts', 'flows', 'processLog', 'settings',
+export const KEYS = ['case', 'teardown', 'receipt', 'starred', 'library', 'flows', 'processLog', 'settings',
   'cases', 'activeCaseId', 'profiles', 'profileSettings'];
 let writer = null;
 

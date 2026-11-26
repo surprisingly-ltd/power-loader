@@ -1,0 +1,57 @@
+/* The demo's fictional casework systems (tools/build-demo-systems.mjs): one plain style, a colour per system. */
+body { font: 15px/1.45 system-ui, sans-serif; margin: 0; color: #1d2329; background: #f4f5f7; }
+.topbar { background: #24364b; color: #fff; padding: 10px 24px; display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: center; }
+.topbar .system { font-weight: 600; }
+.topbar a.system { color: #fff; text-decoration: none; margin-right: 0; }
+.topbar a.system:hover, .topbar a.system:focus { text-decoration: underline; }
+.topbar nav a[aria-current="page"] { color: #fff; font-weight: 600; }
+.topbar small { font-weight: normal; opacity: .8; }
+.topbar nav { flex: 1; }
+.topbar a { color: #cfe0f5; margin-right: 16px; }
+.sys-biv .topbar { background: #3c4a3e; }
+.sys-harbour .topbar { background: #0f6b62; }
+.sys-messages .topbar { background: #5a3d6b; }
+main { max-width: 980px; margin: 20px auto; padding: 0 16px; }
+.panel { background: #fff; border: 1px solid #dde1e6; border-radius: 6px; padding: 16px 20px; margin-bottom: 16px; }
+h1 { margin: 0 0 4px; font-size: 1.5rem; } h2 { font-size: 1.05rem; margin: 0 0 10px; }
+dl { display: grid; grid-template-columns: 200px 1fr; gap: 4px 12px; margin: 0; } dt { color: #5b6672; } dd { margin: 0; }
+table { border-collapse: collapse; width: 100%; } th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e6e9ed; vertical-align: top; }
+table.details th { width: 200px; color: #5b6672; font-weight: normal; }
+caption { text-align: left; color: #5b6672; padding-bottom: 6px; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.tag { display: inline-block; padding: 1px 8px; border-radius: 10px; background: #fde7c4; font-size: .85rem; }
+.tag.new { background: #d2e8d4; } .tag.in-progress { background: #d6e4f5; } .tag.with-you { background: #d6e4f5; } .tag.done { background: #e2e5e9; color: #3b4450; }
+tr.done td { color: #6b7480; }
+.note { border-left: 3px solid #9fb6cf; padding-left: 10px; margin-bottom: 12px; } .note small { color: #5b6672; }
+.breadcrumbs { color: #5b6672; }
+.button, button { display: inline-block; font: inherit; padding: 6px 14px; border-radius: 4px; border: 1px solid #24364b; background: #24364b; color: #fff; text-decoration: none; cursor: pointer; }
+button.secondary { background: #fff; color: #24364b; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.paging { margin-top: 12px; } .paging a, .paging span { margin-right: 8px; } .paging [aria-current] { font-weight: 700; }
+.reset { margin-top: 16px; color: #5b6672; font-size: .9rem; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.foot { max-width: 980px; margin: 0 auto 24px; padding: 0 16px; color: #5b6672; font-size: .85rem; }
+/* The staff intranet: a procedure in numbered steps, with parts to open. Usable with everything open and in print. */
+.sys-intranet .topbar { background: #6b3a1f; }
+.sys-intranet .meta { color: #5b6672; }
+.step h2 { font-size: 1.15rem; } .step-no { color: #6b3a1f; }
+.step:target { outline: 3px solid #e0a96d; }
+details { border-left: 3px solid #e0a96d; padding: 2px 0 2px 10px; margin: 10px 0; }
+details > summary { cursor: pointer; font-weight: 600; }
+details > summary:focus-visible { outline: 2px solid #24364b; outline-offset: 2px; }
+.template { background: #faf6f1; border: 1px dashed #c9a57f; padding: 8px 12px; border-radius: 4px; }
+.timing { background: #f1f6fa; padding: 8px 12px; border-radius: 4px; }
+/* An accordion: its section is closed until its button (or a template's reveal rule) adds accordion--open. */
+.accordion { margin-top: 12px; border-top: 1px solid #b1b4b6; }
+.accordion__head { margin: 0; font-size: 1rem; }
+.accordion__button { all: unset; cursor: pointer; display: block; width: 100%; padding: 8px 0; color: #1d70b8; font-weight: 700; text-decoration: underline; }
+.accordion__button::before { content: "+ "; }
+.accordion--open .accordion__button::before { content: "\2212  "; }
+.accordion__button:focus-visible { outline: 3px solid #fd0; }
+.accordion:not(.accordion--open) .accordion__body { display: none; }
+@media print {
+  .topbar nav, .foot { display: none; }
+  details { border: 0; padding: 0; }
+  details::details-content { content-visibility: visible; display: block; }
+  .panel { break-inside: avoid; border: 0; }
+}

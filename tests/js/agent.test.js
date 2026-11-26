@@ -33,3 +33,37 @@ test('labels on the page can be added without a pointer', async () => {
   assert.ok(candidates.some((c) => c.selector === '#tenancy label(Arrears)' && c.value === '£1,245.60'));
   assert.equal(a.doc.querySelector('[data-powerloader-pick="on"]').textContent, '£1,245.60');
 });
+
+// Site rules (docs/plans/site-access-lists.md): ask() checks the tab's address and sends it as atUrl. The agent
+// refuses when the page has moved on since, so a pushState or redirect between the check and the act fails safe.
+test('every message that reads, fills, draws or captures refuses when the address changed after the check', async () => {
+  const a = agentOn('client-1042.html');
+  const checked = a.w.location.href;
+  const profile = { fields: { firstName: 'label(First name)' } };
+  const msgs = [
+    { type: 'powerloader:applies', profiles: [profile] }, { type: 'powerloader:extract', profile }, { type: 'powerloader:capture' },
+    { type: 'powerloader:describeForm' }, { type: 'powerloader:probe', profile }, { type: 'powerloader:values' }, { type: 'powerloader:labels' },
+    { type: 'powerloader:pageText' }, { type: 'powerloader:highlightPII', text: '', spans: [] }, { type: 'powerloader:pickStart', selected: [] },
+    { type: 'powerloader:pickSelected', selected: [] }, { type: 'powerloader:overrideStart' }, { type: 'powerloader:annotate', notes: [] },
+    { type: 'powerloader:pickTarget' }, { type: 'powerloader:selectRegion' }, { type: 'powerloader:fill', plan: { items: [] } },
+  ];
+  // Checked here, and still here (a fragment doesn't count): answered.
+  const ok = await a.ask({ type: 'powerloader:extract', profile, atUrl: `${checked}#top` });
+  assert.equal(ok.data.firstName, 'Maria');
+  // The page moves on with pushState (a single-page app), as a page script could between check and read.
+  a.w.history.pushState({}, '', '/demo/finance/ledger.html');
+  for (const m of msgs) await assert.rejects(a.ask({ ...m, atUrl: checked }), /The page changed: try again/, m.type);
+  // Messages that need no check still work.
+  assert.deepEqual(await a.ask({ type: 'powerloader:scroll' }), { x: 0, y: 0 });
+});
+
+test('notes drawn for an address are taken away when a single-page app moves to another one', async () => {
+  const a = agentOn('rent-account-1042.html');
+  const notes = [{ id: 'n1', selector: '#payments', type: 'expanded', style: '', nodes: ['Check the payments'] }];
+  const out = await a.ask({ type: 'powerloader:annotate', notes, atUrl: a.w.location.href });
+  assert.deepEqual(out.shown, ['n1']);
+  assert.equal(a.doc.querySelectorAll('powerloader-note').length, 1);
+  a.w.history.pushState({}, '', '/demo/finance/ledger.html');
+  await new Promise((r) => setTimeout(r, 600));
+  assert.equal(a.doc.querySelectorAll('powerloader-note').length, 0);
+});

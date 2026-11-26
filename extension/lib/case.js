@@ -8,11 +8,13 @@
 //     excluded: ['clipId:key'], filled: {formId: Fill}, submitted: {formId: { at, how, ref? }},
 //     workings: [{ id, title, text, uses: [clipId] }], aiPeriods: [{ id, clipId, accepted, ... }],
 //     notNeeded: [key], log: [Event], seq }
-//   Clip: { id, source, kind: 'page'|'document'|'ai', profile: { id, version, draft? }, name, url, title,
+//   Clip: { id, source, kind: 'page'|'document'|'ai'|'fetch', profile: { id, version, draft? }, name, url, title,
 //           capturedAt, revision, values: {key: value}, records: [Record], quotes: {key: text}, extra: {key: value},
-//           identity?: { mismatched: [key], confirmed? } }
+//           identity?: { mismatched: [key], confirmed? }, via?: { stepId, requestId } (a page a fetch step fetched),
+//           format?: 'json' (read from a JSON response; for display only, nothing else reads it) }
 //   Fill: { at, items: [{ box, key, value, clips: [clipId] }], report, stale? }
 import { DEFAULT_IDENTITY, checkRules, display, norm, validateValue } from './fields.js';
+import { logEvent } from './activity.js';
 
 export const SCHEMA = 1;
 const STRONG_IDENTITY = ['dob', 'nino', 'clientId'];
@@ -22,8 +24,10 @@ export function randomId(prefix) {
   return `${prefix}-${Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('').slice(0, 6)}`;
 }
 
-export function newCase(lib, formIds, { ref = '', now = new Date().toISOString(), id = randomId('case') } = {}) {
-  if (!formIds.length) throw new Error('Choose at least one form to start a case');
+// noForms: a case from a flow that fills no form (an inbox triage, whose results are rows). Every case is a
+// case of a flow (lib/core.js startFlowCase()).
+export function newCase(lib, formIds, { ref = '', now = new Date().toISOString(), id = randomId('case'), noForms = false } = {}) {
+  if (!formIds.length && !noForms) throw new Error('Choose at least one form to start a case');
   const forms = formIds.map((fid) => {
     const f = lib.forms[fid];
     if (!f) throw new Error(`Form “${fid}” isn’t in the library`);
@@ -35,6 +39,33 @@ export function newCase(lib, formIds, { ref = '', now = new Date().toISOString()
     workings: [], aiPeriods: [], log: [], seq: 0,
   };
 }
+
+/**
+ * Set the case reference once: from the address of the case the caseworker opened (from: 'address', with the
+ * step that chose it) or typed (from: 'typed'). Logged as set_reference with the step's name, never the
+ * reference or the address. A case that has a reference keeps it: changing it means clearing it first.
+ */
+export function setCaseRef(c, ref, { from = 'typed', step = null } = {}) {
+  const v = String(ref || '').trim().slice(0, 80);
+  if (!v) throw new Error('Type a case reference');
+  if (c.ref) throw new Error(`This case already has the reference ${c.ref}`);
+  c.ref = v;
+  c.refFrom = { from, ...(step ? { stepId: step.id } : {}) };
+  logEvent(c, 'set_reference', { detail: [from === 'address' ? 'from the case opened' : 'typed', step?.name].filter(Boolean).join(' · ') });
+}
+
+/**
+ * Clear the case reference, to choose another case: only before the first clip, so nothing already in the
+ * case was gathered under the wrong reference.
+ */
+export function clearCaseRef(c) {
+  if (c.clips.length) throw new Error('This case already has clips, so its reference stays. Finish this case first to work on another.');
+  c.ref = '';
+  delete c.refFrom;
+}
+
+/** Can the caseworker still change the reference? Until the first clip. */
+export const refChangeable = (c) => !!c?.ref && !c.clips.length;
 
 const formOf = (lib, f) => lib.forms[f.id];
 const def = (lib, key) => lib.fields[key] || { label: key };
@@ -193,7 +224,7 @@ export function addClip(c, lib, clip) {
  * (normalised when valid, kept as read when not, so they show as "needs fixing"). Lists of rows become
  * records for the tools; anything else is kept as extra and never used.
  */
-export function clipFromExtract(lib, profile, { data, url, title }, { kind = 'page', capturedAt = new Date().toISOString(), quotes } = {}) {
+export function clipFromExtract(lib, profile, { data, url, title }, { kind = 'page', capturedAt = new Date().toISOString(), quotes, via } = {}) {
   const values = {};
   const extra = {};
   const records = [];
@@ -212,6 +243,7 @@ export function clipFromExtract(lib, profile, { data, url, title }, { kind = 'pa
   return {
     source: `${profile.id}|${url}`, kind, profile: { id: profile.id, version: profile.version, ...(profile.draft ? { draft: profile.draft } : {}) },
     name: profile.name, url, title, capturedAt, values, records, extra, ...(quotes ? { quotes } : {}),
+    ...(via ? { via: { stepId: String(via.stepId), requestId: String(via.requestId) } } : {}),
   };
 }
 const isRow = (r) => r !== null && typeof r === 'object' && !Array.isArray(r);
@@ -284,21 +316,21 @@ export function removeClip(c, lib, clipId, { clearDependents = false } = {}) {
   return { clip, deps };
 }
 
+// ------------------------------------------------------------------ pages outside the flow
+
+const bareAddress = (url) => { try { const u = new URL(url); return `${u.origin}${u.pathname}`; } catch { return String(url || '').split(/[?#]/)[0]; } };
+
+/** Not needed for this flow (D16): the box asking whether the flow is incomplete isn't shown here again in this case. */
+export function markNotInFlow(c, url) {
+  const a = bareAddress(url);
+  c.notInFlow = [...new Set([...(c.notInFlow || []), a])].slice(-200);
+}
+
+export const notInFlow = (c, url) => (c?.notInFlow || []).includes(bareAddress(url));
+
 // ------------------------------------------------------------------ forms
 
-export function addForm(c, lib, formId) {
-  const f = lib.forms[formId];
-  if (!f) throw new Error('That form isn’t in the library');
-  if (!c.forms.some((x) => x.id === formId)) c.forms.push({ id: f.id, version: f.version });
-}
-
-// A target form can be removed while another stays. Evidence only it needed stays, marked "not needed".
-export function removeForm(c, formId) {
-  if (c.forms.length < 2) throw new Error('A case needs at least one form. Discard the case instead.');
-  c.forms = c.forms.filter((x) => x.id !== formId);
-  delete c.filled[formId];
-  delete c.submitted[formId];
-}
+// A case's forms are its flow's: they are set when it starts and don't change.
 
 // how: 'observed' (a library confirmation profile matched the page and its reference) or 'reported' (you ticked it).
 export function markSubmitted(c, formId, { how, ref, at = new Date().toISOString() }) {
@@ -339,6 +371,60 @@ export function contribution(c, lib, clip, k, { keys = new Set(caseKeys(c, lib))
   return { s: 'over', t: settled(st.status) ? `Not used. Case has ${display(lib.fields[k], st.value)}` : 'Not used', c: 'warn' };
 }
 
+/**
+ * What one clip's value is to the case now, for the step's list, its line and the outlines on the page:
+ *   'matched'    another source agrees, and nothing was decided
+ *   'new'        only this source has it
+ *   'used'       the sources disagreed (or you typed one) and the case uses this source's value
+ *   'overridden' the case uses another value: another source's, chosen, or one you typed
+ *   'conflict'   still to decide
+ *   'excluded'   you excluded it; 'extra': not a field the forms need; null: the clip doesn't have it
+ * Worked out from the case as it is, so it changes as conflicts are decided, reopened or overridden.
+ */
+export function clipValueState(c, lib, clip, k, { keys = new Set(caseKeys(c, lib)), state } = {}) {
+  if (!clip || !(k in (clip.values || {}))) return null;
+  if (!lib.fields[k] || !keys.has(k)) return 'extra';
+  if (excluded(c, clip.id, k)) return 'excluded';
+  const st = state || fieldState(c, lib, k);
+  if (st.status === 'conflict') return 'conflict';
+  const d = def(lib, k);
+  const mine = norm(d, clip.values[k]);
+  const same = settled(st.status) && norm(d, st.value) === mine;
+  if (st.status === 'resolved') return same ? 'used' : 'overridden';
+  if (st.status === 'manual') return !same ? 'overridden' : st.cands.length > 1 ? 'used' : st.cands.find((cd) => cd.n === mine)?.sources.length > 1 ? 'matched' : 'new';
+  return st.cands.find((cd) => cd.n === mine)?.sources.length > 1 ? 'matched' : 'new';
+}
+
+/**
+ * A clip's line, worked out from the case now: { matched, new, used, overridden, conflicts, extra, records },
+ * each a list of keys but records (a count). Excluded values aren't counted. Replaces addClip()'s summary
+ * wherever a clip's result is shown, because that summary is only true at the moment of the clip.
+ */
+export function clipTally(c, lib, clip) {
+  const out = { matched: [], new: [], used: [], overridden: [], conflicts: [], extra: Object.keys(clip?.extra || {}), records: (clip?.records || []).length };
+  if (!clip) return out;
+  const keys = new Set(caseKeys(c, lib));
+  for (const k of Object.keys(clip.values || {})) {
+    const s = clipValueState(c, lib, clip, k, { keys });
+    if (s === 'conflict') out.conflicts.push(k);
+    else if (s === 'extra') out.extra.push(k);
+    else if (s && s !== 'excluded') out[s].push(k);
+  }
+  return out;
+}
+
+/** Tallies added together, for a step that read several pages (a fetch step's summary). */
+export function addTallies(list) {
+  const out = { matched: [], new: [], used: [], overridden: [], conflicts: [], extra: [], records: 0 };
+  for (const t of list) {
+    for (const k of ['matched', 'new', 'used', 'overridden', 'conflicts', 'extra']) out[k].push(...t[k]);
+    out.records += t.records;
+  }
+  // A field two of the pages are in conflict over is one conflict to decide.
+  out.conflicts = [...new Set(out.conflicts)];
+  return out;
+}
+
 /** A result saved from a tool. uses: the clips it relied on, so removing one of them can clear it. */
 export function addWorking(c, { title, text, uses = [], inputs }) {
   c.workings.push({ id: randomId('w'), title, text, uses, ...(inputs ? { inputs } : {}), at: new Date().toISOString() });
@@ -358,6 +444,11 @@ export function counts(c) {
 export function caseLabel(c, lib) {
   if (!c) return '';
   if (c.ref) return c.ref;
+  // A case with no form, from a flow (an inbox triage): the flow's name and the day it started.
+  if (!c.forms.length && c.library?.flow?.name) {
+    const d = new Date(c.createdAt);
+    return `${c.library.flow.name}, ${d.getUTCDate()} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getUTCMonth()]}`;
+  }
   const name = ['firstName', 'lastName'].map((k) => {
     if (!lib.fields[k]) return '';
     const st = fieldState(c, lib, k);

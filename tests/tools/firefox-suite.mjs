@@ -8,6 +8,7 @@ import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { fileURLToPath } from 'node:url';
 import { buildManifest } from '../../tools/build-demo-library.mjs';
+import { ensureSystems } from '../../tools/build-demo-systems.mjs';
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
 const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'power-loader-firefox-suite-'));
@@ -79,9 +80,12 @@ async function serve(req, res) {
     const target = path.resolve(demo, relative || 'index.html');
     if (!target.startsWith(`${demo}${path.sep}`)) { res.writeHead(403).end(); return; }
     const bytes = await fs.readFile(target);
-    res.setHeader('Content-Type', target.endsWith('.json') ? 'application/json' : 'text/html; charset=utf-8');
+    // Each file with its own type: a browser ignores a stylesheet, and refuses a script, served as HTML.
+    res.setHeader('Content-Type', target.endsWith('.json') ? 'application/json' : target.endsWith('.css') ? 'text/css; charset=utf-8' : target.endsWith('.js') ? 'text/javascript; charset=utf-8' : 'text/html; charset=utf-8');
     // A cookie deliberately exists: AI transport must omit it.
     res.setHeader('Set-Cookie', 'synthetic_session=must-not-reach-gateway; SameSite=Lax; Path=/');
+    // A strict page policy, for checking what Power Loader draws on a page (the values a clip reads) still shows.
+    if (url.searchParams.get('csp') === 'strict') res.setHeader('Content-Security-Policy', "default-src 'self'");
     res.end(bytes); return;
   }
   res.writeHead(404).end();
@@ -137,6 +141,8 @@ try {
   await fs.cp(path.join(root, 'extension'), extension, { recursive: true });
   await fs.cp(path.join(root, 'tests/firefox'), path.join(extension, 'tests/firefox'), { recursive: true });
   await fs.cp(path.join(root, 'demo'), demo, { recursive: true });
+  // The generated demo systems (Case Manager, Harbour Homes, the messages service), which a fresh clone hasn't got.
+  await ensureSystems(demo);
   async function rewrite(dir) {
     for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
       const target = path.join(dir, entry.name);

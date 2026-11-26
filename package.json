@@ -7,11 +7,12 @@
   },
   "type": "module",
   "scripts": {
-    "test": "node --test 'tests/js/*.test.js'",
+    "test": "node tools/build-demo-systems.mjs --quiet && node --test 'tests/js/*.test.js'",
     "lint:ext": "web-ext lint --self-hosted --source-dir extension",
     "start:firefox": "web-ext run --source-dir extension --start-url http://localhost:8787/demo/",
-    "build:ext": "node tools/vendor.mjs && web-ext build --source-dir extension --artifacts-dir dist --filename power-loader-{version}.zip --overwrite-dest",
+    "build:ext": "node tools/build-ext.mjs",
     "demo": "node tools/serve-demo.mjs",
+    "site": "node tools/serve-site.mjs",
     "test:live": "node tests/tools/live-smoke.mjs",
     "test:prototype": "node prototype/tests/run-all.mjs",
     "fixtures:candidates": "node tests/tools/regen-expected.mjs",
@@ -20,9 +21,13 @@
     "bundle:source": "node tools/source-bundle.mjs",
     "test:firefox": "node tests/tools/firefox-suite.mjs",
     "test:firefox:smoke": "node tests/tools/firefox-smoke.mjs",
+    "test:firefox:org": "node tests/tools/firefox-org-build.mjs",
     "check:vendor": "node tools/check-vendor.mjs",
     "check:lint": "node tools/check-lint.mjs",
-    "check:site": "node tools/check-site.mjs"
+    "check:site": "node tools/check-site.mjs",
+    "demo:systems": "node tools/build-demo-systems.mjs",
+    "check:policy": "node tools/policy.mjs check",
+    "check:demo": "node tools/build-demo-systems.mjs --check && node tools/build-demo-library.mjs --check"
   },
   "devDependencies": {
     "@huggingface/transformers": "4.3.1",

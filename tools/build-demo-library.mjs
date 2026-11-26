@@ -48,14 +48,39 @@ export async function buildManifest({ dir = root, approvedHosts = ['localhost:87
   };
 }
 
+/**
+ * The flows the demo library carries (flows/…), from the same definitions as the site's downloads
+ * (tools/build-demo-flows.mjs), made from the library's other files.
+ */
+export async function demoLibraryFlows(dir = root) {
+  await import('../extension/lib/extract.js');
+  const { indexLibrary } = await import('../extension/lib/library.js');
+  const { libraryFlowFiles } = await import('./build-demo-flows.mjs');
+  const manifest = await buildManifest({ dir });
+  const files = {};
+  for (const f of manifest.files) if (!f.path.startsWith('flows/')) files[f.path] = JSON.parse(await fs.readFile(path.join(dir, f.path), 'utf8'));
+  // The flows' own commit is that of the files they're made from, so writing them doesn't change them.
+  const own = manifest.files.filter((f) => !f.path.startsWith('flows/'));
+  const commit = createHash('sha256').update(own.map((f) => `${f.path}:${f.sha256}`).join('\n')).digest('hex').slice(0, 7);
+  const lib = indexLibrary({ commit, files }, { ...manifest, commit, files: own });
+  if (lib.problems.length) throw new Error(`Demo library problems: ${JSON.stringify(lib.problems)}`);
+  return libraryFlowFiles(lib);
+}
+
 if (path.resolve(process.argv[1] || '') === fileURLToPath(import.meta.url)) {
-  const text = `${JSON.stringify(await buildManifest(), null, 2)}\n`;
+  const flows = await demoLibraryFlows();
   const target = path.join(root, 'library.json');
   if (process.argv.includes('--check')) {
+    const stale = [];
+    for (const [rel, text] of Object.entries(flows)) if ((await fs.readFile(path.join(root, rel), 'utf8').catch(() => '')) !== text) stale.push(rel);
+    const text = `${JSON.stringify(await buildManifest(), null, 2)}\n`;
     const current = await fs.readFile(target, 'utf8').catch(() => '');
-    if (current !== text) { process.stderr.write('demo/library/library.json is out of date: run node tools/build-demo-library.mjs\n'); process.exitCode = 1; }
+    if (stale.length || current !== text) { process.stderr.write(`demo/library is out of date${stale.length ? ` (${stale.join(', ')})` : ''}: run node tools/build-demo-library.mjs\n`); process.exitCode = 1; }
   } else {
-    await fs.writeFile(target, text);
-    process.stdout.write(`Wrote ${target}\n`);
+    await fs.rm(path.join(root, 'flows'), { recursive: true, force: true });
+    await fs.mkdir(path.join(root, 'flows'), { recursive: true });
+    for (const [rel, text] of Object.entries(flows)) await fs.writeFile(path.join(root, rel), text);
+    await fs.writeFile(target, `${JSON.stringify(await buildManifest(), null, 2)}\n`);
+    process.stdout.write(`Wrote ${Object.keys(flows).length} flows and ${target}\n`);
   }
 }

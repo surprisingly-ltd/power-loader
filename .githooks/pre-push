@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Before anything goes to the public repo (whose push and pull request runs use Actions), run every CI check
+# locally on the exact commits being pushed: tools/ci-local.sh. Pushes to other remotes (the private working
+# repo, which runs no Actions) are not checked. Enable once per clone:  git config core.hooksPath .githooks
+# Skipping it (git push --no-verify) pushes code that hasn't been checked: only for a change CI can't fail.
+set -euo pipefail
+remote_url=$2
+case $remote_url in
+  *surprisingly-ltd/power-loader*) ;;
+  *) exit 0 ;;
+esac
+
+root=$(git rev-parse --show-toplevel)
+zero=0000000000000000000000000000000000000000
+while read -r local_ref local_sha remote_ref _remote_sha; do
+  [ "$local_sha" = "$zero" ] && continue # a deletion
+  if [[ $remote_ref == refs/tags/v* ]]; then
+    # release.yml: the tag must be the manifest version.
+    tag=${remote_ref#refs/tags/}
+    version=$(git show "$local_sha:extension/manifest.json" | node -p "JSON.parse(require('fs').readFileSync(0)).version")
+    [ "$tag" = "v$version" ] || { echo "pre-push: tag $tag doesn't match manifest version $version" >&2; exit 1; }
+  fi
+  echo "pre-push: $local_ref -> $remote_url $remote_ref: running the CI checks locally first"
+  "$root/tools/ci-local.sh" "$local_sha" < /dev/null || {
+    echo "pre-push: the local CI failed, so nothing was pushed (it would fail on GitHub too)." >&2
+    exit 1
+  }
+done

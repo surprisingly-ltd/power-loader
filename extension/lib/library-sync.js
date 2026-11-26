@@ -4,9 +4,8 @@
 /* global browser */
 import { mutateStorage } from './storage.js';
 import { indexLibrary } from './library.js';
-import { getPolicy } from './policy.js';
-import { reconcileDrafts } from './drafts.js';
-import { contentHash, sha256Hex } from './hash.js';
+import { allowedFor, checkAllowed, getPolicy } from './policy.js';
+import { sha256Hex } from './hash.js';
 import { recordFailure } from './diagnostics.js';
 
 const MAX_FILE = 2_000_000;
@@ -20,7 +19,9 @@ export async function libraryConfig() {
   const pick = (k) => (locked.has(`library.${k}`) ? values.library[k] : mine[k] ?? values.library[k]);
   return {
     baseUrl: pick('baseUrl'), branch: pick('branch') || 'main', pinCommit: values.library.pinCommit,
-    auth: values.library.auth, token: values.library.token,
+    auth: values.library.auth, token: values.library.token, syncMinutes: values.library.syncMinutes,
+    // A built-in policy file may allow the address by pattern: every file address is checked as it is fetched.
+    allowed: allowedFor({ values }, 'library.baseUrl'),
     locked: { baseUrl: locked.has('library.baseUrl'), branch: locked.has('library.branch') },
   };
 }
@@ -58,6 +59,7 @@ export function validateManifest(m) {
 }
 
 async function get(url, cfg, fetchFn) {
+  if (cfg.allowed) checkAllowed({ values: { allowed: { 'library.baseUrl': cfg.allowed } } }, 'library.baseUrl', url);
   const headers = cfg.auth === 'token' && cfg.token ? { Authorization: `Bearer ${cfg.token}` } : {};
   let res;
   try {
@@ -77,8 +79,10 @@ async function get(url, cfg, fetchFn) {
 /**
  * Fetch, check and validate one commit of the library. Resolves the stored set; rejects without
  * changing anything when a file is missing, has the wrong hash or fails validation.
+ * have: the set already held. When the manifest names its commit, resolves { unchanged: true, commit } after
+ * fetching only library.json; otherwise a file whose hash is the same as the held copy's isn't fetched again.
  */
-export async function fetchLibrary(cfg, { fetchFn = globalThis.fetch, now = new Date() } = {}) {
+export async function fetchLibrary(cfg, { fetchFn = globalThis.fetch, now = new Date(), have = null } = {}) {
   if (!cfg.baseUrl) throw new Error('Enter the library address');
   const ref = cfg.pinCommit || cfg.branch;
   const manifestBytes = await get(libraryUrl(cfg.baseUrl, ref, 'library.json'), cfg, fetchFn);
@@ -89,8 +93,12 @@ export async function fetchLibrary(cfg, { fetchFn = globalThis.fetch, now = new 
   if (cfg.pinCommit && !manifest.commit.startsWith(cfg.pinCommit) && !cfg.pinCommit.startsWith(manifest.commit)) {
     throw new Error(`The library is pinned to ${cfg.pinCommit} by policy, but the server offered ${manifest.commit}`);
   }
+  if (have?.files && have.commit === manifest.commit) return { unchanged: true, commit: manifest.commit };
+  const held = new Map((have?.files && Array.isArray(have.manifest?.files) ? have.manifest.files : []).map((f) => [f.path, f.sha256]));
   const files = {};
   for (const f of manifest.files) {
+    // Checked against its hash when it was fetched, and the hash is the same: the held copy is this file.
+    if (held.get(f.path) === f.sha256 && have.files[f.path] !== undefined) { files[f.path] = have.files[f.path]; continue; }
     // From the commit the manifest names, so a push during the sync can't mix two versions.
     const bytes = await get(libraryUrl(cfg.baseUrl, manifest.commit, f.path), cfg, fetchFn);
     if (await sha256Hex(bytes) !== f.sha256) throw new Error(`${f.path} doesn’t match the library manifest (wrong hash)`);
@@ -112,29 +120,55 @@ export function pruneSets(state, caseCommit) {
   return state;
 }
 
-/** Sync now. Resolves { ok, commit, changed, error?, drafts: { retired, conflicts } }. */
-export async function syncLibrary({ fetchFn, now = new Date() } = {}) {
+// A timed sync that fails says nothing to the caseworker until the library has been out of date this long.
+export const STALE_MS = 24 * 3600_000;
+
+/** Should a failed sync be shown? Always after the caseworker asked for it; after a timed one, once it's stale. */
+export function syncFailureShown(state, now = Date.now()) {
+  const last = state?.lastSync;
+  if (!last || last.ok) return false;
+  if (!last.auto) return true;
+  const good = state.lastGood || state.sets?.[state.current]?.syncedAt;
+  return !good || now - Date.parse(good) > STALE_MS;
+}
+
+/**
+ * Sync now. Resolves { ok, commit, changed, error? }. auto: a timed sync (at start, on the alarm, when the sidebar
+ * opens), which fetches only library.json when the commit is held and only changed files otherwise, and whose
+ * failure is recorded without a message until the library is a day out of date.
+ */
+export async function syncLibrary({ fetchFn, now = new Date(), auto = false } = {}) {
   const cfg = await libraryConfig();
+  const { library: held } = await browser.storage.local.get('library');
   let set;
   try {
-    set = await fetchLibrary(cfg, { fetchFn, now });
+    // A timed sync fetches only what changed; Sync now (and the readiness check) fetches and checks every file.
+    set = await fetchLibrary(cfg, { fetchFn, now, have: auto ? held?.sets?.[held.current] || null : null });
   } catch (e) {
     const error = e.message || String(e);
     void recordFailure('library-sync');
-    await mutateStorage(({ library }) => ({ patch: { library: { sets: {}, ...library, lastSync: { at: now.toISOString(), ok: false, error } } } }), ['library']);
+    await mutateStorage(({ library }) => ({ patch: { library: { sets: {}, ...library, lastSync: { at: now.toISOString(), ok: false, error, ...(auto ? { auto } : {}) } } } }), ['library']);
     return { ok: false, error };
   }
-  const lib = indexLibrary(set);
-  const published = Object.fromEntries(await Promise.all([...lib.profiles, ...lib.fill].map(async (p) => [p.id, { version: p.version, hash: await contentHash(p) }])));
-  return mutateStorage(({ library, case: c, profileDrafts = [] }) => {
+  if (set.unchanged) {
+    return mutateStorage(({ library }) => {
+      const state = { sets: {}, ...(library || {}) };
+      // Another sync may have moved on meanwhile: only the commit it checked is confirmed.
+      if (state.current !== set.commit) return { result: { ok: true, commit: state.current, changed: false } };
+      state.lastSync = { at: now.toISOString(), ok: true, commit: set.commit };
+      state.lastGood = now.toISOString();
+      return { patch: { library: state }, result: { ok: true, commit: set.commit, changed: false } };
+    }, ['library']);
+  }
+  return mutateStorage(({ library, case: c }) => {
     const state = { sets: {}, ...(library || {}) };
     const changed = state.current !== set.commit;
     if (changed) state.previous = state.current || null;
     state.sets = { ...state.sets, [set.commit]: set };
     state.current = set.commit;
     state.lastSync = { at: now.toISOString(), ok: true, commit: set.commit };
+    state.lastGood = now.toISOString();
     pruneSets(state, c?.library?.commit);
-    const drafts = reconcileDrafts(profileDrafts, published);
-    return { patch: { library: state, profileDrafts: drafts.list }, result: { ok: true, commit: set.commit, changed, drafts: { retired: drafts.retired, conflicts: drafts.conflicts } } };
-  }, ['library', 'case', 'profileDrafts']);
+    return { patch: { library: state }, result: { ok: true, commit: set.commit, changed } };
+  }, ['library', 'case']);
 }

@@ -87,9 +87,11 @@ for (const file of files) {
     for (const m of text.matchAll(/https:\/\/[^"\s]+/g)) if (!/[{}*]/.test(m[0]) && new URL(m[0]).host === HOST) await check(m[0], '/', `dist/site/${file}`, true);
   }
 }
-for (const must of ['index.html', '404.html', 'CNAME', '.nojekyll', 'updates.json', 'privacy.html', 'reviewers.html', 'demo/library/library.json']) {
+for (const must of ['index.html', '404.html', 'CNAME', '.nojekyll', 'updates.json', 'privacy.html', 'how-it-works.html', 'reviewers.html', 'demo/library/library.json']) {
   if (!files.has(must)) problems.push(`dist/site/${must} is missing`);
 }
+// The footer links every page to How it works (tools/build-site.mjs); it isn't one of the tabs.
+if (!(await fs.readFile(path.join(site, 'index.html'), 'utf8')).includes('<a href="/how-it-works">How it works</a>')) problems.push('dist/site/index.html: the footer has no How it works link');
 if ((await fs.readFile(path.join(site, 'CNAME'), 'utf8').catch(() => '')).trim() !== HOST) problems.push(`dist/site/CNAME must be ${HOST}`);
 const updates = JSON.parse(await fs.readFile(path.join(site, 'updates.json'), 'utf8'));
 const manifest = JSON.parse(await fs.readFile(path.join(root, 'extension/manifest.json'), 'utf8'));
@@ -116,7 +118,8 @@ for (const file of tracked) {
     for (const m of line.matchAll(/github\.com\/(surprisingly-ltd|relativistic-labs)\/([A-Za-z0-9_-]+)/g)) {
       if (`https://${m[0]}` !== REPO) problems.push(`${where}: ${m[0]} — the project's repository is ${REPO}`);
     }
-    if (OLD_NAME.test(line)) problems.push(`${where}: still uses the product's former name`);
+    // The hello-world install test keeps its old ID: an IT team may already have it on an allow list.
+    if (OLD_NAME.test(line) && !file.startsWith('hello-world-extension/')) problems.push(`${where}: still uses the product's former name`);
   });
 }
 

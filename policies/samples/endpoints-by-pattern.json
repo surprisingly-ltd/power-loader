@@ -1,0 +1,37 @@
+{
+  "schema": "powerloader-policy/1",
+  "name": "Example Council",
+  "build": {
+    "id": "powerloader@example.gov.uk",
+    "updateUrl": "https://addons.example.gov.uk/powerloader/updates.json",
+    "hosts": [
+      "https://*.example.gov.uk/*"
+    ]
+  },
+  "policy": {
+    "library": {
+      "auth": "cookies"
+    },
+    "allowed": {
+      "gateway.baseUrl": [
+        "https://ai.example.gov.uk/*"
+      ],
+      "gateway.model": [
+        "fast",
+        "gpt-*"
+      ],
+      "library.baseUrl": [
+        "https://gitlab.example.gov.uk/casework/*"
+      ],
+      "privacyModel.filesUrl": [
+        "https://models.example.gov.uk/*"
+      ],
+      "assistModel.filesUrl": [
+        "https://models.example.gov.uk/*"
+      ]
+    },
+    "workstation": {
+      "clearCaseMaxHours": 9
+    }
+  }
+}

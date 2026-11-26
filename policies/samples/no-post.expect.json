@@ -1,0 +1,22 @@
+[
+  {
+    "url": "https://records.example.gov.uk/clients/1",
+    "action": "fetch-get",
+    "allowed": true
+  },
+  {
+    "url": "https://records.example.gov.uk/clients/1",
+    "action": "fetch-post",
+    "allowed": false
+  },
+  {
+    "url": "https://anywhere.example.com/",
+    "action": "read",
+    "allowed": true
+  },
+  {
+    "url": "https://anywhere.example.com/",
+    "action": "fetch-post",
+    "allowed": false
+  }
+]

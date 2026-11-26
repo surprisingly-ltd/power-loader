@@ -1,0 +1,86 @@
+{
+  "schema": "powerloader-form/1",
+  "id": "rsr",
+  "short": "RSR",
+  "name": "Rent support review",
+  "category": "Housing",
+  "version": "v1",
+  "url": "http://localhost:8787/demo/rent-review.html",
+  "fill": "fill/rent-review",
+  "fields": [
+    {
+      "key": "clientId",
+      "required": true
+    },
+    {
+      "key": "firstName",
+      "required": true
+    },
+    {
+      "key": "lastName",
+      "required": true
+    },
+    {
+      "key": "dob",
+      "required": true
+    },
+    {
+      "key": "nino",
+      "required": true
+    },
+    {
+      "key": "address",
+      "required": true
+    },
+    {
+      "key": "postcode",
+      "required": true
+    },
+    {
+      "key": "tenancyRef",
+      "required": true
+    },
+    {
+      "key": "monthlyRent",
+      "required": true
+    },
+    {
+      "key": "arrears",
+      "required": true
+    },
+    {
+      "key": "tenancyEndDate"
+    },
+    {
+      "key": "currentEmployer"
+    },
+    {
+      "key": "weeklyIncome",
+      "required": true
+    },
+    {
+      "key": "changeEffectiveDate"
+    },
+    {
+      "key": "newWeeklyIncome"
+    },
+    {
+      "key": "reason",
+      "required": true
+    }
+  ],
+  "rules": [
+    {
+      "field": "changeEffectiveDate",
+      "before": "today",
+      "message": "The change must have happened already"
+    }
+  ],
+  "confirmation": {
+    "match": [
+      "http://localhost:8787/demo/rent-review-submitted.html*"
+    ],
+    "refPattern": "RSR-\\d{5}"
+  },
+  "sideEffects": []
+}

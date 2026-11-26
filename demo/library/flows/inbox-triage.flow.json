@@ -1,0 +1,282 @@
+{
+  "schema": "powerloader-flow/1",
+  "id": "inbox-triage",
+  "name": "Inbox triage",
+  "guidance": "1. Team inbox. Go to the Housing Support Team’s inbox at http://localhost:8787/demo/messages/index.html and press Fetch: Power Loader reads every message on the page, 4 at a time, and lists the urgent referrals nobody has picked up, marked in the inbox too. This flow fills no form and the case has no reference.\n2. Deal with each referral. Open each one from the list, call the referrer and accept it in your own system. Then finish this triage and start a Rent support review for the client: Power Loader works on one case at a time.",
+  "hosts": [
+    "localhost:8787"
+  ],
+  "fields": {},
+  "journey": [
+    "p-00000001",
+    "p-00000002"
+  ],
+  "timelines": [],
+  "pages": [
+    {
+      "id": "p-00000001",
+      "role": "fetch",
+      "name": "Team inbox",
+      "url": "http://localhost:8787/demo/messages/index.html",
+      "required": [],
+      "match": "http://localhost:8787/demo/messages/index*",
+      "fetch": {
+        "requests": [
+          {
+            "id": "r-00000003",
+            "name": "Messages",
+            "pageId": "p-00000004",
+            "url": "",
+            "required": false,
+            "each": {
+              "pageId": "p-00000005",
+              "list": "items",
+              "max": 25
+            }
+          }
+        ],
+        "then": {
+          "to": "",
+          "url": "",
+          "open": "ask"
+        },
+        "show": {
+          "type": "inboxItem",
+          "label": "Open urgent referrals",
+          "where": {
+            "urgency": "Urgent",
+            "status": "Open"
+          },
+          "columns": [
+            "client",
+            "reason",
+            "respondBy"
+          ],
+          "mark": {
+            "row": "#inbox tbody tr",
+            "key": "messageId",
+            "rowKey": "@data-message",
+            "text": "Urgent, open"
+          }
+        }
+      },
+      "step": {
+        "text": "The inbox doesn’t say which messages are referrals, how urgent they are or whether anyone has picked them up. Press Fetch: Power Loader reads every message on this page of the inbox, 4 at a time, and lists the urgent referrals that are still open. They’re marked in the inbox too.",
+        "links": []
+      }
+    },
+    {
+      "id": "p-00000005",
+      "role": "input",
+      "name": "Team inbox: the list",
+      "url": "http://localhost:8787/demo/messages/index.html",
+      "required": [],
+      "parent": "p-00000001",
+      "profileId": "messages/inbox",
+      "kind": "extract",
+      "profile": {
+        "schema": "powerloader-profile/1",
+        "id": "messages/inbox",
+        "kind": "extract",
+        "name": "Team inbox",
+        "version": "v1",
+        "fetchOnly": true,
+        "match": [
+          "http://localhost:8787/demo/messages/index*"
+        ],
+        "urlPattern": "http://localhost:8787/demo/messages/index.html",
+        "when": "#inbox",
+        "fields": {
+          "items": [
+            "#inbox tbody tr",
+            {
+              "@type": "inboxItem",
+              "href": "a @href | abs",
+              "messageId": "@data-message"
+            }
+          ]
+        }
+      },
+      "picks": []
+    },
+    {
+      "id": "p-00000004",
+      "role": "input",
+      "name": "Messages",
+      "url": "http://localhost:8787/demo/messages/message/{messageId}.html",
+      "required": [],
+      "parent": "p-00000001",
+      "profileId": "messages/inbox-message",
+      "kind": "extract",
+      "profile": {
+        "schema": "powerloader-profile/1",
+        "id": "messages/inbox-message",
+        "kind": "extract",
+        "name": "Inbox message",
+        "version": "v1",
+        "fetchOnly": true,
+        "match": [
+          "http://localhost:8787/demo/messages/message/*"
+        ],
+        "urlPattern": "http://localhost:8787/demo/messages/message/{messageId}.html",
+        "when": "#message",
+        "fields": {
+          "item": [
+            "main",
+            {
+              "@type": "inboxItem",
+              "messageId": "#message label(Message ID)",
+              "type": "#message label(Type)",
+              "client": "#message label(Client ID)",
+              "from": "#message label(From)",
+              "received": "#message label(Received) | date",
+              "urgency": "#referral label(Urgency)",
+              "status": "#referral label(Referral status)",
+              "reason": "#referral label(Reason)",
+              "respondBy": "#referral label(Respond by) | date"
+            }
+          ]
+        }
+      },
+      "picks": []
+    },
+    {
+      "id": "p-00000002",
+      "role": "guide",
+      "name": "Deal with each referral",
+      "url": "",
+      "required": [],
+      "match": "",
+      "step": {
+        "text": "Open each referral from the list. Call the referrer, accept it in your own system, and note the client. Then finish this triage and start a Rent support review for the client: Power Loader works on one case at a time.",
+        "links": []
+      }
+    }
+  ],
+  "problems": [],
+  "files": {
+    "fields.json": {
+      "schema": "powerloader-fields/1",
+      "fields": {}
+    },
+    "profiles/pages/messages/inbox.json": {
+      "schema": "powerloader-profile/1",
+      "id": "messages/inbox",
+      "kind": "extract",
+      "name": "Team inbox: the list",
+      "version": "v1",
+      "basedOn": {
+        "version": "v1",
+        "commit": "8926ad0"
+      },
+      "match": [
+        "http://localhost:8787/demo/messages/index*"
+      ],
+      "urlPattern": "http://localhost:8787/demo/messages/index.html",
+      "when": "#inbox",
+      "fetchOnly": true,
+      "fields": {
+        "items": [
+          "#inbox tbody tr",
+          {
+            "@type": "inboxItem",
+            "href": "a @href | abs",
+            "messageId": "@data-message"
+          }
+        ]
+      }
+    },
+    "profiles/pages/messages/inbox-message.json": {
+      "schema": "powerloader-profile/1",
+      "id": "messages/inbox-message",
+      "kind": "extract",
+      "name": "Messages",
+      "version": "v1",
+      "basedOn": {
+        "version": "v1",
+        "commit": "8926ad0"
+      },
+      "match": [
+        "http://localhost:8787/demo/messages/message/*"
+      ],
+      "urlPattern": "http://localhost:8787/demo/messages/message/{messageId}.html",
+      "when": "#message",
+      "fetchOnly": true,
+      "fields": {
+        "item": [
+          "main",
+          {
+            "@type": "inboxItem",
+            "messageId": "#message label(Message ID)",
+            "type": "#message label(Type)",
+            "client": "#message label(Client ID)",
+            "from": "#message label(From)",
+            "received": "#message label(Received) | date",
+            "urgency": "#referral label(Urgency)",
+            "status": "#referral label(Referral status)",
+            "reason": "#referral label(Reason)",
+            "respondBy": "#referral label(Respond by) | date"
+          }
+        ]
+      }
+    },
+    "steps.json": {
+      "schema": "powerloader-steps/1",
+      "steps": [
+        {
+          "id": "p-00000001",
+          "name": "Team inbox",
+          "role": "fetch",
+          "text": "The inbox doesn’t say which messages are referrals, how urgent they are or whether anyone has picked them up. Press Fetch: Power Loader reads every message on this page of the inbox, 4 at a time, and lists the urgent referrals that are still open. They’re marked in the inbox too.",
+          "links": [],
+          "url": "http://localhost:8787/demo/messages/index.html",
+          "match": [
+            "http://localhost:8787/demo/messages/index*"
+          ],
+          "fetch": {
+            "requests": [
+              {
+                "id": "r-00000003",
+                "name": "Messages",
+                "each": {
+                  "profileId": "messages/inbox",
+                  "list": "items",
+                  "max": 25
+                },
+                "method": "GET",
+                "profileId": "messages/inbox-message",
+                "required": false
+              }
+            ],
+            "show": {
+              "type": "inboxItem",
+              "label": "Open urgent referrals",
+              "where": {
+                "urgency": "Urgent",
+                "status": "Open"
+              },
+              "columns": [
+                "client",
+                "reason",
+                "respondBy"
+              ],
+              "mark": {
+                "row": "#inbox tbody tr",
+                "key": "messageId",
+                "rowKey": "@data-message",
+                "text": "Urgent, open"
+              }
+            }
+          }
+        },
+        {
+          "id": "p-00000002",
+          "name": "Deal with each referral",
+          "role": "guide",
+          "text": "Open each referral from the list. Call the referrer, accept it in your own system, and note the client. Then finish this triage and start a Rent support review for the client: Power Loader works on one case at a time.",
+          "links": []
+        }
+      ]
+    }
+  }
+}

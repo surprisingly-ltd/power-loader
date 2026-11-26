@@ -28,6 +28,12 @@ POWERLOADER_FIREFOX=/path/to/firefox pnpm test:firefox   # real Firefox suites (
 
 CI runs all of these on every pull request, plus CodeQL, dependency, secret and workflow scanning.
 
+To run what CI runs, the way it runs it, before you push, commit and then run `tools/ci-local.sh`. It
+runs each job in a fresh clone of the commit, with the same tool versions, Firefox ESR and release, and
+CodeQL, gitleaks, osv-scanner and zizmor. It runs only the jobs your changes can affect compared with
+`main`, and `--full` runs them all. To run it automatically before every push to this repo, run
+`git config core.hooksPath .githooks` once.
+
 ## Rules that keep it safe
 
 - **No remote code.** Everything the extension runs ships in the package. Third-party code goes through
@@ -47,5 +53,8 @@ CI runs all of these on every pull request, plus CodeQL, dependency, secret and 
 Keep each pull request to one change, with a description of what changed and why, and how you checked it.
 Changes to `main` go through pull requests, and the required checks must pass. By contributing you agree
 that your contribution is licensed under the Apache License 2.0 (see `LICENSE`).
+
+Releases are made by the maintainers: see [docs/releasing.md](docs/releasing.md). Claude Code sessions in this
+repository can follow the same steps with the `release` skill (`.claude/skills/release/SKILL.md`).
 
 Security issues: please follow [SECURITY.md](SECURITY.md) instead of opening an issue.

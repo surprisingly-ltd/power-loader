@@ -1,0 +1,32 @@
+{
+  "schema": "powerloader-policy/1",
+  "name": "Example Council",
+  "build": {
+    "id": "powerloader@example.gov.uk",
+    "updateUrl": "https://addons.example.gov.uk/powerloader/updates.json"
+  },
+  "policy": {
+    "siteAccess": {
+      "rules": [
+        {
+          "id": "fetch-example-only",
+          "effect": "allow",
+          "pattern": "https://*.example.gov.uk/*",
+          "actions": [
+            "fetch-get"
+          ],
+          "note": "Background requests only go to example.gov.uk."
+        },
+        {
+          "id": "no-post",
+          "effect": "deny",
+          "pattern": "*://*",
+          "actions": [
+            "fetch-post"
+          ],
+          "note": "Fetch steps never send a POST."
+        }
+      ]
+    }
+  }
+}

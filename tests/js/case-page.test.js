@@ -121,3 +121,28 @@ test('opening a page remembers the scroll position and opens the extension page'
   assert.deepEqual(session.fullPage.from, { tabId: 7, windowId: 2, url: 'u', focus: 'open-full', scroll: { x: 0, y: 99 } });
   assert.ok(calls.includes('create moz-extension://x/case/case.html?field=dob'));
 });
+
+test('the fetched view: what a fetch step read, as text, each value with what happened to it', async () => {
+  const { act, ui } = await import('../../extension/case/case.js');
+  const excerpt = (text, start, end) => ({ lines: [{ n: 11, text: 'Message ID MSG-1' }, { n: 12, text }], marks: [{ line: 1, start, end }] });
+  local.case = structuredClone(local.case);
+  local.case.clips.push({
+    id: 'clip-f1', source: 'messages/message|http://localhost:8787/demo/messages/message/m-1.html', kind: 'fetch', profile: { id: 'messages/message', version: 'v1' }, name: 'Customer message',
+    url: 'http://localhost:8787/demo/messages/message/m-1.html', title: 'Message 1', capturedAt: '2026-11-26T14:05:00Z', values: { phone: '07700 900999' }, records: [], extra: {},
+    via: { stepId: 'p-msg', requestId: 'r1' }, excerpts: { phone: excerpt('Phone <img src=x onerror=alert(1)> 07700 900999', 35, 47) },
+  });
+  await act.refresh();
+  act.openFetched('clip-f1', 'phone');
+  const view = await until(() => doc.querySelector('[data-key="fetched-view"]'), 'the fetched view');
+  assert.equal(ui.view, 'fetched');
+  assert.ok([...doc.querySelectorAll('[role=tab]')].some((t) => /^Fetched · 1/.test(t.textContent)), 'a tab of its own once something was fetched');
+  // The response's text is shown as text: its markup is characters, never elements.
+  assert.equal(view.querySelectorAll('img').length, 0);
+  assert.match(view.textContent, /Phone <img src=x onerror=alert\(1\)> ⚠ 07700 900999/);
+  const mark = view.querySelector('.fv-mark[data-field="phone"]');
+  assert.ok(mark.classList.contains('cf'), 'in conflict: orange');
+  assert.match(view.textContent, /In conflict: decide which is right/);
+  assert.match(view.textContent, /Showing the parts that were read\. Fetch again to see the whole response\./);
+  assert.match(view.textContent, /localhost:8787\/demo\/messages\/message\/m-1\.html/);
+  assert.ok(button('Open the page', view) && button('Fetch again', view) === undefined, 'Fetch again only for a step the library has');
+});

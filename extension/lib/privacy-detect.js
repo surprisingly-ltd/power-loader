@@ -27,6 +27,10 @@ export function validatePrivacy(doc) {
     if (typeof m !== 'object' || (m.baseUrl != null && typeof m.baseUrl !== 'string') || (m.revision != null && typeof m.revision !== 'string')) errors.push('"model" must be { baseUrl, modelId, revision, hashes }');
     if (m.hashes != null && (typeof m.hashes !== 'object' || Object.values(m.hashes).some((x) => !/^[0-9a-f]{64}$/.test(String(x))))) errors.push('"model.hashes" must map file paths to SHA-256 hashes');
   }
+  // Whether the on-device model is used: on or off, and whether the caseworker can change it.
+  if (doc.use !== undefined && (doc.use === null || typeof doc.use !== 'object' || typeof doc.use.on !== 'boolean' || (doc.use.lock !== undefined && typeof doc.use.lock !== 'boolean'))) {
+    errors.push('"use" must be { on: true or false, lock: true or false }');
+  }
   doc.patterns.forEach((p, i) => {
     if (!CATEGORIES[p?.category]) errors.push(`patterns[${i}]: unknown category "${p?.category}"`);
     if (typeof p?.pattern !== 'string' || p.pattern.length > 300) errors.push(`patterns[${i}]: pattern must be a string of at most 300 characters`);

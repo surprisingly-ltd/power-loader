@@ -1,0 +1,25 @@
+{
+  "policies": {
+    "3rdparty": {
+      "Extensions": {
+        "powerloader@surprisingly.ltd": {
+          "library": {
+            "baseUrl": "https://git.council.example/casework/powerloader-library/-/raw/{ref}/",
+            "branch": "main",
+            "auth": "cookies"
+          },
+          "gateway": { "baseUrl": "https://ai-gateway.council.example/v1", "model": "fast" },
+          "privacyModel": { "filesUrl": "https://models.council.example/privacy-filter/" },
+          "assistModel": { "enabled": false },
+          "redaction": { "lockedGroups": ["names", "ids", "address"], "allowSendAsWritten": false, "blockImages": true },
+          "activityLog": { "retentionDays": 90, "coarseTimestamps": true },
+          "siteAccess": {
+            "allow": ["https://*.council.example*"],
+            "deny": ["https://payroll.council.example*"],
+            "lockLibraryRules": false
+          }
+        }
+      }
+    }
+  }
+}

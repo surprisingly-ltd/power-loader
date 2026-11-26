@@ -1,5 +1,5 @@
 // Builds the public site from site/ into dist/site/: the homepage (with its loader scene, bundled from
-// site/hero/), the training pages (setup, try a flow, create a flow), privacy and reviewer notes. demo/ is
+// site/hero/), the training pages (setup, try a flow, create a flow), privacy, how it works and reviewer notes. demo/ is
 // copied to dist/site/demo/ with its forms library pointing at the hosted pages instead of localhost:8787,
 // and the demo flows are exported from that library to dist/site/flows/ with the extension's own code.
 // The output is static, for GitHub Pages (CNAME, .nojekyll). Signed releases fetched into dist/releases/ by
@@ -15,13 +15,16 @@ import { build } from 'esbuild';
 import { DEFAULT_MODEL } from '../extension/lib/model-fetch.js';
 import { buildManifest } from './build-demo-library.mjs';
 import { buildDemoFlows } from './build-demo-flows.mjs';
+import { ensureSystems } from './build-demo-systems.mjs';
+import { homeValues, howItWorksValues } from './how-it-works.mjs';
 
 import { REPO, SITE as DEFAULT_SITE } from './site-config.mjs';
 
 const SITE = (process.env.SITE_URL || DEFAULT_SITE).replace(/\/+$/, '');
 const root = fileURLToPath(new URL('..', import.meta.url));
 const src = path.join(root, 'site');
-const out = path.join(root, 'dist/site');
+// SITE_OUT: another folder under the repo to build into, for a local copy (tools/serve-site.mjs).
+const out = path.resolve(root, process.env.SITE_OUT || 'dist/site');
 const manifest = JSON.parse(await fs.readFile(path.join(root, 'extension/manifest.json'), 'utf8'));
 
 const escape = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -35,7 +38,7 @@ const table = ['<table>', '<thead><tr><th scope="col">File</th><th scope="col">n
   ...rows.map(([file, sha, npm, url]) => `<tr><td><code>${escape(file)}</code></td><td><a href="${escape(url)}">${escape(npm)}</a></td><td class="sha">${sha}</td></tr>`),
   '</tbody>', '</table>'].join('\n');
 
-// The tabs on every page, in training order. Privacy and reviewer notes are in the footer.
+// The tabs on every page, in training order. Privacy, How it works and reviewer notes are in the footer.
 const TABS = [
   { file: 'index.html', href: '/', label: 'Home' },
   { file: 'setup.html', href: '/setup', label: 'Setup', level: 1 },
@@ -54,7 +57,7 @@ const header = (file) => [
 const footer = [
   '<footer class="foot"><div class="bar">',
   '<p><b>Power Loader</b> is open source (Apache-2.0) and published by Surprisingly Limited, registered in England and Wales, company number 13766094.</p>',
-  `<ul><li><a href="${REPO}">Source on GitHub</a></li><li><a href="/privacy">Privacy</a></li><li><a href="/reviewers">For reviewers</a></li><li><a href="/demo/">Demo pages</a></li><li><a href="mailto:privacy@surprisingly.ltd">privacy@surprisingly.ltd</a></li></ul>`,
+  `<ul><li><a href="${REPO}">Source on GitHub</a></li><li><a href="/privacy">Privacy</a></li><li><a href="/how-it-works">How it works</a></li><li><a href="/reviewers">For reviewers</a></li><li><a href="/demo/">Demo pages</a></li><li><a href="mailto:privacy@surprisingly.ltd">privacy@surprisingly.ltd</a></li></ul>`,
   '</div></footer>',
 ].join('\n');
 const nextLevel = (file) => {
@@ -108,6 +111,9 @@ const values = {
   DOWNLOAD_LINK: published.length ? '/download/power-loader-latest.xpi' : `${REPO}/releases`,
   DEMO_GUIDANCE: guidance.trim(),
   FOOTER: footer,
+  // /how-it-works: diagrams, validated samples and worked examples (tools/how-it-works.mjs).
+  ...howItWorksValues(),
+  ...homeValues(),
 };
 
 await fs.rm(out, { recursive: true, force: true });
@@ -122,12 +128,16 @@ for (const entry of await fs.readdir(src, { withFileTypes: true })) {
       if (!(k in page)) throw new Error(`${name}: unknown placeholder ${m}`);
       return page[k];
     });
+    // The add-on's own icon is the site's favicon.
+    body = body.replace('</head>', '<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n</head>');
   }
   await fs.writeFile(path.join(out, name), body);
   process.stdout.write(`dist/site/${name}\n`);
 }
 
-// The demo, as served locally by `pnpm demo`, with its library's addresses moved to this site.
+// The demo, as served locally by `pnpm demo`, with every address moved to this site: the library's and its
+// flows' (written for localhost:8787) and the pages' links to the guide (written for the live site). SITE is
+// the one setting, so a copy built for another address (tools/serve-site.mjs) is the same site throughout.
 async function copyDemo(from, to) {
   await fs.mkdir(to, { recursive: true });
   for (const entry of await fs.readdir(from, { withFileTypes: true })) {
@@ -135,15 +145,17 @@ async function copyDemo(from, to) {
     if (entry.isDirectory()) await copyDemo(inFile, outFile);
     else if (entry.name.endsWith('.json')) await fs.writeFile(outFile, (await fs.readFile(inFile, 'utf8')).replaceAll('http://localhost:8787', SITE));
     // Pages can't send X-Robots-Tag, so the hosted demo pages say it themselves.
-    else if (entry.name.endsWith('.html')) await fs.writeFile(outFile, (await fs.readFile(inFile, 'utf8')).replace(/<head>/i, '<head>\n<meta name="robots" content="noindex">'));
+    else if (entry.name.endsWith('.html')) await fs.writeFile(outFile, (await fs.readFile(inFile, 'utf8')).replaceAll(DEFAULT_SITE, SITE).replace(/<head>/i, '<head>\n<meta name="robots" content="noindex">'));
     else await fs.copyFile(inFile, outFile);
   }
 }
+// The synthetic casework systems (tools/build-demo-systems.mjs) are generated into demo/ first.
+await ensureSystems();
 const demo = path.join(out, 'demo');
 await copyDemo(path.join(root, 'demo'), demo);
 const demoManifest = await buildManifest({ dir: path.join(demo, 'library'), approvedHosts: [new URL(SITE).host] });
 await fs.writeFile(path.join(demo, 'library/library.json'), `${JSON.stringify(demoManifest, null, 2)}\n`);
-if (JSON.stringify(demoManifest).includes('localhost') || (await fs.readFile(path.join(demo, 'library/profiles/fill/dhp.json'), 'utf8')).includes('localhost')) throw new Error('The hosted demo library still names localhost');
+if (!/^(localhost|127\.0\.0\.1)$/.test(new URL(SITE).hostname) && (JSON.stringify(demoManifest).includes('localhost') || (await fs.readFile(path.join(demo, 'library/profiles/fill/dhp.json'), 'utf8')).includes('localhost'))) throw new Error('The hosted demo library still names localhost');
 // The loader scene: the rig from the Transfer Bay 07 game plus the door, as one small script.
 await build({ entryPoints: [path.join(src, 'hero/hero.ts')], bundle: true, minify: true, format: 'esm', target: 'firefox115', outfile: path.join(out, 'hero.js'), logLevel: 'warning', legalComments: 'none' });
 process.stdout.write('dist/site/hero.js\n');
@@ -166,6 +178,10 @@ process.stdout.write('dist/site/game/ (Transfer Bay 07)\n');
 
 // Ready-made flows for the "Try a flow" page, exported from the hosted demo library.
 for (const file of await buildDemoFlows({ libraryDir: path.join(demo, 'library'), outDir: path.join(out, 'flows'), from: `Power Loader site ${manifest.version}` })) process.stdout.write(`dist/site/flows/${file}\n`);
+
+// The add-on's icon (extension/icons/icon.svg) is the favicon and the header mark.
+await fs.copyFile(path.join(root, 'extension/icons/icon.svg'), path.join(out, 'favicon.svg'));
+process.stdout.write('dist/site/favicon.svg\n');
 
 // GitHub Pages: serve this host, and don't run Jekyll (it would drop files starting with _).
 await fs.writeFile(path.join(out, 'CNAME'), `${new URL(SITE).host}\n`);

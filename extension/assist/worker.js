@@ -4,7 +4,7 @@
 // own cache, so changing one model never deletes the other's files.
 // Protocol: { id, type: 'load' | 'generate' | 'unload' | 'clearCache', ... } in; { id, type: 'progress' | 'done' | 'error', ... } out.
 import { env, pipeline } from '../vendor/transformers.min.js';
-import { failure, verifyingFetch } from '../lib/model-fetch.js';
+import { failure, filesRoot, transformersPaths, verifyingFetch } from '../lib/model-fetch.js';
 
 env.allowLocalModels = false;
 env.useWasmCache = false;
@@ -12,7 +12,6 @@ env.backends.onnx.wasm.wasmPaths = {
   mjs: new URL('../vendor/ort-wasm-simd-threaded.asyncify.mjs', import.meta.url).href,
   wasm: new URL('../vendor/ort-wasm-simd-threaded.asyncify.wasm', import.meta.url).href,
 };
-env.remotePathTemplate = '{model}/resolve/{revision}/';
 const CACHE = 'power-loader-assist-cache';
 env.cacheKey = CACHE;
 
@@ -20,7 +19,7 @@ let generator = null;
 let loaded = null;
 let loading = null;
 
-const sameSource = (a, b) => a && b && a.baseUrl === b.baseUrl && a.modelId === b.modelId && a.revision === b.revision;
+const sameSource = (a, b) => a && b && filesRoot(a) === filesRoot(b) && a.modelId === b.modelId && a.revision === b.revision;
 
 async function checkWebGPU() {
   if (!globalThis.navigator?.gpu) throw failure('webgpu', 'This browser doesn’t offer WebGPU to extensions, which the model needs');
@@ -29,7 +28,7 @@ async function checkWebGPU() {
 }
 
 async function dropOtherCache(source) {
-  const keep = `${source.baseUrl}${source.modelId}/resolve/${source.revision}/`;
+  const keep = filesRoot(source);
   const cache = await caches.open(CACHE).catch(() => null);
   if (!cache) return;
   for (const req of await cache.keys()) if (!req.url.startsWith(keep)) await cache.delete(req);
@@ -51,13 +50,13 @@ async function generate(messages, maxTokens = 12) {
 }
 
 function load(id, source) {
-  if (!source?.baseUrl || !source.revision) return Promise.reject(failure('config', 'No model server address and pinned revision are set'));
+  if (!(source?.baseUrl || source?.filesUrl) || !source.revision) return Promise.reject(failure('config', 'No model server address and pinned revision are set'));
   if (generator && sameSource(loaded, source)) return Promise.resolve(loaded.result);
   if (loading && sameSource(loading.source, source)) return loading.promise;
   generator = null;
   const promise = (async () => {
     await checkWebGPU();
-    env.remoteHost = source.baseUrl;
+    Object.assign(env, transformersPaths(source));
     env.fetch = verifyingFetch(source);
     await dropOtherCache(source);
     const files = {};

@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { demoLibrary } from './helpers/library.js';
 import {
   canUse, diffDraft, draftFromProfile, editPicks, exportBody, exportChecks, exportFileName, guessKey, judgeFillTest, judgeTest,
-  literalLeaks, newFillDraft, newPageDraft, picksOf, reconcileDrafts, recordTest, repoPath, setUse, suggestPatterns, togglePick,
+  literalLeaks, newFillDraft, newPageDraft, picksOf, recordTest, repoPath, setUse, suggestPatterns, togglePick,
 } from '../../extension/lib/drafts.js';
 import { contentHash } from '../../extension/lib/hash.js';
 
@@ -114,21 +114,4 @@ test('fill drafts are tested by a dry run of their boxes', () => {
   assert.equal(t.fields['#d-first'].ok, true);
   assert.match(t.fields.input.error, /Matches \d+ elements/);
   assert.equal(t.ok, false);
-});
-
-test('after a sync a draft is retired only if the published hash equals its exported hash', () => {
-  const mk = (id, extra) => ({ ...newPageDraft({ url: 'http://localhost:8787/demo/a.html', title: id }), ...extra, profile: { id, name: id, version: 'v4' } });
-  const drafts = [
-    mk('same', { exported: { hash: 'h1' }, base: { version: 'v3' } }),
-    mk('changed', { exported: { hash: 'h2' }, base: { version: 'v3' } }),
-    mk('untouched', { base: { version: 'v3' } }),
-  ];
-  const out = reconcileDrafts(drafts, { same: { version: 'v4', hash: 'h1' }, changed: { version: 'v4', hash: 'other' }, untouched: { version: 'v3', hash: 'x' } });
-  assert.deepEqual(out.retired, ['same']);
-  assert.deepEqual(out.conflicts, ['changed']);
-  assert.deepEqual(out.list.map((d) => d.profile.id), ['changed', 'untouched']);
-  assert.equal(out.list[1].conflict, null);
-  // Keeping my draft is remembered for that published version.
-  out.list[0].conflict.dismissed = true;
-  assert.deepEqual(reconcileDrafts(out.list, { changed: { version: 'v4', hash: 'other' } }).conflicts, []);
 });

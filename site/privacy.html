@@ -12,11 +12,11 @@
 <main id="main">
 <div class="prose">
 <h1>Privacy policy</h1>
-<p class="updated">Effective 24 November 2026 · Covers version {{VERSION}} of the Power Loader extension and this website</p>
+<p class="updated">Effective 26 November 2026 · Covers version {{VERSION}} of the Power Loader extension and this website</p>
 
 <div class="tip">
 <p><b>We receive nothing.</b> Power Loader has no servers of its own and no account system. It has no analytics, telemetry, tracking, advertising or crash reporting. No case data, page content, settings, keys or usage information is ever sent to Surprisingly Ltd.</p>
-<p><b>Case data stays on your computer.</b> It leaves only if <i>your organisation</i> has set up its own AI gateway, and only when you press an ✦ button, read the preview and approve it. Nothing else the extension sends contains case data.</p>
+<p><b>Case data stays on your computer.</b> It goes to an AI only if <i>your organisation</i> has set up its own AI gateway, and only when you press an ✦ button, read the preview and approve it. The only other request that can carry a case value is a flow’s <b>fetch step</b>: when you press its button, it asks the casework system you’re using for some of its own pages, and their addresses can contain a value such as the case reference.</p>
 </div>
 
 <p>This policy is written to meet the transparency requirements of the EU General Data Protection Regulation (GDPR) and the UK GDPR. It covers two things published by Surprisingly Limited (“we”, “us”), a company registered in England and Wales, company number 13766094:</p>
@@ -32,8 +32,8 @@
 <tbody>
 <tr><td>Does Power Loader send anything to Surprisingly Ltd?</td><td><b>No.</b> Nothing, ever. We couldn’t see your data even if we wanted to.</td></tr>
 <tr><td>Where is case data kept?</td><td>In Firefox, on your computer. It’s deleted when you finish or discard the case.</td></tr>
-<tr><td>Does case data go anywhere else?</td><td>Only to your organisation’s own AI gateway, if it has one, and only a request you have previewed and approved.</td></tr>
-<tr><td>What other connections does it make?</td><td>To your organisation’s forms library, to download the privacy model, and Firefox’s own update check. None of them carries case data. <a href="#connections">Details below.</a></td></tr>
+<tr><td>Does case data go anywhere else?</td><td>Only to your organisation’s own AI gateway, if it has one, and only a request you have previewed and approved. A fetch step also puts values such as the case reference in the addresses of the pages it asks the same casework system for.</td></tr>
+<tr><td>What other connections does it make?</td><td>To your organisation’s forms library, to download the on-device models if they’re used, and Firefox’s own update check. None of them carries case data. <a href="#connections">Details below.</a></td></tr>
 <tr><td>Does this website track me?</td><td>No. No cookies, no analytics, no third-party scripts or fonts. The game remembers only whether you muted it. Our host keeps standard server logs. <a href="#website">Details below.</a></td></tr>
 <tr><td>Who is responsible for the people in my cases?</td><td>Your organisation, as data controller. <a href="#roles">Details below.</a></td></tr>
 </tbody>
@@ -42,21 +42,23 @@
 
 <h2 id="roles">Who is responsible for what</h2>
 <p><b>For the data you handle with the extension, your organisation is the data controller.</b> It installs Power Loader for its staff and decides which systems it may read, where its forms library and AI gateway are, and how long the activity log is kept. Its own privacy notice applies to that data, as do its contracts with any AI provider behind its gateway.</p>
+<p>Your organisation also decides what the extension may send, and where. Power Loader can run with no AI at all. If your organisation uses AI, requests go only to the gateway it chooses, after the on-device privacy model (a privacy shield that runs on your computer, and on by default) and the preview. Your organisation can lock these choices with Firefox policy, and its forms library can set some of them. <a href="/how-it-works#choices">How it works</a> lists them.</p>
 <p><b>Surprisingly Ltd is neither a controller nor a processor of that data.</b> We write and publish the software, but it never sends us anything, and we have no access to any computer it runs on.</p>
 <p><b>For this website and for messages you send us, Surprisingly Ltd is the controller.</b> That covers the small amount of personal data described under <a href="#website">This website</a> and <a href="#contact-us">If you contact us</a>.</p>
 
 <h2 id="extension">The extension: what it keeps on your computer</h2>
 <p>Power Loader uses Firefox’s extension storage on the computer where it runs. Nothing in this list is sent anywhere, except the gateway key, which goes only to your organisation’s gateway to sign in each approved request.</p>
 <ul>
-<li><b>The active case:</b> the forms or flow it started from, and the values you clipped from pages, each with where it came from. Depending on the case, these can include names, dates of birth, addresses, reference numbers such as NI numbers and client IDs, and financial, housing, employment and health details.</li>
+<li><b>The active case:</b> the flow it started from, and the values you clipped from pages, each with where it came from. For a page a fetch step read, it also keeps the text around each value it read (at most 500 characters a value), so you can see where the value came from; not the whole page. Depending on the case, these can include names, dates of birth, addresses, reference numbers such as NI numbers and client IDs, and financial, housing, employment and health details.</li>
 <li><b>Your notes</b> on the case.</li>
 <li><b>An activity log</b> of the approved pages you used and what you did with them, without the values themselves. Pages outside your organisation’s approved list are not logged. Your organisation sets how long entries are kept: 90 days by default.</li>
 <li><b>Flows and drafts you make:</b> page layouts, field names and test results, never values from pages. Power Loader checks for and blocks personal data left in a flow before you export it.</li>
 <li><b>Settings</b>, and the AI gateway key if you choose <b>Remember the key in this browser</b> (otherwise the key lasts only for the browser session).</li>
-<li><b>Cached files</b> from your forms library and the privacy model.</li>
+<li><b>Cached files</b> from your forms library and the on-device models: the privacy model, and the profile assistant if it has been used to make a profile.</li>
 </ul>
-<p>When you <b>finish</b> or <b>discard</b> a case, Power Loader deletes the case, its values and its working data. If Firefox closes part-way through, the deletion completes the next time it starts. Removing the extension removes everything it stored.</p>
-<p>Reading text from PDFs and pictures, and finding personal data with the privacy model, both run entirely on your computer.</p>
+<p>When you <b>finish</b> or <b>discard</b> a case, Power Loader deletes the case, its values and its working data. By default it also deletes a case that is still open when Firefox closes (at the next start) or that has been left for 24 hours without use; you can change both in Settings, unless your organisation has set them. If Firefox closes part-way through a deletion, it completes the next time it starts. Removing the extension removes everything it stored.</p>
+<p>Reading text from PDFs and pictures, finding personal data with the privacy model, and suggesting fields with the profile assistant all run entirely on your computer.</p>
+<p>The privacy model is on by default. Your organisation, its forms library or you (in Settings) can switch it off. Off, it isn’t downloaded and nothing is scanned with it, but values in the case and the library’s patterns are still redacted before anything goes to an AI, and the preview says the model is off.</p>
 
 <h2 id="connections">The extension: every connection it makes</h2>
 <p>This is the complete list. The extension contains no other network code, and every library it includes is packaged with it, so nothing is loaded from the internet at runtime.</p>
@@ -64,11 +66,12 @@
 <table>
 <thead><tr><th scope="col">Where</th><th scope="col">What is sent</th><th scope="col">When</th><th scope="col">Case data?</th></tr></thead>
 <tbody>
-<tr><td>Your organisation’s <b>AI gateway</b> (optional, set up by your organisation)</td><td>The text of the task you chose, after redaction: detected personal details are replaced by placeholders such as <code>&lt;redacted:person_name|ref:…&gt;</code>. Images cannot be sent.</td><td>Only when you press an ✦ button and approve the preview. The <b>Test the connection</b> button sends only the fixed text “Reply with OK.”</td><td><b>Only what you approve</b>, redacted unless your organisation allows otherwise and you choose to send an item as written</td></tr>
-<tr><td>Your organisation’s <b>forms library</b> (optional)</td><td>Requests for the library’s files, with any sign-in your organisation requires</td><td>When you connect or sync the library</td><td>No</td></tr>
-<tr><td>The <b>model server</b>: Hugging Face by default, or a server set by your organisation or by you</td><td>Requests for the privacy model’s files, each checked against a known hash</td><td>Once, when you download the model, and again only if it changes</td><td>No</td></tr>
+<tr><td>Your organisation’s <b>AI gateway</b> (optional, set up by your organisation)</td><td>The request for the task you chose, as shown in the preview. Personal details found in its text are replaced by placeholders such as <code>&lt;redacted:person_name|ref:…&gt;</code>. In the reader’s ✦ Enhanced mode you can choose <b>Send the picture itself</b>: a picture can’t be redacted, so it is sent as it is, only after you tick that you understand that, and never if your organisation blocks pictures.</td><td>Only when you press an ✦ button and approve the preview. The <b>Test the connection</b> button sends only the fixed text “Reply with OK.”</td><td><b>Only what you approve.</b> Text is redacted, unless you choose to send an item as written (your organisation can turn that choice off). A picture you choose to send is not redacted.</td></tr>
+<tr><td>Your organisation’s <b>forms library</b> (optional)</td><td>Requests for the library’s files, with any sign-in your organisation requires</td><td>When you press <b>Connect</b> or <b>Sync now</b>, and when you open the sidebar if the last sync was more than an hour ago</td><td>No</td></tr>
+<tr><td>Your organisation’s <b>casework systems</b>, in a flow’s fetch step</td><td>Requests for the pages the step names, from the site your tab is on, with that site’s own sign-in. Only GET requests: nothing is posted.</td><td>Only when you press the step’s Fetch button. Your organisation, its library or you can turn fetch steps off.</td><td>Only values in the page addresses, such as the case reference, sent to the system the case is in</td></tr>
+<tr><td>The <b>model server</b>: Hugging Face by default, or a server set by your organisation or by you</td><td>Requests for the on-device models’ files, each checked against a known hash</td><td>When you download or check the privacy model, and the first time the profile assistant is used to make a profile. Files already downloaded are kept in the browser. Never for a model that is switched off.</td><td>No</td></tr>
 <tr><td><b>This website</b>, through Firefox’s update check</td><td>Firefox asks for <code>/updates.json</code> to see whether a newer signed version exists</td><td>Firefox decides, normally about once a day</td><td>No</td></tr>
-<tr><td><b>This website’s demo library</b> (only if you connect it)</td><td>Requests for the fictional demo files</td><td>When you connect or sync the demo library</td><td>No</td></tr>
+<tr><td><b>This website’s demo library</b> (only if you connect it)</td><td>Requests for the fictional demo files</td><td>As for your organisation’s library: when you connect or sync it, and when you open the sidebar if the last sync was more than an hour ago</td><td>No</td></tr>
 </tbody>
 </table>
 </div>
@@ -80,6 +83,7 @@
 <li><b>Copy diagnostics</b> puts a report on your clipboard for IT support. It contains version numbers, which settings are set and recent error types, never case values, page addresses, notes or keys. It goes nowhere unless you paste it somewhere.</li>
 <li><b>Export</b> (flows, activity log, settings) saves a file on your computer.</li>
 <li><b>Copying a value</b> puts it on your clipboard.</li>
+<li><b>An email step</b> opens your own email app with the message filled in. Power Loader doesn’t send it.</li>
 </ul>
 
 <h3>Firefox’s data permissions</h3>
@@ -111,6 +115,7 @@
 <p>You can also complain to a data protection authority: in the UK, the <a href="https://ico.org.uk/make-a-complaint/">Information Commissioner’s Office</a>; in the EU, the authority in the country where you live or work (see the <a href="https://www.edpb.europa.eu/about-edpb/about-edpb/members_en">list of EU data protection authorities</a>). We’d appreciate the chance to sort it out first.</p>
 
 <h2 id="open-source">Check it yourself</h2>
+<p><a href="/how-it-works">How it works</a> describes the design for security, compliance and data protection teams: the parts, the site rules and policy, and what leaves the browser.</p>
 <p>Power Loader is open source. The <a href="{{REPO}}">source code</a> shows every network request it can make, and the <a href="/reviewers">reviewer notes</a> explain how to rebuild the published package from that source and compare it byte for byte.</p>
 
 <h2 id="changes">Changes to this policy</h2>

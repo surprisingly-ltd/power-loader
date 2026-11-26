@@ -8,7 +8,7 @@
 // Test:  { at, url, ok, snapshot, fields: { key: { count, ok, error } }, leaks: [string] } (never page values)
 import { canonical } from './hash.js';
 import { validateValue } from './fields.js';
-import { hostApproved, hostOf, validateLibraryProfile } from './library.js';
+import { profileHostsApproved, validateLibraryProfile } from './library.js';
 
 export const SCHEMA = 'powerloader-profile/1';
 const nextVersion = (v) => `v${Number(String(v || 'v0').slice(1)) + 1}`;
@@ -134,6 +134,51 @@ export function togglePick(d, selector, key = '') {
   });
 }
 
+// ------------------------------------------------------------------ rows picks
+// A rows pick reads every item of a list as a row: a list spec [rows, { field: item }] under a group key, which
+// clipFromExtract() turns into records (group-1, group-2, …) for the tools. The JSON tree view makes them
+// (Every payment); HTML can use them later. They live in the profile's fields beside the picks, which
+// rebuild() keeps as they are.
+
+/** The rows picks of an extraction draft: [{ group, rows, items: { field: selector } }]. */
+export function rowPicksOf(d) {
+  return Object.entries(d.profile.fields || {}).filter(([, spec]) => Array.isArray(spec) && typeof spec[0] === 'string' && (spec.length === 1 || (spec[1] && typeof spec[1] === 'object' && !Array.isArray(spec[1]))))
+    .map(([group, spec]) => ({ group, rows: spec[0], items: Object.fromEntries(Object.entries(spec[1] || {}).filter(([k, v]) => !k.startsWith('@') && !k.startsWith('$') && typeof v === 'string')) }));
+}
+
+const GROUP = /^[A-Za-z][A-Za-z0-9]{0,39}$/;
+
+/**
+ * Add a field to the rows read from rows (a list's items), as group: one more item field, or a new list. A
+ * group that is already a single-value pick's key, or a list of other rows, gets a name of its own. Returns
+ * the group used. The draft goes back to "Not tested".
+ */
+export function addRowField(d, { group, rows, field, item }) {
+  if (!GROUP.test(field)) throw new Error('A row’s field name is letters and digits, starting with a letter');
+  let g = GROUP.test(group) ? group : 'rows';
+  const taken = (k) => picksOf(d).some((p) => p.key === k) || (d.profile.fields?.[k] !== undefined && !(Array.isArray(d.profile.fields[k]) && d.profile.fields[k][0] === rows));
+  for (let n = 2; taken(g); n++) g = `${GROUP.test(group) ? group : 'rows'}${n}`;
+  editDraft(d, (p) => {
+    p.fields = p.fields || {};
+    const cur = Array.isArray(p.fields[g]) && p.fields[g][0] === rows ? p.fields[g] : [rows, {}];
+    cur[1] = { ...(cur[1] || {}), [field]: item };
+    p.fields[g] = cur;
+  });
+  return g;
+}
+
+/** Remove one item field from a rows pick; the list goes when its last field does. */
+export function removeRowField(d, group, field) {
+  editDraft(d, (p) => {
+    const spec = p.fields?.[group];
+    if (!Array.isArray(spec)) return;
+    const items = { ...(spec[1] || {}) };
+    delete items[field];
+    if (Object.keys(items).some((k) => !k.startsWith('@'))) p.fields[group] = [spec[0], items];
+    else delete p.fields[group];
+  });
+}
+
 // The case field a page label most likely means, by the library's field labels.
 export function guessKey(lib, label) {
   const want = String(label || '').toLowerCase().replace(/[:*]+$/, '').trim();
@@ -193,7 +238,12 @@ export function judgeTest(d, probes, { url, lib, pageValues = [], at = now() }) 
 
 export function recordTest(d, test) {
   if (d.tested?.ok && d.tested.url !== test.url && d.tested.snapshot === test.snapshot) d.second = test;
-  else { d.tested = test; d.second = null; }
+  else {
+    // A test as fetched (fetch steps) stands while the profile is the one it tested.
+    const fetched = d.tested?.fetched && d.tested.snapshot === test.snapshot ? d.tested.fetched : null;
+    d.tested = fetched ? { ...test, fetched } : test;
+    d.second = null;
+  }
   if (!testedNow(d)) d.use = false;
   return d;
 }
@@ -230,7 +280,7 @@ export function diffDraft(d, base) {
   const remapped = Object.keys(now_).filter((k) => k in was && canonical(now_[k]) !== canonical(was[k]))
     .map((k) => ({ key: k, from: was[k], to: now_[k], rows: !isFill && !!(rowSpec(now_[k]) || rowSpec(was[k])) }));
   const meta = [];
-  for (const k of ['name', 'match', 'urlPattern', 'when']) {
+  for (const k of ['name', 'format', 'match', 'urlPattern', 'when']) {
     if (canonical(d.profile[k] ?? null) !== canonical(base[k] ?? null)) meta.push({ what: k, from: base[k] ?? null, to: d.profile[k] ?? null });
   }
   return { added, removed, remapped, meta, same: !added.length && !removed.length && !remapped.length && !meta.length };
@@ -242,8 +292,13 @@ export function exportBody(d) {
     schema: SCHEMA, id: p.id, kind: d.kind === 'fill' ? 'fill' : 'extract', name: p.name, version: p.version,
     ...(d.base ? { basedOn: { version: d.base.version, commit: d.base.commit } } : {}),
     ...(p.form ? { form: p.form } : {}),
+    // Only a format other than the default is written, so an HTML profile's file is as it always was.
+    ...(p.format && p.format !== 'html' ? { format: p.format } : {}),
     match: p.match, urlPattern: p.urlPattern,
     ...(p.when ? { when: p.when } : {}),
+    ...(p.fetchOnly ? { fetchOnly: true } : {}),
+    // How to open a closed part of the page (class names only): part of the template, so it travels with it.
+    ...(Array.isArray(p.reveal) && p.reveal.length && d.kind !== 'fill' ? { reveal: p.reveal } : {}),
     fields: p.fields,
   };
   return body;
@@ -271,29 +326,4 @@ export function exportChecks(d, { lib, values = [] }) {
 }
 
 // Host check for a draft's match and link pattern against the library's approved systems.
-export function draftHostsApproved(d, lib) {
-  const pats = [...[d.profile.match].flat(), d.profile.urlPattern].filter(Boolean);
-  return pats.every((p) => hostApproved(hostOf(p), lib?.approvedHosts || []));
-}
-
-/**
- * After a sync: a draft is retired only when the published file's content hash equals the hash it exported.
- * A different published version of the same profile, or a newer one than its base, is a conflict for the
- * caseworker to settle. Nothing is deleted silently. published: { id: { version, hash } }.
- */
-export function reconcileDrafts(drafts, published) {
-  const retired = [];
-  const conflicts = [];
-  const list = [];
-  for (const d of drafts) {
-    const pub = published[d.profile.id];
-    if (pub && d.exported && pub.hash === d.exported.hash) { retired.push(d.profile.name); continue; }
-    const newer = pub && (!d.base || pub.version !== d.base.version);
-    if (newer && !(d.conflict && d.conflict.hash === pub.hash)) {
-      d.conflict = { version: pub.version, hash: pub.hash, dismissed: false };
-      conflicts.push(d.profile.name);
-    }
-    list.push(d);
-  }
-  return { list, retired, conflicts };
-}
+export const draftHostsApproved = (d, lib) => profileHostsApproved(d.profile, lib?.approvedHosts || []);

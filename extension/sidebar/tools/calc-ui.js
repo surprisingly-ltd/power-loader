@@ -1,5 +1,6 @@
 // The calculator: which amounts in the case make a figure, such as the landlord's arrears. Standard searches
 // on this computer; ✦ Enhanced asks the AI gateway a question about the ticked amounts, after the preview.
+import { assertTool } from '../../lib/tools.js';
 import { h, plural, announce, copyText } from '../../ui/dom.js';
 import { TARGET, amounts, inputSignature, LIMITS, workingText } from '../../lib/calc.js';
 import { addWorking, fieldState, settled } from '../../lib/case.js';
@@ -47,6 +48,7 @@ function arrearsOf(c, lib) {
 async function ask(context, chosen) {
   const { data, act } = context;
   if (!calc.question.trim() || !chosen.length) return;
+  try { await assertTool('calculator'); } catch (e) { announce(e.message); return; }
   calc.ai = { busy: true };
   act.render();
   const notes = caseNotes(data.case);
@@ -93,6 +95,7 @@ export function calcBlock(context, { wide = false } = {}) {
   const hit = new Set(!stale && combo ? combo.items.map((a) => a.id) : []);
   const aiHit = new Set(calc.ai?.items || []);
   const run = async () => {
+    try { await assertTool('calculator'); } catch (e) { announce(e.message); return; }
     const out = await search(chosen, figure(), { maxK: calc.maxK, tol: Number(calc.tol) || 0 }, act.render);
     if (!out.ok) { announce(out.message); calc.result = null; act.render(); return; }
     calc.result = { ...out.result, sig, target: figure() };

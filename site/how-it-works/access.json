@@ -1,0 +1,34 @@
+{
+  "schema": "powerloader-access/1",
+  "allow": {
+    "lock": true,
+    "rules": [
+      {
+        "id": "fetch-messages",
+        "pattern": "https://messages.council.example/message/*",
+        "actions": ["fetch-get"],
+        "note": "Fetch steps may read the messages service’s message pages. Nothing else is fetched in the background."
+      }
+    ]
+  },
+  "deny": {
+    "lock": true,
+    "rules": [
+      {
+        "id": "finance",
+        "pattern": "https://finance.council.example*",
+        "note": "The finance system is out of scope for every flow."
+      }
+    ]
+  },
+  "rules": [
+    {
+      "id": "archive-read-only",
+      "effect": "deny",
+      "pattern": "https://cases.council.example/archive/*",
+      "actions": ["fill", "annotate"],
+      "note": "Archived records are read, not changed. Left to the caseworker."
+    }
+  ],
+  "backgroundReading": { "on": true, "lock": false }
+}

@@ -5,9 +5,10 @@
 import '../lib/extract.js';
 import { h, rerender, announce, copyText, describeError, plural, time, draftInput, clearDraft, drafts } from '../ui/dom.js';
 import { tabList, tabPanel } from '../ui/tabs.js';
-import { CaseEnded, caseLibrary, updateCase } from '../lib/core.js';
+import { CaseEnded, caseLibrary, currentAccess, updateCase } from '../lib/core.js';
+import { allowed } from '../lib/access.js';
 import {
-  caseKeys, caseLabel, caseText, contribution, decide, excludeValue, fieldState, fillStale, formProgress, isRequired, neededBy,
+  caseKeys, caseLabel, caseText, clipValueState, contribution, decide, excludeValue, fieldState, fillStale, formProgress, isRequired, neededBy,
   restoreValue, setManual, settled, undecide,
 } from '../lib/case.js';
 import { display, norm } from '../lib/fields.js';
@@ -15,12 +16,14 @@ import { ACTIVITIES, allRows, exportRows, logEvent, toCsv } from '../lib/activit
 import { returnToSidebar } from '../lib/pages.js';
 import { CASE_ENDED } from '../lib/teardown.js';
 import { getPolicy } from '../lib/policy.js';
+import { settingsUnderPolicy } from '../lib/ai/settings.js';
+import { closeNote, guardClose } from '../sidebar/close-warning.js';
 import { openFinish, openRemoveClip } from '../sidebar/case-dialogs.js';
 import { conflictCard, shortUrl, whereFound } from '../sidebar/caseview.js';
 import { installPresenter } from '../sidebar/privacy.js';
-import { toolBlock } from '../sidebar/tools/tools.js';
+import { toolBlock, toolsShown } from '../sidebar/tools/tools.js';
 
-export const ui = { view: 'fields', form: null, status: 'all', open: null, src: null, realLinks: false };
+export const ui = { view: 'fields', form: null, status: 'all', open: null, src: null, realLinks: false, fetched: null, step: null, field: null };
 let data = {};
 
 async function load() {
@@ -29,7 +32,7 @@ async function load() {
   let lib = null;
   try { lib = c ? caseLibrary(s.library, c) : null; } catch { lib = null; }
   const policy = await getPolicy().catch(() => ({ values: {}, locked: new Set() }));
-  data = { case: c, lib, library: s.library, settings: s.settings || {}, policy };
+  data = { case: c, lib, library: s.library, settings: settingsUnderPolicy(s.settings || {}, policy), policy };
 }
 
 export const act = {
@@ -46,8 +49,10 @@ export const act = {
     } finally { await load(); render(); }
   },
   refresh: async () => { await load(); render(); },
+  // A fetched source on a conflict card: what was read from it, here.
+  openFetched: (clipId, field = null) => { Object.assign(ui, { view: 'fetched', fetched: clipId, step: null, field }); history.replaceState(null, '', '?view=fetched'); render(); showFetched(field); },
 };
-const VIEWS = ['fields', 'sources', 'matrix', 'activity', 'calc', 'timeline'];
+const VIEWS = ['fields', 'sources', 'fetched', 'matrix', 'activity', 'calc', 'timeline'];
 // What the shared case components need. Events logged here are logged against the full case page.
 const ctx = () => ({ data, lib: data.lib, act, ui, logPage: () => page });
 const label = (k) => data.lib.fields[k]?.label || k;
@@ -81,7 +86,7 @@ function srcLink(cl) {
   if (!cl.url || !/^https?:/.test(cl.url)) return h('span', { class: 'small muted' }, cl.kind === 'document' ? 'Read from a document' : cl.kind === 'region' ? 'Read from the screen' : '');
   return h('a', { class: 'srclink', href: cl.url, target: '_blank', rel: 'noopener', title: 'Open this source in a new tab' }, `${shortUrl(cl.url)} ↗`);
 }
-const kindLabel = (cl) => ({ page: `Page profile ${cl.profile?.id || ''} ${cl.profile?.version || ''}${cl.profile?.draft ? ' (your draft)' : ''}`, document: 'Document, read on this computer', region: 'Screen region, read on this computer', ai: 'AI extraction, redacted' }[cl.kind] || 'Source');
+const kindLabel = (cl) => ({ page: `Page profile ${cl.profile?.id || ''} ${cl.profile?.version || ''}${cl.profile?.draft ? ' (your draft)' : ''}`, document: 'Document, read on this computer', region: 'Screen region, read on this computer', ai: 'AI extraction, redacted', fetch: `${cl.format === 'json' ? 'Data' : 'Page'} fetched by a step, page profile ${cl.profile?.id || ''} ${cl.profile?.version || ''}` }[cl.kind] || 'Source');
 
 function statusPill(k, st) {
   if (settled(st.status) && !st.valid) return h('span', { class: 'pill bad' }, 'Needs fixing');
@@ -247,6 +252,118 @@ function sourcesView() {
   ];
 }
 
+// ------------------------------------------------------------------ what a fetch step read
+
+const STATE_WORDS = { matched: ['', 'Matched: another page agrees'], new: ['', 'New: only this page has it'], used: ['ok', 'Used: you chose this page’s value'], overridden: ['warn', 'Overridden: the case uses another value'], conflict: ['cf', '⚠ In conflict: decide which is right'], excluded: ['warn', 'Excluded by you'], extra: ['', 'Not needed by these forms'] };
+
+// An excerpt's lines, each value outlined: text nodes and spans, never the response's markup.
+function excerptLines(ex, k, state) {
+  return h('div', { class: 'fv-lines', 'data-key': `fv-ex-${k}` }, ex.lines.map((l, i) => {
+    const marks = ex.marks.filter((m) => m.line === i).sort((a, b) => a.start - b.start);
+    const parts = [];
+    let at = 0;
+    for (const m of marks) {
+      if (m.start < at || m.end <= m.start) continue;
+      parts.push(l.text.slice(at, m.start), h('mark', { class: `fv-mark ${state === 'conflict' ? 'cf' : ''}`, 'data-field': k }, state === 'conflict' ? '⚠ ' : '', l.text.slice(m.start, m.end)));
+      at = m.end;
+    }
+    parts.push(l.text.slice(at));
+    return [i && l.n !== ex.lines[i - 1].n + 1 ? h('div', { class: 'fv-gap', 'aria-hidden': 'true' }, '⋯') : null, h('div', { class: 'fv-line' }, h('span', { class: 'fv-n', 'aria-hidden': 'true' }, String(l.n + 1)), h('span', {}, parts))];
+  }));
+}
+
+/**
+ * The fetched view: what a fetch step read from a page, to look back at. The parts that were read (the clip's
+ * excerpts, lib/fetch-view.js), each value outlined and listed with what happened to it, when and where it was
+ * fetched and by which request, and Open the page and Fetch again. It is Power Loader's own page: nothing from
+ * the response is shown except as text.
+ */
+function fetchedView() {
+  const c = data.case;
+  const lib = data.lib;
+  const fetched = c.clips.filter((cl) => cl.kind === 'fetch');
+  if (!fetched.length) return h('p', { class: 'muted' }, 'Nothing has been fetched for this case yet.');
+  const inStep = ui.step ? fetched.filter((cl) => cl.via?.stepId === ui.step) : fetched;
+  const sel = clipOf(ui.fetched) || inStep[0] || fetched[0];
+  const step = (lib.steps || []).find((s) => s.id === sel.via?.stepId);
+  const request = (step?.fetch?.requests || []).find((r) => r.id === sel.via?.requestId);
+  const order = Object.keys(sel.values).concat([...new Set((sel.records || []).map((r) => r.group))]);
+  const excerpts = sel.excerpts || {};
+  const shown = order.filter((k) => excerpts[k]);
+  const list = (inStep.length ? inStep : fetched).map((cl) => h('button', {
+    type: 'button', class: 'srccard', 'data-key': `fv-${cl.id}`, 'aria-current': String(cl.id === sel.id), onclick: () => { ui.fetched = cl.id; ui.field = null; render(); showFetched(); },
+  }, h('b', {}, cl.title || cl.name), h('span', { class: 'muted' }, `${time(cl.capturedAt)} · ${shortUrl(cl.url)}`)));
+  const canOpen = /^https?:/.test(sel.url || '');
+  return [
+    ui.step && inStep.length !== fetched.length ? h('p', { class: 'small' }, `What ${step?.name || 'the step'} read. `, h('button', { type: 'button', class: 'link sm', 'data-key': 'fv-all', onclick: () => { ui.step = null; render(); } }, 'Show every page fetched')) : null,
+    h('div', { class: 'srcs-layout' },
+      h('nav', { class: 'stack', 'aria-label': 'Pages fetched' }, list),
+      h('div', { class: 'card', style: 'gap:10px', 'data-key': 'fetched-view' },
+        h('div', { class: 'row between' }, h('h3', {}, sel.title || sel.name),
+          h('div', { class: 'row' },
+            canOpen ? h('button', { type: 'button', class: 'sm', 'data-key': 'fv-open', onclick: () => openFetchedPage(sel) }, 'Open the page') : null,
+            step ? h('button', { type: 'button', class: 'sm', 'data-key': 'fv-again', onclick: () => fetchAgain(step) }, 'Fetch again') : null)),
+        h('dl', { class: 'kv' },
+          h('dt', {}, 'Fetched'), h('dd', {}, `${time(sel.capturedAt)}${sel.format === 'json' ? ', as data' : ''}`),
+          h('dt', {}, 'From'), h('dd', {}, sel.url || ''),
+          h('dt', {}, 'By'), h('dd', {}, [step?.name, request?.name].filter(Boolean).join(' · ') || 'a fetch step'),
+          h('dt', {}, 'Read with'), h('dd', {}, `${sel.name} ${sel.profile?.version || ''}`)),
+        h('p', { class: 'small muted' }, 'Showing the parts that were read. Fetch again to see the whole response.'),
+        h('div', { class: 'fv-grid' },
+          h('div', { class: 'fv-text', 'data-scroll': 'fetched-text' }, shown.length
+            ? shown.map((k) => [h('h4', { class: 'fv-key' }, label(k)), excerptLines(excerpts[k], k, contrib(sel, k)?.s === 'conflict' ? 'conflict' : '')])
+            : h('p', { class: 'muted' }, 'This page was fetched before Power Loader kept what it read. Fetch again to see it.')),
+          h('ul', { class: 'plain fv-vals', 'aria-label': 'Values read' }, order.map((k) => {
+            const records = (sel.records || []).filter((r) => r.group === k).length;
+            const s = k in sel.values ? clipValueState(c, lib, sel, k, { keys: view.keySet }) : null;
+            const [cls, words] = STATE_WORDS[s] || ['', `${plural(records, 'row')} for the tools`];
+            return h('li', { class: `fv-val ${s || ''}` },
+              h('button', { type: 'button', class: 'link', 'data-key': `fv-go-${k}`, disabled: !excerpts[k], onclick: () => scrollToValue(k) }, label(k)),
+              k in sel.values ? h('b', {}, display(lib.fields[k] || {}, sel.values[k])) : null,
+              h('span', { class: `pill ${cls === 'cf' ? 'cf' : cls}` }, words),
+              s === 'conflict' ? h('button', { type: 'button', class: 'link sm', 'data-key': `fv-decide-${k}`, onclick: () => { ui.view = 'fields'; ui.open = k; history.replaceState(null, '', '?view=fields'); render(); } }, 'Decide') : null);
+          }))))),
+  ];
+}
+
+// The fetched view opens scrolled to the value it was opened for, or the first one read.
+function showFetched(field = null) {
+  const first = document.querySelector(field ? `.fv-mark[data-field="${CSS.escape(field)}"]` : '.fv-mark') || document.querySelector('.fv-mark');
+  if (first) scrollToValue(first.getAttribute('data-field'));
+}
+
+function scrollToValue(k) {
+  const el = document.querySelector(`.fv-mark[data-field="${CSS.escape(k)}"]`);
+  if (!el) return;
+  el.scrollIntoView?.({ block: 'center', behavior: typeof matchMedia !== 'function' || matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  el.classList.remove('flash');
+  void el.offsetWidth;
+  el.classList.add('flash');
+}
+
+/**
+ * Open the page: in the tab the case page was opened from, through the site rules' navigate check, then back to
+ * the sidebar, which outlines the values when the page is recognised (holding the one this view was opened for).
+ */
+async function openFetchedPage(cl) {
+  const layers = await currentAccess().catch(() => null);
+  if (layers && !allowed(layers, cl.url, 'navigate').ok) { announce('Power Loader doesn’t open this address: the site rules block it.'); return; }
+  const { fullPage } = await browser.storage.session.get('fullPage');
+  const tabId = fullPage?.from?.tabId;
+  if (tabId == null) { announce('The tab you came from was closed.'); return; }
+  await browser.storage.session.set({ fullPage: { ...fullPage, from: { ...fullPage.from, scroll: null } }, ...(ui.field && cl.values[ui.field] != null ? { follow: { url: cl.url, key: ui.field, value: display(data.lib.fields[ui.field] || {}, cl.values[ui.field]), at: time(cl.capturedAt) } } : {}) });
+  await browser.tabs.update(tabId, { url: cl.url }).catch(() => {});
+  const r = await returnToSidebar();
+  if (!r.ok) announce(r.reason);
+}
+
+// Fetch again: back to the sidebar with the step open, where the run starts if the tab is on its page.
+async function fetchAgain(step) {
+  await browser.storage.session.set({ fetchAgain: step.id });
+  const r = await returnToSidebar();
+  if (!r.ok) announce(r.reason);
+}
+
 // ------------------------------------------------------------------ matrix
 
 function matrixView() {
@@ -378,16 +495,18 @@ export function render() {
   view = viewOf();
   const n = view.conflicts.length;
   const tabs = [
-    { key: 'fields', label: 'Fields', badge: n ? String(n) : null }, { key: 'sources', label: `Sources · ${c.clips.length}` }, { key: 'matrix', label: 'Matrix' },
-    { key: 'activity', label: `Activity · ${c.log.length}` }, { key: 'calc', label: 'Calculator' }, { key: 'timeline', label: 'Timeline' },
+    { key: 'fields', label: 'Fields', badge: n ? String(n) : null }, { key: 'sources', label: `Sources · ${c.clips.length}` },
+    ...(c.clips.some((cl) => cl.kind === 'fetch') ? [{ key: 'fetched', label: `Fetched · ${c.clips.filter((cl) => cl.kind === 'fetch').length}` }] : []), { key: 'matrix', label: 'Matrix' },
+    { key: 'activity', label: `Activity · ${c.log.length}` }, ...[{ key: 'calc', label: 'Calculator' }, { key: 'timeline', label: 'Timeline' }].filter((t) => toolsShown(ctx()).includes(t.key)),
   ];
-  const body = ui.view === 'sources' ? sourcesView() : ui.view === 'matrix' ? matrixView() : ui.view === 'activity' ? activityView()
+  const body = ui.view === 'sources' ? sourcesView() : ui.view === 'fetched' ? fetchedView() : ui.view === 'matrix' ? matrixView() : ui.view === 'activity' ? activityView()
     : ui.view === 'calc' || ui.view === 'timeline' ? h('div', { class: 'tool' }, toolBlock(ctx(), ui.view, { wide: true })) : fieldsView();
   document.title = `${caseLabel(c, data.lib)} – Power Loader`;
   return rerender(app,
     h('div', { class: 'page-head' },
       h('div', {}, h('div', { class: 'eyebrow' }, 'Active case'), h('h1', {}, caseLabel(c, data.lib)),
-        h('div', { class: 'meta' }, `Started ${time(c.createdAt)} · ${c.forms.map((f) => data.lib.forms[f.id]?.name).join(' + ')} · stored only in this browser`)),
+        h('div', { class: 'meta' }, `Started ${time(c.createdAt)} · ${c.forms.map((f) => data.lib.forms[f.id]?.name).join(' + ')} · stored only in this browser`),
+        closeNote(data)),
       h('div', { class: 'row' }, back,
         h('button', { type: 'button', 'data-key': 'copy-case', onclick: () => copyText(caseText(c, data.lib), 'Case text') }, 'Copy as text'),
         h('button', { type: 'button', class: 'primary', 'data-key': 'finish', onclick: () => openFinish(ctx()) }, 'Finish case'))),
@@ -405,16 +524,19 @@ export async function start() {
   });
   browser.runtime.onMessage.addListener((msg) => { if (msg?.type === CASE_ENDED) { drafts.clear(); ui.open = null; ui.src = null; } });
   installPresenter(ctx());
+  guardClose(() => data);
   // Logged before the first render, so opening the page renders once rather than twice.
   const { case: open } = await browser.storage.local.get('case');
   if (open) await updateCase(open.id, (c) => { logEvent(c, 'open_full_case_view', { page }); }).catch(() => {});
   await load();
   const params = new URLSearchParams(location.search);
   const field = params.get('field');
-  if (field) ui.open = field;
   if (VIEWS.includes(params.get('view'))) ui.view = params.get('view');
+  if (ui.view === 'fetched') Object.assign(ui, { fetched: params.get('clip'), step: params.get('step'), field });
+  else if (field) ui.open = field;
   render();
-  if (field) document.querySelector(`[data-key="fr-${CSS.escape(field)}"]`)?.focus();
+  if (ui.view === 'fetched') showFetched(field);
+  else if (field) document.querySelector(`[data-key="fr-${CSS.escape(field)}"]`)?.focus();
 }
 
 start();

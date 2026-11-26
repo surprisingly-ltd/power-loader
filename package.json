@@ -30,16 +30,16 @@
     "check:demo": "node tools/build-demo-systems.mjs --check && node tools/build-demo-library.mjs --check"
   },
   "devDependencies": {
-    "@huggingface/transformers": "4.3.1",
+    "@huggingface/transformers": "4.3.2",
     "@playwright/test": "1.60.0",
     "@tesseract.js-data/eng": "1.0.0",
     "esbuild": "0.27.2",
     "jsdom": "25.0.1",
-    "onnxruntime-web": "1.30.0",
-    "pdfjs-dist": "4.10.38",
+    "onnxruntime-web": "1.31.1",
+    "pdfjs-dist": "6.5.438",
     "ses": "^2.3.0",
-    "tesseract.js": "5.1.1",
-    "tesseract.js-core": "5.1.1",
+    "tesseract.js": "7.0.0",
+    "tesseract.js-core": "6.1.2",
     "web-ext": "10.8.0",
     "zip-dir": "2.0.0"
   },

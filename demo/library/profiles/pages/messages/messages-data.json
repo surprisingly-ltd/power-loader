@@ -1,0 +1,28 @@
+{
+  "schema": "powerloader-profile/1",
+  "id": "messages/messages-data",
+  "kind": "extract",
+  "format": "json",
+  "name": "Customer messages (data)",
+  "version": "v1",
+  "match": [
+    "http://localhost:8787/demo/messages/api/*"
+  ],
+  "urlPattern": "http://localhost:8787/demo/messages/api/{clientId}.json",
+  "when": ":root > [key='clientId']",
+  "fields": {
+    "clientId": ":root > [key='clientId']",
+    "changeEffectiveDate": ":root > [key='messages'] > * > [key='form'] > [key='answers'] > [key='effectiveDate'] | date",
+    "newWeeklyIncome": ":root > [key='messages'] > * > [key='form'] > [key='answers'] > [key='newWeeklyIncome'] | number",
+    "tenancyEndDate": ":root > [key='messages'] > * > [key='form'] > [key='answers'] > [key='tenancyEndDate'] | date",
+    "messages": [
+      ":root > [key='messages'] > *",
+      {
+        "@type": "message",
+        "date": ":scope > [key='received'] | date",
+        "label": ":scope > [key='subject']",
+        "cat": ":scope > [key='type']"
+      }
+    ]
+  }
+}

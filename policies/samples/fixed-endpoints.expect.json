@@ -1,0 +1,32 @@
+[
+  {
+    "setting": "gateway.baseUrl",
+    "value": "https://ai.example.gov.uk/v1",
+    "allowed": true
+  },
+  {
+    "setting": "gateway.baseUrl",
+    "value": "https://ai.elsewhere.example/v1",
+    "allowed": false
+  },
+  {
+    "setting": "gateway.model",
+    "value": "expensive",
+    "allowed": false
+  },
+  {
+    "setting": "library.baseUrl",
+    "value": "https://gitlab.example.gov.uk/casework/powerloader-library/-/raw/{ref}/",
+    "allowed": true
+  },
+  {
+    "url": "https://records.example.gov.uk/clients/1",
+    "action": "read",
+    "allowed": true
+  },
+  {
+    "url": "https://records.elsewhere.example/clients/1",
+    "action": "read",
+    "allowed": false
+  }
+]

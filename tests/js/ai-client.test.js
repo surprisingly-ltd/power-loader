@@ -104,3 +104,11 @@ test('migration drops custom serverUrl without guessing an inference endpoint an
   assert.equal(JSON.stringify(backup).includes('secret-test'), false);
   assert.equal(backup[CREDENTIAL_KEY], undefined);
 });
+
+test('a gateway address or model locked by policy is used on every request, whatever was saved before', async () => {
+  const { withPolicy } = await import('../../extension/lib/ai/settings.js');
+  const saved = { baseUrl: 'https://old-gateway.example/v1', model: 'fast', auth: 'bearer' };
+  const policy = { values: { gateway: { baseUrl: 'https://gateway.council.example/v1', model: 'internal' } }, locked: new Set(['gateway.baseUrl', 'gateway.model']) };
+  assert.deepEqual(withPolicy(saved, policy), { baseUrl: 'https://gateway.council.example/v1', model: 'internal', auth: 'bearer' });
+  assert.deepEqual(withPolicy(saved, { values: { gateway: {} }, locked: new Set() }), saved, 'no policy: the caseworker’s own');
+});

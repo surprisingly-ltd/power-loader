@@ -1,5 +1,5 @@
 import { config, test, assert, equal, until, state, control, journal } from './harness.js';
-import { startCase, getLibrary, updateCase } from '../../lib/core.js';
+import { startFlowCase, updateCase } from '../../lib/core.js';
 import { addClip } from '../../lib/case.js';
 import { syncLibrary } from '../../lib/library-sync.js';
 import { endCase, CASE_SESSION_KEYS } from '../../lib/teardown.js';
@@ -8,10 +8,9 @@ const marker = 'SYNTHETIC-RESTART-PRIVATE';
 export async function seedRecovery() {
   const old = await state();
   assert(!old.case, 'Previous test case finished');
-  await startCase(['dhp'], { ref: marker });
+  await startFlowCase(null, { ref: marker, libraryPath: 'flows/discretionary-housing-payment.flow.json' });
   const active = (await state()).case;
-  const lib = await getLibrary();
-  await updateCase(active.id, (c) => addClip(c, lib, {
+  await updateCase(active.id, (c, lib) => addClip(c, lib, {
     id: 'restart-synthetic', name: 'Synthetic restart evidence', kind: 'document', values: { firstName: marker }, records: [], capturedAt: new Date().toISOString(), url: `${config.base}/demo/client-PRIVATE.html`, profile: { id: 'qa', version: 'v1' }, quotes: {},
   }));
   await browser.storage.session.set(Object.fromEntries(CASE_SESSION_KEYS.map((key) => [key, { text: marker }])));

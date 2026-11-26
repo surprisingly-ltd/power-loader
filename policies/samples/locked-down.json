@@ -1,0 +1,62 @@
+{
+  "schema": "powerloader-policy/1",
+  "name": "Example Council",
+  "build": {
+    "id": "powerloader@example.gov.uk",
+    "updateUrl": "https://addons.example.gov.uk/powerloader/updates.json",
+    "hosts": [
+      "https://*.example.gov.uk/*"
+    ]
+  },
+  "policy": {
+    "gateway": {
+      "enabled": false
+    },
+    "library": {
+      "baseUrl": "https://gitlab.example.gov.uk/casework/powerloader-library/-/raw/{ref}/",
+      "auth": "cookies",
+      "syncMinutes": 60
+    },
+    "privacyModel": {
+      "filesUrl": "https://models.example.gov.uk/privacy-filter/"
+    },
+    "assistModel": {
+      "enabled": false
+    },
+    "workstation": {
+      "clearCaseOnClose": true,
+      "clearCaseAfterHours": 4
+    },
+    "siteAccess": {
+      "rules": [
+        {
+          "id": "example-only",
+          "effect": "allow",
+          "pattern": "https://*.example.gov.uk/*",
+          "note": "Power Loader works only on example.gov.uk."
+        },
+        {
+          "id": "fetch-example-only",
+          "effect": "allow",
+          "pattern": "https://*.example.gov.uk/*",
+          "actions": [
+            "fetch-get"
+          ],
+          "note": "Background requests only go to example.gov.uk."
+        },
+        {
+          "id": "no-post",
+          "effect": "deny",
+          "pattern": "*://*",
+          "actions": [
+            "fetch-post"
+          ],
+          "note": "Fetch steps never send a POST."
+        }
+      ]
+    },
+    "tools": {
+      "capture": false
+    }
+  }
+}

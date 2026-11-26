@@ -9,7 +9,7 @@ import { decide, detect, effectiveSettings, knownValues, patternsFor } from '../
 import { approve, prepare, review, restore, registerPresenter, previewBeforeSend, isApproved } from '../../extension/lib/ai/boundary.js';
 import { complete } from '../../extension/lib/ai/client.js';
 import { cleanHtml, parseSnapshot } from '../../extension/lib/ai/snapshot.js';
-import { verifyingFetch, modelSource, normalizeModelUrl, DEFAULT_MODEL } from '../../extension/lib/model-fetch.js';
+import { verifyingFetch, modelSource, normalizeModelUrl, DEFAULT_MODEL, filesRoot, transformersPaths, testModelServer, assistSource } from '../../extension/lib/model-fetch.js';
 import { logEvent } from '../../extension/lib/activity.js';
 
 const lib = demoLibrary();
@@ -181,6 +181,58 @@ test('the model address comes from policy, then the caseworker, then the library
   assert.deepEqual([yours.baseUrl, yours.from, yours.revision, yours.hashes], ['https://mine.example/hf/', 'you', DEFAULT_MODEL.revision, DEFAULT_MODEL.hashes], 'a mirror you choose is still checked against the default hashes');
   const policy = modelSource({ values: { privacyModel: { baseUrl: 'https://m.example/x', revision: 'r1', required: true } } }, libModel, { privacy: { modelUrl: 'https://mine.example/hf/' } });
   assert.deepEqual([policy.baseUrl, policy.from, policy.locked, policy.revision], ['https://m.example/x/', 'policy', true, 'r1']);
+});
+
+test('a folder address serves the files from the folder itself, and nothing outside it', async () => {
+  const body = new TextEncoder().encode('{"model":"config"}');
+  const good = createHash('sha256').update(body).digest('hex');
+  const source = { layout: 'folder', filesUrl: 'https://models.example/pf/', modelId: 'openai/privacy-filter', revision: 'abc', hashes: { 'config.json': good } };
+  assert.equal(filesRoot(source), 'https://models.example/pf/');
+  assert.deepEqual(transformersPaths(source), { remoteHost: 'https://models.example/pf/', remotePathTemplate: '.' });
+  assert.equal(filesRoot({ baseUrl: 'https://huggingface.co/', modelId: 'm/x', revision: 'r' }), 'https://huggingface.co/m/x/resolve/r/');
+  const asked = [];
+  const record = async (u) => { asked.push(u); return new Response(body); };
+  // Transformers.js joins host, '.' and the file name: the request goes to the folder's file, and is checked.
+  assert.equal(await (await verifyingFetch(source, record)('https://models.example/pf/./config.json')).text(), '{"model":"config"}');
+  assert.equal(asked[0], 'https://models.example/pf/config.json');
+  await assert.rejects(verifyingFetch(source, record)('https://models.example/other/config.json'), (e) => e.reason === 'blocked');
+  await assert.rejects(verifyingFetch(source, record)('https://models.example/pf/tokenizer.json'), /No expected hash/);
+});
+
+test('a folder from policy, the caseworker or the library wins over a mirror in the same place; the assistant follows only a mirror', () => {
+  const none = { values: { privacyModel: {} } };
+  const mine = modelSource(none, null, { privacy: { modelFilesUrl: 'https://mine.example/pf' } });
+  assert.deepEqual([mine.layout, mine.filesUrl, mine.baseUrl, mine.from, mine.revision], ['folder', 'https://mine.example/pf/', null, 'you', DEFAULT_MODEL.revision]);
+  const lib = modelSource(none, { privacy: { model: { filesUrl: 'https://lib.example/pf/', baseUrl: 'https://lib.example/hf/' } } }, {});
+  assert.deepEqual([lib.layout, lib.filesUrl, lib.from], ['folder', 'https://lib.example/pf/', 'library']);
+  const pol = modelSource({ values: { privacyModel: { filesUrl: 'https://org.example/pf/' } } }, null, { privacy: { modelUrl: 'https://mine.example/hf/' } });
+  assert.deepEqual([pol.layout, pol.filesUrl, pol.from, pol.locked], ['folder', 'https://org.example/pf/', 'policy', true]);
+  assert.equal(modelSource(none, null, { privacy: { modelUrl: 'https://mine.example/hf/' } }).layout, 'hub', 'an address saved before folders existed is still a mirror');
+  assert.equal(assistSource({ values: { privacyModel: { filesUrl: 'https://org.example/pf/' } } }, {}).baseUrl, 'https://huggingface.co/');
+  assert.equal(assistSource({ values: {} }, { privacy: { modelFilesUrl: 'https://mine.example/pf/' } }).baseUrl, 'https://huggingface.co/');
+  assert.equal(assistSource({ values: { privacyModel: { baseUrl: 'https://org.example/hf/' } } }, {}).baseUrl, 'https://org.example/hf/');
+  const own = assistSource({ values: { assistModel: { filesUrl: 'https://org.example/gemma' } } }, {});
+  assert.deepEqual([own.layout, own.filesUrl], ['folder', 'https://org.example/gemma/']);
+});
+
+test('Test connection asks for one byte of each expected file and reports what it found', async () => {
+  const source = { layout: 'folder', filesUrl: 'https://models.example/pf/', ...DEFAULT_MODEL, baseUrl: null };
+  const asked = [];
+  const all = await testModelServer(source, async (u, init) => { asked.push([u, init.headers.Range, init.credentials]); return new Response('x', { status: 206, headers: { 'content-range': 'bytes 0-0/1000' } }); });
+  assert.deepEqual([all.found, all.expected, all.url, all.hint], [5, 5, 'https://models.example/pf/', null]);
+  assert.deepEqual(asked.map(([u]) => u).sort(), Object.keys(DEFAULT_MODEL.hashes).map((f) => `https://models.example/pf/${f}`).sort());
+  assert.ok(asked.every(([, r, c]) => r === 'bytes=0-0' && c === 'omit'));
+  assert.ok(all.files.every((f) => f.status === 'found' && f.size === 1000));
+  const denied = await testModelServer(source, async () => new Response('', { status: 401 }));
+  assert.ok(denied.files.every((f) => f.status === 'denied' && f.http === 401));
+  const down = await testModelServer(source, async () => { throw new TypeError('NetworkError'); });
+  assert.ok(down.files.every((f) => f.status === 'unreachable'));
+  // Nothing in the folder, but the files are at Hugging Face's paths under it: the hint says so.
+  const hub = await testModelServer(source, async (u) => new Response('', { status: u.includes('/resolve/') ? 200 : 404 }));
+  assert.deepEqual([hub.found, hub.hint], [0, 'hub']);
+  const mirror = { ...DEFAULT_MODEL, baseUrl: 'https://models.example/pf/' };
+  const folder = await testModelServer(mirror, async (u) => new Response('', { status: u.includes('/resolve/') ? 404 : 200 }));
+  assert.deepEqual([folder.found, folder.hint], [0, 'folder']);
 });
 
 test('a model server address must be https, or http on this computer, with nothing hidden in it', () => {

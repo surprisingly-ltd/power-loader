@@ -1,6 +1,6 @@
 # Make a profile with a local model
 
-Created: 2026-11-24. Status: proposal.
+Created: 2026-11-24. Status: built (1.0.0). This plan records the design and its decisions; the code and README describe what ships.
 
 **Make a profile for this page** should start with a draft already filled in, worked out on this computer, rather than an empty draft. The caseworker then corrects it on the page. Nothing leaves the computer. The existing **✦ Suggest a profile with AI** (gateway, redaction preview) stays as the other route.
 

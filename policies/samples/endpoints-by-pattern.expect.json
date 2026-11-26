@@ -1,0 +1,57 @@
+[
+  {
+    "setting": "library.baseUrl",
+    "value": "https://gitlab.example.gov.uk/casework/team-a/-/raw/{ref}/",
+    "allowed": true
+  },
+  {
+    "setting": "library.baseUrl",
+    "value": "https://gitlab.example.gov.uk/finance/lib/-/raw/{ref}/",
+    "allowed": false
+  },
+  {
+    "setting": "gateway.baseUrl",
+    "value": "https://ai.example.gov.uk/v1",
+    "allowed": true
+  },
+  {
+    "setting": "gateway.baseUrl",
+    "value": "https://api.openai.com/v1",
+    "allowed": false
+  },
+  {
+    "setting": "gateway.model",
+    "value": "gpt-5",
+    "allowed": true
+  },
+  {
+    "setting": "gateway.model",
+    "value": "expensive",
+    "allowed": false
+  },
+  {
+    "setting": "privacyModel.filesUrl",
+    "value": "https://models.example.gov.uk/privacy-filter/",
+    "allowed": true
+  },
+  {
+    "setting": "privacyModel.filesUrl",
+    "value": "https://huggingface.co/openai/privacy-filter/",
+    "allowed": false
+  },
+  {
+    "setting": "workstation.clearCaseAfterHours",
+    "value": 4,
+    "allowed": true
+  },
+  {
+    "setting": "workstation.clearCaseAfterHours",
+    "value": 12,
+    "allowed": false
+  },
+  {
+    "setting": "workstation.clearCaseAfterHours",
+    "value": 0,
+    "allowed": false
+  }
+]

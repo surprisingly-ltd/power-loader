@@ -4,7 +4,7 @@
 // Protocol: { id, type: 'load' | 'scan' | 'cancel' | 'clearCache', ... } in; { id, type: 'progress' | 'done' | 'error', ... } out.
 import { env, pipeline } from '../vendor/transformers.min.js';
 import { chunkText, locate } from '../lib/pii.js';
-import { failure, verifyingFetch } from '../lib/model-fetch.js';
+import { failure, filesRoot, transformersPaths, verifyingFetch } from '../lib/model-fetch.js';
 
 env.allowLocalModels = false;
 // ONNX Runtime's WebGPU backend still loads its WASM runtime; serve it from the extension.
@@ -15,7 +15,6 @@ env.backends.onnx.wasm.wasmPaths = {
   mjs: new URL('../vendor/ort-wasm-simd-threaded.asyncify.mjs', import.meta.url).href,
   wasm: new URL('../vendor/ort-wasm-simd-threaded.asyncify.wasm', import.meta.url).href,
 };
-env.remotePathTemplate = '{model}/resolve/{revision}/';
 const CACHE = 'transformers-cache';
 // A fixed sample with known findings: the test scan must find a name and an address in it.
 const SAMPLE = 'Maria Kowalska lives at Flat 3, 12 Mill Lane, Northtown.';
@@ -33,24 +32,24 @@ async function checkWebGPU() {
   return adapter.info ? { vendor: adapter.info.vendor, architecture: adapter.info.architecture } : {};
 }
 
-const sameSource = (a, b) => a && b && a.baseUrl === b.baseUrl && a.modelId === b.modelId && a.revision === b.revision;
+const sameSource = (a, b) => a && b && filesRoot(a) === filesRoot(b) && a.modelId === b.modelId && a.revision === b.revision;
 
 // Changing the address or revision starts afresh, and the old cached files are deleted.
 async function dropOtherCache(source) {
-  const keep = `${source.baseUrl}${source.modelId}/resolve/${source.revision}/`;
+  const keep = filesRoot(source);
   const cache = await caches.open(CACHE).catch(() => null);
   if (!cache) return;
   for (const req of await cache.keys()) if (!req.url.startsWith(keep)) await cache.delete(req);
 }
 
 function load(id, source) {
-  if (!source?.baseUrl || !source.revision) return Promise.reject(failure('config', 'Set the model server address and revision first'));
+  if (!(source?.baseUrl || source?.filesUrl) || !source.revision) return Promise.reject(failure('config', 'Set the model server address and revision first'));
   if (classifier && sameSource(loaded, source)) return Promise.resolve(loaded.result);
   if (loading && sameSource(loading.source, source)) return loading.promise;
   classifier = null;
   const promise = (async () => {
     const gpu = await checkWebGPU();
-    env.remoteHost = source.baseUrl;
+    Object.assign(env, transformersPaths(source));
     env.fetch = verifyingFetch(source);
     await dropOtherCache(source);
     const files = {};

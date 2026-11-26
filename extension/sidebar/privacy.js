@@ -6,19 +6,19 @@ import { effectiveSettings, knownValues, patternsFor } from '../lib/privacy-dete
 import { registerPresenter, approve as approvePayload, prepare, review as reviewState } from '../lib/ai/boundary.js';
 import { runTask } from '../lib/ai/tasks.js';
 import { aiReady, connectionConfig } from '../lib/ai/settings.js';
-import { modelSource, normalizeModelUrl } from '../lib/model-fetch.js';
-import { describeModel, loadModel, model, modelReady, onModelChange, scanText, clearModelCache } from '../lib/privacy-client.js';
-import { ask, describeForm, pageLogInfo, pageTextOf, saveDraft, saveSettings, updateCase } from '../lib/core.js';
+import { modelSource, normalizeModelUrl, testModelServer } from '../lib/model-fetch.js';
+import { matchesAny } from '../lib/access.js';
+import { allowedNote } from './org-policy.js';
+import { describeModel, loadModel, model, modelReady, onModelChange, scanText, clearModelCache, stopWorker } from '../lib/privacy-client.js';
+import { ask, pageLogInfo, pageTextOf, saveSettings, updateCase } from '../lib/core.js';
 import { addClip, caseKeys, fieldState, settled } from '../lib/case.js';
 import { display, norm, validateValue } from '../lib/fields.js';
 import { logEvent } from '../lib/activity.js';
-import { editPicks, newFillDraft } from '../lib/drafts.js';
-import { editExisting } from './draft-editor.js';
 import { recordFailure } from '../lib/diagnostics.js';
 
 // Page highlights use the same colours as the --pii-* tokens in ui/base.css.
 const HL = { names: '#f4b6c2', dob: '#f9dc7a', ids: '#f9c08f', contact: '#d2c3ee', address: '#a9cff5', dates: '#fff1a8' };
-export const privacyUi = { hl: false, paste: '', running: null, modelUrl: null, modelUrlError: '', otherServer: false };
+export const privacyUi = { hl: false, paste: '', running: null, modelUrl: null, modelUrlError: '', otherServer: false, test: null };
 
 const settingsOf = (data) => effectiveSettings(data.settings?.privacy, data.policy?.values?.redaction);
 
@@ -27,11 +27,11 @@ export async function boundaryContext(context, parts = []) {
   const { data, lib } = context;
   const source = modelSource(data.policy, lib, data.settings);
   const modelSpans = {};
-  if (modelReady()) await Promise.all(parts.filter((p) => p.kind !== 'image').map(async (p) => { modelSpans[p.id] = await scanText(p.text).catch(() => []); }));
+  if (source.use.on && modelReady()) await Promise.all(parts.filter((p) => p.kind !== 'image').map(async (p) => { modelSpans[p.id] = await scanText(p.text).catch(() => []); }));
   return {
     // extraKnown: values a caller knows are personal, such as every value on a page while a flow is authored.
     known: [...knownValues(data.case, lib), ...(context.extraKnown || [])], patterns: patternsFor(lib), modelSpans,
-    settings: settingsOf(data), identifierTypes: lib?.identifierTypes || {}, model: { ready: modelReady(), required: source.required },
+    settings: settingsOf(data), identifierTypes: lib?.identifierTypes || {}, model: { ready: source.use.on && modelReady(), required: source.required, off: !source.use.on, offBy: source.use.from },
     blockImages: !!data.policy?.values?.redaction?.blockImages,
   };
 }
@@ -92,7 +92,8 @@ function presenter(context) {
         return [
           h('p', { class: 'muted' }, `${state.title}${check ? ' · Nothing is sent from this check.' : ` · ${what} to your organisation’s AI gateway`}`),
           r.blocked && !check ? h('div', { class: 'notice bad stack', role: 'alert' }, r.blocked, toModelSetup(context, dlg)) : null,
-          !state.context.model.ready && !r.blocked ? h('div', { class: 'notice warn stack' }, 'The on-device model isn’t ready, so names and addresses that aren’t already in the case may be missed. Read the text carefully.', toModelSetup(context, dlg)) : null,
+          state.context.model.off ? h('div', { class: 'notice warn stack', 'data-key': 'px-model-off' }, `The on-device privacy model is switched off ${OFF_BY[state.context.model.offBy] || ''}. Values in the case and the library’s patterns are still redacted, but names and addresses that aren’t in the case may be missed. Read the text carefully.`)
+            : !state.context.model.ready && !r.blocked ? h('div', { class: 'notice warn stack' }, 'The on-device model isn’t ready, so names and addresses that aren’t already in the case may be missed. Read the text carefully.', toModelSetup(context, dlg)) : null,
           r.planted ? h('div', { class: 'notice warn' }, `${plural(r.planted, 'piece')} of text on the page looked like a placeholder and ${r.planted === 1 ? 'was' : 'were'} neutralised (shown as ‹redacted:…).`) : null,
           h('div', { class: 'px-bar' },
             h('div', { class: 'seg', role: 'group', 'aria-label': 'View' },
@@ -240,18 +241,6 @@ export async function extractWithAI(context) {
   await runAi(context, 'extract', { text: page.text, title: page.title, url: page.url, keys, label: 'Page text' }, async (out) => showExtractResult(context, out, source));
 }
 
-export async function mapFormWithAI(context, form) {
-  const { ui, act } = context;
-  const described = await describeForm(ui.page.id);
-  await runAi(context, 'form', { form: described, title: ui.page.title, url: ui.page.url }, async (out) => {
-    const d = newFillDraft(form, { url: ui.page.url, from: 'ai' });
-    editPicks(d, (picks) => { for (const [box, key] of Object.entries(out.fields)) picks.push({ box, key }); });
-    await saveDraft(d);
-    await editExisting(d.id, act);
-    announce(`Draft fill profile made with ${plural(Object.keys(out.fields).length, 'box', 'boxes')}${out.dropped.length ? `; ${out.dropped.length} suggestions weren’t on this form` : ''}. Test it before use.`);
-  });
-}
-
 // ------------------------------------------------------------------ the tab
 
 async function highlightPage(context) {
@@ -329,45 +318,94 @@ export function renderPrivacy(context) {
 const modelPill = () => h('span', { class: `pill ${model.state === 'ready' ? 'ok' : model.state === 'failed' ? 'bad' : 'warn'}`, role: 'status' }, describeModel());
 const FROM = { policy: '🔒 set by your organisation', you: 'your setting', library: 'from the forms library', default: 'Hugging Face, the default' };
 
-// Where the model downloads from. The caseworker can point it at another server with the same files (a mirror in
-// Hugging Face's layout), unless policy sets the address. The revision and file hashes stay pinned either way.
+// Where the model downloads from. The caseworker can point it at a folder that holds the model's files, on any
+// web server, or at a mirror in Hugging Face's layout, unless policy sets the address. The revision and file
+// hashes stay pinned either way.
+const SRC_HELP = {
+  folder: 'The folder that holds the files below, on any web server that allows requests from the browser.',
+  mirror: 'A server with the same paths as Hugging Face: each file is at {address}{model}/resolve/{revision}/{file}.',
+};
+
 function modelCard(context, source, savePrivacy) {
   const { act } = context;
-  const mine = context.data.settings?.privacy?.modelUrl || '';
-  const src = mine || privacyUi.otherServer ? 'other' : 'hf';
+  if (!source.use.on) {
+    return h('div', { class: 'card stack' }, h('div', { class: 'row between' }, h('h3', {}, 'On-device privacy model'), h('span', { class: 'pill' }, 'Off')), modelUseToggle(context, source));
+  }
+  const p = context.data.settings?.privacy || {};
+  const saved = p.modelFilesUrl ? 'folder' : p.modelUrl ? 'mirror' : 'hf';
+  const src = privacyUi.otherServer || saved;
+  const mine = (src === 'folder' ? p.modelFilesUrl : src === 'mirror' ? p.modelUrl : '') || '';
   const value = privacyUi.modelUrl ?? mine;
-  const save = async (url) => {
+  const save = async (kind, url) => {
     privacyUi.modelUrlError = '';
     try {
-      const modelUrl = url ? normalizeModelUrl(url) : null;
+      const clean = url ? normalizeModelUrl(url) : null;
+      // The organisation allows the model only from these addresses (policy allowed): Hugging Face too, unless listed.
+      if (source.allowed && !matchesAny(source.allowed, clean || source.baseUrl || 'https://huggingface.co/')) throw new Error(`Your organisation doesn’t allow this address for the model. It allows ${source.allowed.join(' or ') || 'none'}.`);
       privacyUi.modelUrl = null;
-      await savePrivacy({ modelUrl });
-      announce(modelUrl ? 'Model server saved. Load and test the model to use it.' : 'Back to the default model server.');
+      privacyUi.otherServer = false;
+      privacyUi.test = null;
+      await savePrivacy({ modelFilesUrl: kind === 'folder' ? clean : null, modelUrl: kind === 'mirror' ? clean : null });
+      announce(clean ? 'Model address saved. Test the connection, then load and test the model.' : 'Back to the default model server.');
     } catch (e) {
       privacyUi.modelUrlError = e.message;
       act.render();
     }
   };
+  // What a test checks: the address being typed, if it's valid, or else the address in use.
+  // Read when the test runs, not when the card was drawn: the hint's button changes the choice first.
+  const typedSource = () => {
+    const kind = privacyUi.otherServer || saved;
+    const typed = (privacyUi.modelUrl ?? mine).trim();
+    if (source.locked || kind === 'hf' || !typed) return source;
+    const url = normalizeModelUrl(typed);
+    return kind === 'folder' ? { ...source, layout: 'folder', filesUrl: url, baseUrl: null } : { ...source, layout: 'hub', baseUrl: url, filesUrl: null };
+  };
+  const runTest = async () => {
+    let target;
+    privacyUi.modelUrlError = '';
+    try { target = typedSource(); } catch (e) { privacyUi.modelUrlError = e.message; act.render(); return; }
+    privacyUi.test = { running: true };
+    act.render();
+    const result = await testModelServer(target).catch((e) => ({ error: e.message }));
+    privacyUi.test = { result };
+    announce(testSummary(result).text);
+    act.render();
+  };
   const radio = (v, title, sub) => h('label', { class: 'radio' },
     h('input', { type: 'radio', name: 'px-src', 'data-key': `px-src-${v}`, value: v, checked: src === v, disabled: source.locked,
-      onchange: () => { privacyUi.otherServer = v === 'other'; if (v === 'hf' && mine) save(null); else act.render(); } }),
+      onchange: () => {
+        privacyUi.test = null; privacyUi.modelUrlError = '';
+        if (v === 'hf') { privacyUi.otherServer = false; if (saved !== 'hf') save('hf', null); else act.render(); return; }
+        // Moving between folder and mirror keeps what was typed, so a hint from the test can be acted on.
+        if (privacyUi.modelUrl == null && mine) privacyUi.modelUrl = mine;
+        privacyUi.otherServer = v; act.render();
+      } }),
     h('span', {}, h('b', {}, title), h('small', {}, sub)));
   const busy = ['downloading', 'starting', 'testing'].includes(model.state);
+  const expected = Object.keys(source.hashes || {});
   return h('div', { class: 'card' },
     h('div', { class: 'row between' }, h('h3', {}, 'Where the model comes from'), source.locked ? h('span', { class: 'pill' }, '🔒 Set by your organisation') : null),
     h('p', { class: 'small muted' }, 'The model is downloaded once and kept in this browser. Use your organisation’s copy if huggingface.co is blocked.'),
+    source.locked ? null : allowedNote(source.allowed, { 'data-key': 'px-allowed' }),
     source.locked ? null : h('fieldset', {}, h('legend', { class: 'sr' }, 'Model server'),
       radio('hf', 'Hugging Face', 'huggingface.co, at a pinned version'),
-      radio('other', 'Another model server', 'Any server with the same file layout as Hugging Face')),
-    !source.locked && src === 'other' ? h('form', { class: 'stack', onsubmit: (e) => { e.preventDefault(); save((privacyUi.modelUrl ?? mine).trim()); } },
-      h('label', { class: 'field' }, 'Model server address',
-        h('input', { type: 'url', 'data-key': 'px-model-url', value, placeholder: 'https://models.example.gov.uk/huggingface/', 'aria-describedby': 'px-model-url-help px-model-url-error', 'aria-invalid': privacyUi.modelUrlError ? 'true' : 'false',
+      radio('folder', 'A folder with the model’s files', 'Your organisation’s copy, on any web server'),
+      radio('mirror', 'A Hugging Face mirror', 'A server with the same paths as Hugging Face')),
+    !source.locked && src !== 'hf' ? h('form', { class: 'stack', onsubmit: (e) => { e.preventDefault(); save(src, (privacyUi.modelUrl ?? mine).trim()); } },
+      h('label', { class: 'field' }, src === 'folder' ? 'Folder address' : 'Mirror address',
+        h('input', { type: 'url', 'data-key': 'px-model-url', value, placeholder: src === 'folder' ? 'https://models.example.gov.uk/privacy-filter/' : 'https://models.example.gov.uk/huggingface/', 'aria-describedby': 'px-model-url-help px-model-url-error', 'aria-invalid': privacyUi.modelUrlError ? 'true' : 'false',
           oninput: (e) => { privacyUi.modelUrl = e.target.value; } })),
-      h('p', { class: 'small muted', id: 'px-model-url-help' }, 'Files must be at the same paths as on Hugging Face (', h('code', {}, '{model}/resolve/{revision}/'), '), and the server must allow requests from the browser. They’re still checked against the expected hashes.'),
+      h('p', { class: 'small muted', id: 'px-model-url-help' }, SRC_HELP[src], ' Files are still checked against the expected hashes.'),
+      src === 'folder' && expected.length ? h('ul', { class: 'small muted px-files' }, expected.map((f) => h('li', {}, h('code', {}, f)))) : null,
       h('p', { class: 'small error-text', id: 'px-model-url-error', role: 'alert' }, privacyUi.modelUrlError),
-      h('button', { type: 'submit', class: 'sm', 'data-key': 'px-model-save', style: 'align-self:flex-start' }, 'Save')) : null,
-    h('p', { class: 'small' }, `Model server (${FROM[source.from]}): `, h('code', {}, source.baseUrl), ` · ${source.modelId} · revision `, h('code', {}, source.revision ? source.revision.slice(0, 12) : 'not set'),
+      h('div', { class: 'row' },
+        h('button', { type: 'submit', class: 'sm', 'data-key': 'px-model-save' }, 'Save'),
+        testButton(runTest))) : null,
+    h('p', { class: 'small' }, `Model ${source.layout === 'folder' ? 'folder' : 'server'} (${FROM[source.from]}): `, h('code', {}, source.layout === 'folder' ? source.filesUrl : source.baseUrl), ` · ${source.modelId} · revision `, h('code', {}, source.revision ? source.revision.slice(0, 12) : 'not set'),
       source.hashes ? ' · every file is checked against its expected hash' : ' · no file hashes are set, so files aren’t checked'),
+    source.locked || src === 'hf' ? h('div', { class: 'row' }, testButton(runTest)) : null,
+    testReport((hint) => { privacyUi.otherServer = hint === 'folder' ? 'folder' : 'mirror'; if (privacyUi.modelUrl == null) privacyUi.modelUrl = mine; runTest(); }, source.locked),
     source.required ? h('p', { class: 'small' }, '🔒 Your organisation requires the model before anything is sent to the AI.') : null,
     h('div', { class: 'row' },
       h('button', { type: 'button', class: 'sm', 'data-key': 'px-load', disabled: busy, onclick: () => loadModel(source).then(() => act.refresh()) }, model.state === 'ready' ? 'Check again' : 'Load and test the model'),
@@ -376,21 +414,84 @@ function modelCard(context, source, savePrivacy) {
     h('button', { type: 'button', class: 'link sm', 'data-key': 'px-clear', onclick: () => clearModelCache().then(() => { announce('The downloaded model was removed'); act.refresh(); }) }, 'Remove the downloaded model'));
 }
 
+const testButton = (run) => h('button', { type: 'button', class: 'sm', 'data-key': 'px-model-test', disabled: !!privacyUi.test?.running, onclick: run },
+  privacyUi.test?.running ? [h('span', { class: 'spinner' }), ' Testing…'] : 'Test connection');
+
+const fmtSize = (n) => (n == null ? '' : n >= 1e9 ? `${(n / 1e9).toFixed(1)} GB` : n >= 1e6 ? `${Math.round(n / 1e6)} MB` : n >= 1e3 ? `${Math.round(n / 1e3)} KB` : `${n} bytes`);
+const FILE_STATUS = { found: '✓', missing: '✗ not found', denied: '✗ refused', unreachable: '✗ couldn’t reach it', error: '✗ server error' };
+
+/** One line on what a connection test found, and whether it's good. */
+export function testSummary(r) {
+  if (r.error) return { ok: false, text: `The test didn’t run: ${r.error}` };
+  const missing = r.files.filter((f) => f.status === 'missing').map((f) => f.file);
+  if (r.found === r.expected) {
+    const total = r.files.reduce((n, f) => n + (f.size || 0), 0);
+    return { ok: true, text: `Connected. Found all ${r.expected} files the model needs${total ? `, ${fmtSize(total)} in all` : ''}. They’re checked against their hashes when they download.` };
+  }
+  if (r.files.every((f) => f.status === 'unreachable')) return { ok: false, text: 'Couldn’t reach the model server. Check the address and the network, and that the server allows requests from the browser (CORS: Access-Control-Allow-Origin).' };
+  if (r.files.some((f) => f.status === 'denied')) return { ok: false, text: `The server refused access (HTTP ${r.files.find((f) => f.status === 'denied').http}). The files must be readable without signing in.` };
+  if (r.hint === 'folder') return { ok: false, text: 'None of the files are at Hugging Face’s paths under this address, but config.json is in this folder itself. Choose “A folder with the model’s files”.', hint: 'folder' };
+  if (r.hint === 'hub') return { ok: false, text: 'None of the files are in this folder, but they are at Hugging Face’s paths under it ({model}/resolve/{revision}/). Choose “A Hugging Face mirror”.', hint: 'hub' };
+  if (!r.found) return { ok: false, text: `Reached the server, but found none of the ${r.expected} files the model needs here.` };
+  return { ok: false, text: `Found ${r.found} of the ${r.expected} files the model needs. Missing: ${missing.join(', ') || 'see below'}.` };
+}
+
+function testReport(switchTo, locked) {
+  const t = privacyUi.test;
+  if (!t?.result) return null;
+  const r = t.result;
+  const sum = testSummary(r);
+  return h('div', { class: `notice ${sum.ok ? 'ok' : 'bad'} small stack`, 'data-key': 'px-model-report', role: 'status' },
+    h('span', {}, sum.text),
+    sum.hint && !locked ? h('button', { type: 'button', class: 'sm', 'data-key': 'px-model-switch', style: 'align-self:flex-start', onclick: () => switchTo(sum.hint) }, sum.hint === 'folder' ? 'Use it as a folder and test again' : 'Use it as a mirror and test again') : null,
+    r.files ? h('details', { open: !sum.ok },
+      h('summary', {}, `What was checked, in `, h('code', {}, r.url)),
+      h('ul', { class: 'px-files' }, r.files.map((f) => h('li', {},
+        h('code', {}, f.file), ' ', FILE_STATUS[f.status], f.status === 'found' ? (f.size ? ` · ${fmtSize(f.size)}` : '') : f.http ? ` (HTTP ${f.http})` : '')))) : null);
+}
+
+const OFF_BY = { policy: 'by your organisation', library: 'by your library', you: 'in your Settings', default: '' };
+const ON_FROM = { policy: 'Set by your organisation', library: 'Set by your library' };
+
+// Use the model or not: on by default. Policy or the library can set it for everyone, and lock it.
+function modelUseToggle(context, source) {
+  const { data, act } = context;
+  const u = source.use;
+  return h('label', { class: 'check' },
+    h('input', {
+      type: 'checkbox', 'data-key': 'set-model-use', checked: u.on, disabled: u.locked,
+      onchange: (e) => saveSettings({ privacy: { ...(data.settings?.privacy || {}), useModel: e.target.checked } })
+        // Off, the model stops now, so it holds no memory or graphics card; its download stays in the cache.
+        .then(() => { if (!e.target.checked) stopWorker(); })
+        .then(() => announce(e.target.checked ? 'The on-device privacy model is on' : 'The on-device privacy model is off: only case values and the library’s patterns are redacted'), (err) => announce(describeError(err)))
+        .then(() => act.refresh()),
+    }),
+    h('span', {}, h('b', {}, 'Use the on-device privacy model before anything goes to the AI'), u.locked ? ` 🔒 ${ON_FROM[u.from]}` : u.from === 'library' ? ' (your library’s choice; you can change it)' : '', h('br'),
+      h('span', { class: 'small muted' }, 'It finds names and addresses that aren’t in the case. Off, Power Loader still redacts the case’s values and the library’s patterns, and the preview says the model is off. Without the ✦ AI, nothing is sent anywhere either way.')));
+}
+
 /** The model's download, for Settings: setup isn't spread across tabs. The Privacy tab has the rest. */
 export function modelSetupCard(context) {
   const { data, lib, act } = context;
   const source = modelSource(data.policy, lib, data.settings);
+  if (!source.use.on) {
+    return h('div', { class: 'card stack', id: 'model-setup' },
+      h('div', { class: 'row between' }, h('h2', {}, 'On-device privacy model'), h('span', { class: 'pill' }, 'Off')),
+      modelUseToggle(context, source),
+      h('p', { class: 'small muted' }, `Switched off ${OFF_BY[source.use.from]}. Nothing is downloaded or scanned.`));
+  }
   const busy = ['downloading', 'starting', 'testing'].includes(model.state);
   const ready = model.state === 'ready';
   return h('div', { class: `card${ready ? '' : ' stack'}`, id: 'model-setup' },
     h('div', { class: 'row between' }, h('h2', {}, 'On-device privacy model'), modelPill()),
+    modelUseToggle(context, source),
     ready ? h('p', { class: 'small muted' }, 'Ready. It finds names and addresses before anything is sent to the AI.')
       : h('p', { class: 'small' }, `Download it now: about 920 MB, once. It runs only on this computer and finds names and addresses that aren’t in the case, before anything goes to the AI.${source.required ? ' Your organisation requires it before anything is sent.' : ''}`),
     h('div', { class: 'row' },
       h('button', { type: 'button', class: ready ? 'sm' : 'primary', 'data-key': 'set-model-load', disabled: busy, onclick: () => loadModel(source).then(() => act.refresh()) },
         busy ? [h('span', { class: 'spinner' }), ' Working…'] : ready ? 'Check again' : 'Download and test the model'),
       h('button', { type: 'button', class: 'link sm', 'data-key': 'set-model-more', onclick: () => act.setTab('privacy') }, 'Where it comes from, and what to redact')),
-    h('p', { class: 'small muted' }, `From ${source.baseUrl.replace(/^https?:\/\//, '')}${source.locked ? ' (set by your organisation)' : ''}. Needs a graphics card that Firefox can use (WebGPU).`));
+    h('p', { class: 'small muted' }, `From ${(source.layout === 'folder' ? source.filesUrl : source.baseUrl).replace(/^https?:\/\//, '')}${source.locked ? ' (set by your organisation)' : ''}. Needs a graphics card that Firefox can use (WebGPU).`));
 }
 
 export function watchModel(act) { onModelChange(() => act.render()); }

@@ -4,6 +4,7 @@ You get the author's guidance, the flow's pages in order (each with an id, its r
 
 For each page, write:
 - "text": what the caseworker does on this page, in one to four short, plain sentences, taken from the guidance. Say what to look for, what to check and what to choose, and what comes next. Don't explain Power Loader itself.
+- "when" (optional): when the guidance says a step is needed only sometimes ("only if the case has no tenancy reference"), say so as a condition instead of a sentence: {"field": "<name>", "is": "missing"} for a step needed only when the case has no value for that name, or "is": "present" for one needed only when it has one. Use only the names given (ref is the case reference). Leave it out for a step that is always needed, for the first step, and for a page where the caseworker chooses the case.
 - "links": the links that take the caseworker to the next page or pages. Use "to" with the id of the page it opens. Add "url" only when the address must carry a value, such as a case number or a search for a name: write the page's address shape with {name} where the value goes, using only the names given. Leave "url" out otherwise.
 
 Rules:
@@ -12,4 +13,4 @@ Rules:
 - "label" is the link's words, such as "Open the client record" or "Search for the tenant".
 
 Reply with ONLY a JSON object, no prose and no code fences:
-{"steps": [{"page": "<page id>", "text": "<instructions>", "links": [{"label": "<words>", "to": "<page id>", "url": "<optional address template>"}]}], "notes": "<one sentence>"}
+{"steps": [{"page": "<page id>", "text": "<instructions>", "when": {"field": "<name>", "is": "missing"}, "links": [{"label": "<words>", "to": "<page id>", "url": "<optional address template>"}]}], "notes": "<one sentence>"}

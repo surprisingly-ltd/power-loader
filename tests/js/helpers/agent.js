@@ -12,10 +12,13 @@ export function agentOn(page, { scripts = false } = {}) {
 export function agentOnDom(dom) {
   const w = dom.window;
   w.HTMLElement.prototype.getClientRects = function () { return [1]; };
-  let listener;
+  const listeners = [];
   const sent = [];
-  w.browser = { runtime: { onMessage: { addListener: (fn) => { listener = fn; } }, sendMessage: async (m) => { sent.push(m); } } };
-  for (const f of ['extract.js', 'capture.js', 'agent.js']) w.eval(ext(f));
+  w.browser = { runtime: { onMessage: { addListener: (fn) => { listeners.push(fn); } }, sendMessage: async (m) => { sent.push(m); } } };
+  // The files ensureAgent() (lib/core.js) injects, in its order: the agent, and what a clip shows on the page.
+  for (const f of ['extract.js', 'capture.js', 'agent.js', 'gather.js']) w.eval(ext(f));
+  // Each listener answers the messages it knows, as runtime messaging takes the first answer.
+  const answer = (msg) => { for (const fn of listeners) { const out = fn(msg); if (out !== undefined) return out; } return undefined; };
   // Results are plain JSON, as they would be after runtime messaging.
-  return { w, doc: w.document, ask: async (msg) => JSON.parse(JSON.stringify(await listener(msg)) ?? 'null'), sent };
+  return { w, doc: w.document, ask: async (msg) => JSON.parse(JSON.stringify(await answer(msg)) ?? 'null'), sent };
 }

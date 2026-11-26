@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rent support review – Northshire Council Case Manager</title>
+<link rel="stylesheet" href="assets/systems.css">
+</head>
+<body class="sys-cm">
+<header class="topbar"><span class="system">Northshire Council · Case Manager <small>(fictional)</small></span>
+<nav aria-label="Case Manager"><a href="cm/queue.html">Work queue</a><a href="#">Search</a><a href="#">Reports</a></nav>
+<span class="user">Logged in as <b>A. Worker (Housing Support Team)</b></span></header>
+<main>
+<form id="rent-review" class="panel" action="rent-review-submitted.html" method="get" autocomplete="off">
+  <h1>Rent support review</h1>
+  <p id="for-case">Open this form from a case.</p>
+  <fieldset>
+    <legend>Client</legend>
+    <p><label for="r-client">Client ID</label><br><input id="r-client" name="client"></p>
+    <p><label for="r-first">First name</label><br><input id="r-first" name="first"></p>
+    <p><label for="r-last">Last name</label><br><input id="r-last" name="last"></p>
+    <p><label for="r-dob">Date of birth</label><br><input id="r-dob" name="dob" type="date"></p>
+    <p><label for="r-nino">NI number</label><br><input id="r-nino" name="nino"></p>
+    <p><label for="r-address">Address</label><br><textarea id="r-address" name="address" rows="3"></textarea></p>
+    <p><label for="r-postcode">Postcode</label><br><input id="r-postcode" name="postcode"></p>
+  </fieldset>
+  <fieldset>
+    <legend>Tenancy</legend>
+    <p><label for="r-tenancy">Landlord reference</label><br><input id="r-tenancy" name="tenancy"></p>
+    <p><label for="r-rent">Monthly rent (£)</label><br><input id="r-rent" name="rent"></p>
+    <p><label for="r-arrears">Arrears (£)</label><br><input id="r-arrears" name="arrears"></p>
+    <p><label for="r-end">Tenancy end date, if the client is moving</label><br><input id="r-end" name="tenancy_end" type="date"></p>
+  </fieldset>
+  <fieldset>
+    <legend>Income</legend>
+    <p><label for="r-employer">Current employer</label><br><input id="r-employer" name="employer"></p>
+    <p><label for="r-income">Weekly income on record (£)</label><br><input id="r-income" name="income"></p>
+    <p><label for="r-change">Change of circumstances: effective date</label><br><input id="r-change" name="change_date" type="date"></p>
+    <p><label for="r-new-income">Change of circumstances: new weekly income (£)</label><br><input id="r-new-income" name="new_income"></p>
+  </fieldset>
+  <p><label for="r-reason">Your recommendation</label><br><textarea id="r-reason" name="reason" rows="5"></textarea></p>
+  <input type="hidden" name="case" value="">
+  <input type="hidden" name="ref" value="RSR-40000">
+  <p><button type="submit">Submit review</button></p>
+</form>
+</main>
+<footer class="foot">A fictional system for the Power Loader demo. Every person and record here is made up.</footer>
+<script src="assets/casework.js"></script>
+</body>
+</html>

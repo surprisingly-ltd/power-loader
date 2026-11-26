@@ -1,0 +1,13 @@
+{
+  "schema": "powerloader-policy/1",
+  "name": "Example Council",
+  "build": {
+    "id": "powerloader@example.gov.uk",
+    "updateUrl": "https://addons.example.gov.uk/powerloader/updates.json"
+  },
+  "policy": {
+    "gateway": {
+      "enabled": false
+    }
+  }
+}

@@ -1,15 +1,22 @@
 // The active case in the sidebar: what this page is to the case, conflicts, per-form progress, clips and fields.
-import { h, plural, time, draftInput, clearDraft, drafts, announce } from '../ui/dom.js';
+import { NOT_HERE } from '../lib/build-hosts.js';
+import { h, plural, time, draftInput, clearDraft, drafts, copyText } from '../ui/dom.js';
 import {
-  caseKeys, conflictKeys, confirmIdentity, contribution, decide, excludeValue, fieldState, fillStale, formProgress, identityWarnings,
-  isRequired, markSubmitted, neededBy, notNeededKeys, removeForm, restoreValue, setManual, settled, undecide, unmarkSubmitted, addForm,
+  caseKeys, clipTally, conflictKeys, confirmIdentity, contribution, decide, excludeValue, fieldState, fillStale, formProgress, identityWarnings,
+  isRequired, markSubmitted, neededBy, notNeededKeys, removeClip, restoreValue, setManual, settled, undecide, unmarkSubmitted,
+  clearCaseRef, refChangeable, setCaseRef,
 } from '../lib/case.js';
 import { display } from '../lib/fields.js';
 import { logEvent } from '../lib/activity.js';
-import { libraryUpdates, pageLogInfo, updateCaseLibrary } from '../lib/core.js';
+import { pageLogInfo } from '../lib/core.js';
 import { confirmDialog } from '../ui/dialog.js';
 import { aiReady } from '../lib/ai/settings.js';
-import { caseVars, currentStep, fillTemplate, markStep, stepAddress, stepStatus } from '../lib/journey.js';
+import { MAILTO_SAFE, caseVars, emailFor, markStep, stepAddress } from '../lib/journey.js';
+import { stepReader } from './tools/reader-ui.js';
+import { SOURCE_TEXT, allowed, globVerdict } from '../lib/access.js';
+import { stepsCard } from './steps.js';
+import { followNotice, isRinging, tallyLine, valueList } from './gather-ui.js';
+import { listNoun } from '../lib/fetch-steps.js';
 
 const label = (lib, k) => lib.fields[k]?.label || k;
 const labels = (lib, keys) => keys.map((k) => label(lib, k)).join(', ');
@@ -28,12 +35,16 @@ function here({ ui, lib, logPage }) {
 
 // ------------------------------------------------------------------ the flow's steps
 
-const STEP_ICON = { done: '✓', filled: '◐', todo: '·' };
-const STEP_ROLE = { guide: 'Page to visit', input: 'Page to clip', output: 'Form to fill' };
-const varLabel = (lib, k) => (k === 'ref' ? 'Case reference' : label(lib, k));
+const STEP_ACTION = { guide: 'navigate', input: 'read', output: 'fill', fetch: 'navigate' };
+const NO_OPEN = 'Power Loader doesn’t open this address: the site rules block it';
+
+// Is a step's own page one the site rules block? Judged by its address or pattern.
+export const stepBlocked = (data, lib, s) => !!(data.access && STEP_ACTION[s.role] && stepAddress(lib, s) && globVerdict(data.access, stepAddress(lib, s), STEP_ACTION[s.role]).verdict === 'blocked');
+export const STEP_ROLE = { guide: 'Page to visit', input: 'Page to clip', output: 'Form to fill', email: 'Email to send', scan: 'Screenshot to read', fetch: 'Pages to fetch' };
+export const varLabel = (lib, k) => (k === 'ref' ? 'Case reference' : label(lib, k));
 
 // A value a link needs and the case doesn't have yet: the case reference, or a value typed by the caseworker.
-function missingInput(context, k) {
+export function missingInput(context, k) {
   const { lib, act } = context;
   const key = `step-var-${k}`;
   return h('div', { class: 'row', style: 'flex-wrap:nowrap' },
@@ -54,69 +65,96 @@ function missingInput(context, k) {
 }
 
 /**
- * The steps the flow (or library) gives this case: the step for this page, or the next one not done, with
- * what to do and the links to click. Links are filled in from the case; a value one needs can be typed here.
+ * An email step: the email as it will be, filled in from the case, and a button that opens it in the
+ * caseworker's email app (a mailto: link). Nothing is sent by Power Loader: they check it and send it there.
  */
-function stepsCard(context) {
-  const { ui, data, lib, act } = context;
-  const steps = lib.steps || [];
-  if (!steps.length) return null;
-  const c = data.case;
-  const vars = caseVars(c, lib);
-  const status = Object.fromEntries(steps.map((s) => [s.id, stepStatus(c, s)]));
-  const done = steps.filter((s) => status[s.id] === 'done').length;
-  const chosen = ui.view.step && steps.find((s) => s.id === ui.view.step);
-  const cur = chosen ? { step: chosen, index: steps.indexOf(chosen), here: false, chosen: true } : currentStep(c, lib, ui.page?.url);
-  const open = (url, { link = false } = {}) => {
-    act.openUrl(url);
-    if (link) act.update((cs) => logEvent(cs, 'follow_step_link', { detail: cur.step.name })).catch(() => {});
-  };
-  const list = ui.view.steps ? h('ol', { class: 'plain stack', style: 'gap:2px' }, steps.map((s, i) => h('li', {},
-    h('button', {
-      type: 'button', class: `link sm${cur?.step.id === s.id ? ' strong' : ''}`, 'data-key': `step-go-${s.id}`, 'aria-current': cur?.step.id === s.id ? 'step' : undefined,
-      onclick: () => { ui.view.step = s.id; act.render(); },
-    }, h('span', { 'aria-hidden': 'true' }, `${STEP_ICON[status[s.id]]} `), `${i + 1}. ${s.name}`, h('span', { class: 'sr' }, `, ${status[s.id] === 'done' ? 'done' : status[s.id] === 'filled' ? 'filled, not submitted' : 'to do'}`))))) : null;
-  const head = h('div', { class: 'row between' },
-    h('h3', {}, `Steps · ${done} of ${steps.length} done`),
-    h('button', { type: 'button', class: 'link sm', 'data-key': 'steps-all', 'aria-expanded': String(!!ui.view.steps), onclick: () => { ui.view.steps = !ui.view.steps; act.render(); } }, ui.view.steps ? 'Hide the steps' : 'All steps'));
-  if (!cur) return h('div', { class: 'card steps' }, head, list, h('p', {}, h('b', {}, 'Every step is done. '), 'Finish the case when the forms are submitted.'));
-  const s = cur.step;
-  const st = status[s.id];
-  const own = !cur.here ? stepAddress(lib, s) : '';
-  const ownUrl = own ? fillTemplate(own, vars) : null;
-  const links = s.links || [];
-  const missing = [...new Set(links.flatMap((l) => fillTemplate(l.url, vars).missing))];
-  const next = steps.slice(cur.index + 1).find((x) => status[x.id] !== 'done');
-  return h('div', { class: 'card steps', role: 'region', 'aria-label': 'Steps' },
-    head, list,
-    h('div', { class: 'ctx-head' }, h('span', { class: `pill ${st === 'done' ? 'ok' : 'acc'}` }, `Step ${cur.index + 1}${st === 'done' ? ' · done' : st === 'filled' ? ' · filled' : ''}`), h('strong', {}, s.name)),
-    h('span', { class: 'small muted' }, `${STEP_ROLE[s.role]}${cur.here ? ' · you’re on it now' : ''}`),
-    s.text ? h('p', { style: 'white-space:pre-wrap' }, s.text) : null,
-    own && ownUrl?.url && !cur.here ? h('button', { type: 'button', class: 'sm', 'data-key': 'step-open', style: 'align-self:flex-start', onclick: () => open(ownUrl.url) }, `Go to ${s.name}`) : null,
-    links.length ? h('div', { class: 'stack', style: 'gap:4px' }, links.map((l, i) => {
-      const f = fillTemplate(l.url, vars);
-      return h('button', {
-        type: 'button', class: i === 0 ? 'primary sm' : 'sm', 'data-key': `step-link-${i}`, style: 'align-self:flex-start', disabled: !f.url,
-        title: f.url ? f.url : `Needs ${f.missing.map((k) => varLabel(lib, k)).join(', ')}`,
-        onclick: () => {
-          open(f.url, { link: true });
-          // A page to visit is done once the caseworker follows its link to the next page.
-          if (s.role === 'guide' && l.to && st !== 'done') act.update((cs) => markStep(cs, s.id, true));
-          if (chosen) ui.view.step = null;
-        },
-      }, l.label);
-    })) : null,
-    missing.length ? h('div', { class: 'stack', style: 'gap:4px' },
-      h('span', { class: 'small' }, `${missing.length === 1 ? 'A link needs' : 'The links need'} ${missing.map((k) => varLabel(lib, k)).join(' and ')}. Clip the page that has ${missing.length === 1 ? 'it' : 'them'}, or type ${missing.length === 1 ? 'it' : 'them'} here:`),
-      missing.map((k) => missingInput(context, k))) : null,
+export function emailBlock(context, s, done, { main = !done } = {}) {
+  const { data, lib, act } = context;
+  const e = emailFor(s.email, caseVars(data.case, lib, { text: true }));
+  const row = (name, v) => (v ? h('div', { class: 'row small', style: 'gap:6px;flex-wrap:nowrap;align-items:baseline' }, h('span', { class: 'muted', style: 'min-width:4.5em' }, name), h('span', { style: 'min-width:0;overflow-wrap:anywhere' }, v)) : null);
+  const opened = () => act.update((cs) => {
+    logEvent(cs, 'open_email', { detail: s.name });
+    if (!done) markStep(cs, s.id, true);
+  }, 'The email is open in your email app. Check it there, then send it.');
+  return h('div', { class: 'stack', style: 'gap:6px' },
+    h('div', { class: 'stack email-preview', style: 'gap:3px;border:1px solid var(--border);border-radius:6px;padding:8px' },
+      row('To', e.to.join(', ') || h('i', { class: 'muted' }, 'you choose, in your email app')), row('Cc', e.cc.join(', ')), row('Subject', e.subject),
+      e.body ? h('pre', { class: 'small', 'data-key': 'step-email-body', style: 'white-space:pre-wrap;margin:4px 0 0;font:inherit;max-height:220px;overflow:auto' }, e.body) : null),
+    e.bad.length ? h('p', { class: 'notice warn small', role: 'alert' }, `${e.bad.map((a) => `“${a.slice(0, 60)}”`).join(', ')} ${e.bad.length === 1 ? 'isn’t an email address' : 'aren’t email addresses'}. Correct the value in the case, or copy the text and write the email yourself.`) : null,
+    e.mailto && e.mailto.length > MAILTO_SAFE ? h('p', { class: 'small muted' }, 'This email is long, and some email apps cut a long email short. If the text is cut, paste it in with Copy the text.') : null,
     h('div', { class: 'row' },
-      st === 'done'
-        ? (c.steps?.[s.id] ? h('button', { type: 'button', class: 'link sm', 'data-key': 'step-undo', onclick: () => act.update((cs) => markStep(cs, s.id, false), `${s.name} is open again`) }, 'Not done yet') : null)
-        : h('button', {
-          type: 'button', class: 'sm', 'data-key': 'step-done',
-          onclick: () => act.update((cs) => { markStep(cs, s.id, true); logEvent(cs, s.role === 'input' ? 'skip_step' : 'complete_step', { detail: s.name }); }, next ? `Next: ${next.name}` : 'Every step is done').then(() => { ui.view.step = null; act.render(); }),
-        }, s.role === 'input' ? 'Skip this page' : s.role === 'output' ? 'Done with this form' : next ? `Done: next is ${next.name}` : 'Done'),
-      cur.chosen ? h('button', { type: 'button', class: 'link sm', 'data-key': 'step-current', onclick: () => { ui.view.step = null; act.render(); } }, 'Back to the current step') : null));
+      e.mailto
+        ? h('a', { class: main ? 'button primary big' : 'button sm', href: e.mailto, 'data-key': 'step-email-open', role: 'button', onclick: opened }, 'Open in your email app')
+        : h('button', { type: 'button', class: main ? 'primary big' : 'sm', 'data-key': 'step-email-open', disabled: true, title: e.missing.length ? `Needs ${e.missing.map((k) => varLabel(lib, k)).join(', ')}` : 'Correct the addresses first' }, 'Open in your email app'),
+      e.subject ? h('button', { type: 'button', class: 'sm', 'data-key': 'step-email-subject', onclick: () => copyText(e.subject, 'Subject') }, 'Copy the subject') : null,
+      e.body ? h('button', { type: 'button', class: 'sm', 'data-key': 'step-email-text', onclick: () => copyText(e.body, 'Text') }, 'Copy the text') : null),
+    h('span', { class: 'small muted' }, 'Power Loader doesn’t send it: your email app opens with it written, for you to check and send.'));
+}
+
+/**
+ * Where the case reference came from, and the guard against working on two cases at once: set from the case
+ * the caseworker opened, with Change until the first clip; on another case's page, a warning and only Finish.
+ */
+export function refNotice(context) {
+  const { ui, data, act } = context;
+  const c = data.case;
+  if (ui.info?.otherRef && c.ref) {
+    return h('div', { class: 'notice warn stack', role: 'alert', 'data-key': 'ref-other', style: 'gap:6px' },
+      h('p', {}, h('b', {}, `This is case ${ui.info.otherRef}, not this case (${c.ref}).`), ' Power Loader works on one case at a time, so nothing from this page goes into this case.'),
+      h('button', { type: 'button', class: 'sm', 'data-key': 'ref-finish', style: 'align-self:flex-start', onclick: () => act.finish() }, 'Finish this case first'));
+  }
+  if (c.refFrom?.from === 'address' && refChangeable(c)) {
+    return h('div', { class: 'notice stack', role: 'status', 'data-key': 'ref-set', style: 'gap:4px' },
+      h('p', {}, 'Case reference set to ', h('b', {}, c.ref), ', from the case you opened.'),
+      h('button', {
+        type: 'button', class: 'link sm', 'data-key': 'ref-change', style: 'align-self:flex-start',
+        onclick: () => {
+          // This page would set it again straight away: it doesn't, until the tab moves on.
+          ui.refDeclined = ui.page?.url || null;
+          act.update((cs) => clearCaseRef(cs), 'The case reference is cleared. Open the case you’re working on.');
+        },
+      }, 'Change'));
+  }
+  return null;
+}
+
+// Choosing the case by hand: a reference typed instead, for a case that isn't opened in the system.
+export function typeRefInput(context, s) {
+  const { act } = context;
+  const key = 'choose-ref';
+  return h('details', { class: 'small', 'data-key': 'choose-type' },
+    h('summary', {}, 'Or type the case reference'),
+    h('div', { class: 'row', style: 'flex-wrap:nowrap' },
+      h('label', { class: 'sr', for: key }, 'Case reference'),
+      draftInput(key, { type: 'text', id: key, placeholder: 'Case reference' }),
+      h('button', {
+        type: 'button', class: 'sm', 'data-key': `${key}-use`,
+        onclick: () => {
+          const v = (drafts.get(key) || '').trim();
+          if (!v) return;
+          clearDraft(key);
+          act.update((cs) => { if (!cs.ref) setCaseRef(cs, v, { from: 'typed', step: s }); }, 'Case reference saved');
+        },
+      }, 'Use')));
+}
+
+// A link the site rules block: shown disabled, with the reason, and the address can still be copied.
+export function blockedLink(data, url, key, label = 'Go to it') {
+  if (!data.access || allowed(data.access, url, 'navigate').ok) return null;
+  return h('div', { class: 'stack', style: 'gap:2px' },
+    h('div', { class: 'row' },
+      h('button', { type: 'button', class: 'sm', 'data-key': key, disabled: true, title: NO_OPEN }, label),
+      h('button', { type: 'button', class: 'link sm', 'data-key': `${key}-copy`, onclick: () => copyText(url, 'The address') }, 'Copy the address')),
+    h('span', { class: 'small muted' }, `${NO_OPEN}.`));
+}
+
+/** A scan step: what it reads, and the reader for a screenshot of it. Done once what it read is added. */
+export function scanBlock(context, s, done) {
+  const { lib } = context;
+  const reads = Object.keys(s.scan?.fields || {}).map((k) => varLabel(lib, k));
+  return h('div', { class: 'stack', style: 'gap:6px' },
+    h('span', { class: 'small' }, 'Reads ', h('b', {}, reads.join(', ')), done ? ' · added to the case' : ''),
+    stepReader(context, s));
 }
 
 // ------------------------------------------------------------------ identity
@@ -133,11 +171,35 @@ function identityCard(context, clip) {
 
 // ------------------------------------------------------------------ this page
 
-function contextCard(context) {
+// What the site rules block here, in words. Never "this page is blocked": the page works, Power Loader doesn't.
+const ruleSource = (rule) => SOURCE_TEXT[rule?.layer] || 'in your Settings';
+export function blockedCard(info) {
+  const rule = info.blocked?.read || info.blocked?.fill;
+  return h('div', { class: 'card', 'data-key': 'blocked-card' },
+    h('div', { class: 'ctx-head' }, h('span', { class: 'pill' }, '⛔ Site rules')),
+    h('p', {}, h('b', {}, 'Power Loader doesn’t work on this page. '), `The site rules ${ruleSource(rule)} block reading and filling here. You can still use the page yourself.`));
+}
+
+// Some actions blocked, not reading: say which.
+function partlyBlocked(info) {
+  const b = info.blocked || {};
+  if (b.fill && !b.read) return h('p', { class: 'notice warn small', 'data-key': 'blocked-fill' }, `Power Loader can read this page but not fill it here: the site rules ${ruleSource(b.fill)} block filling.`);
+  return null;
+}
+
+/**
+ * What this page is to the case. In a step (inStep) it is drawn without its own heading, as part of the step,
+ * and its button is green only when it is the step's main one (main).
+ */
+export function contextCard(context, { inStep = false, main = true } = {}) {
   const { ui, data, lib, act } = context;
   const c = data.case;
   const info = ui.info || { kind: 'none' };
   if (info.kind === 'none') return h('div', { class: 'card' }, h('p', { class: 'muted' }, 'Power Loader works on web pages (http and https).'));
+  if (info.kind === 'blocked' || (!info.access && info.originBlocked)) return blockedCard(info);
+  if (!info.access && info.grantable === false) {
+    return h('div', { class: 'card', 'data-key': 'not-here' }, h('div', { class: 'ctx-head' }, h('span', { class: 'pill' }, 'Not this site')), h('p', {}, NOT_HERE));
+  }
   if (!info.access) {
     let host = '';
     try { host = new URL(ui.page.url).host; } catch { /* not a URL */ }
@@ -146,49 +208,49 @@ function contextCard(context) {
       h('p', {}, 'Power Loader needs your permission to read pages on this site.'),
       h('button', { type: 'button', class: 'primary', 'data-key': 'allow', onclick: () => act.requestAccess() }, `Allow on ${host}`));
   }
+  // Another case's page (D9): nothing from it goes into this case, so it isn't offered for clipping.
+  if (info.kind === 'source' && info.otherRef && c.ref) {
+    return h('div', { class: 'card ctx src' },
+      h('div', { class: 'ctx-head' }, h('span', { class: 'pill warn' }, 'Another case'), h('strong', {}, info.profile.name)),
+      h('p', { class: 'muted' }, `This page is for case ${info.otherRef}. Finish this case (${c.ref}) before you work on it.`));
+  }
   if (info.kind === 'source') {
     const p = info.profile;
     const clip = c.clips.find((x) => x.source === `${p.id}|${ui.page.url}`);
-    const s = ui.lastClip?.url === ui.page.url ? ui.lastClip.summary : null;
-    return h('div', { class: 'card ctx src' },
-      h('div', { class: 'ctx-head' }, h('span', { class: p.draft ? 'pill magic' : 'pill acc' }, p.draft ? `Your draft ${p.version}` : 'Recognised'), h('strong', {}, p.name)),
+    return h('div', { class: inStep ? 'step-own' : 'card ctx src' },
+      inStep ? null : h('div', { class: 'ctx-head' }, h('span', { class: 'pill acc' }, 'Recognised'), h('strong', {}, p.name)),
       clip ? [
         h('p', { class: 'muted' }, `Clipped at ${time(clip.capturedAt)}${ui.lastClip?.url === ui.page.url && ui.lastClip.auto ? ' automatically' : ''}.`),
-        s ? h('div', { class: 'diff' },
-          s.added.length ? h('span', { class: 'pill ok' }, `+${s.added.length} new`) : null,
-          s.agreed.length ? h('span', { class: 'pill' }, `${s.agreed.length} matched`) : null,
-          s.conflicts.length ? h('span', { class: 'pill bad' }, `${plural(s.conflicts.length, 'conflict')}: ${labels(lib, s.conflicts)}`) : null,
-          s.records ? h('span', { class: 'pill' }, `${plural(s.records, 'row')} for tools`) : null,
-          s.extra.length ? h('span', { class: 'pill' }, `${s.extra.length} extra kept`) : null) : null,
+        tallyLine(context, clipTally(c, lib, clip)),
         h('div', { class: 'row' },
           h('button', { type: 'button', class: 'sm', 'data-key': 'clip', disabled: !!ui.busy, onclick: () => act.clip(p) }, 'Clip again'),
           h('button', { type: 'button', class: 'sm', 'data-key': 'undo-clip', onclick: () => act.removeClip(clip.id) }, 'Undo this clip')),
         aiButton(context, 'ai-extract', '✦ Read this page with AI', () => act.extractWithAI()),
-        updateLink(context, p),
+        fixLink(context, { profileId: p.id }),
       ] : [
-        h('button', { type: 'button', class: 'primary big', 'data-key': 'clip', disabled: !!ui.busy, onclick: () => act.clip(p) }, ui.busy === 'clip' ? [h('span', { class: 'spinner' }), ' Clipping…'] : 'Clip this page'),
-        h('p', { class: 'small muted' }, `Reads ${plural(Object.keys(p.fields || {}).length, 'item')} with the ${p.draft ? 'draft' : 'library'} profile ${p.id} ${p.version}.`),
-        updateLink(context, p),
+        // The values it reads, listed here and outlined on the page (a page a fetch step reads, opened by hand).
+        valueList(context, p, null, { live: true }),
+        h('button', { type: 'button', class: main ? 'primary big' : 'sm', 'data-key': 'clip', disabled: !!ui.busy, onclick: () => act.clip(p) }, ui.busy === 'clip' ? [h('span', { class: 'spinner' }), ' Clipping…'] : 'Clip this page'),
+        h('p', { class: 'small muted' }, `Reads ${plural(Object.keys(p.fields || {}).length, 'item')} with the flow’s template ${p.name} ${p.version}.`),
       ]);
   }
+  if (info.kind === 'form' && info.blocked?.fill) return h('div', { class: 'card' }, h('div', { class: 'ctx-head' }, h('span', { class: 'pill' }, 'Form'), h('strong', {}, lib.forms[info.formId]?.name || '')), partlyBlocked(info));
   if (info.kind === 'form') {
     const f = lib.forms[info.formId];
+    // A case's forms are its flow's.
     if (!c.forms.some((x) => x.id === info.formId)) {
       return h('div', { class: 'card' },
         h('div', { class: 'ctx-head' }, h('span', { class: 'pill' }, 'Form'), h('strong', {}, f.name)),
-        h('p', { class: 'muted' }, 'This form isn’t part of the current case.'),
-        h('button', { type: 'button', class: 'sm', 'data-key': 'add-form', onclick: () => act.update((cs, l) => addForm(cs, l, f.id), `${f.name} added to the case`) }, 'Add it to this case'));
+        h('p', { class: 'muted', 'data-key': 'form-not-in-flow' }, 'This form isn’t part of this flow.'));
     }
     const pr = formProgress(c, lib, f.id);
     const stale = fillStale(c, lib, f.id);
-    return h('div', { class: 'card ctx form' },
-      h('div', { class: 'ctx-head' }, h('span', { class: 'pill ok' }, 'Target form'), h('strong', {}, `${f.name} ${f.version}`)),
+    return h('div', { class: inStep ? 'step-own' : 'card ctx form' },
+      inStep ? null : h('div', { class: 'ctx-head' }, h('span', { class: 'pill ok' }, 'Target form'), h('strong', {}, `${f.name} ${f.version}`)),
       stale ? h('div', { class: 'notice bad', role: 'alert' }, 'Check again: this form was filled before the case changed. Values from a removed or changed source may still be in it. Fill it again, then check every box.') : null,
       c.filled[f.id] ? null : h('p', { class: 'muted' }, `${pr.done} of ${pr.req} required fields ready${pr.conflicts.length ? `, ${plural(pr.conflicts.length, 'conflict')} will be left empty` : ''}${pr.invalid.length ? `, ${pr.invalid.length} need fixing` : ''}${pr.missing.length ? `, ${pr.missing.length} missing` : ''}.`),
-      info.fillProfile ? (context.renderFill ? context.renderFill(f) : null)
-        : [h('p', { class: 'small muted' }, 'The library has no fill profile for this form yet. Fill profiles are usually made by your library team and shared with everyone.'),
-          h('button', { type: 'button', class: 'sm', 'data-key': 'make-fill', style: 'align-self:flex-start', onclick: () => act.makeFillProfile(f) }, 'Make a fill profile')],
-      aiButton(context, 'ai-form', '✦ Map this form with AI', () => act.mapFormWithAI(f)),
+      info.fillProfile ? (context.renderFill ? context.renderFill(f, { main }) : null)
+        : [h('p', { class: 'small muted' }, 'The flow doesn’t say how to fill this form yet: it has no template for its boxes.'), fixLink(context, { formId: f.id })],
       submittedControl(context, f));
   }
   if (info.kind === 'confirm') {
@@ -201,33 +263,25 @@ function contextCard(context) {
         : [h('p', {}, h('b', {}, 'All forms submitted.'), ' Finish the case to delete its data from this browser.'),
           h('button', { type: 'button', class: 'primary big', 'data-key': 'finish-here', onclick: () => act.finish() }, 'Finish case')]);
   }
-  return unrecognisedCard(context);
+  // A page the flow doesn't know: nothing here offers to build (step 9 asks whether the flow is incomplete).
+  return null;
 }
 
-// Any caseworker can fix a page profile that reads the wrong thing: the new version is a draft on this
-// computer, used here once tested, and exported for the library team to publish.
-export function updateLink({ act, data }, profile) {
-  // A case from a flow: its profiles are changed in the Flows tab, not as library drafts.
-  if (data?.case?.library?.flow) {
-    return h('button', { type: 'button', class: 'link sm', 'data-key': 'update-profile', onclick: () => act.setTab('flows') }, `Something wrong or missing? Change the flow ${data.case.library.flow.name || ''}`.trim());
-  }
-  return h('button', { type: 'button', class: 'link sm', 'data-key': 'update-profile', onclick: () => act.updateProfile(profile) },
-    profile.draft ? 'Edit your draft of this profile' : 'Something wrong or missing? Update this profile');
-}
-
-export function unrecognisedCard(context, start = false) {
-  const { act } = context;
-  return h('div', { class: 'card' },
-    h('div', { class: 'ctx-head' }, h('span', { class: 'pill' }, 'Not recognised')),
-    h('p', { class: 'muted' }, `No profile in your library reads this page.${start ? '' : ' Go to a client system page to clip, or make a profile for this one.'}`),
-    h('button', { type: 'button', class: 'sm primary', 'data-key': 'make-profile', style: 'align-self:flex-start', onclick: () => act.makeProfile() }, 'Make a profile for this page'),
-    start ? null : aiButton(context, 'ai-extract', '✦ Extract with AI', () => act.extractWithAI()),
-    // The remote AI's profile suggestion is in the editor, once the targets are chosen.
-    aiReady(context.data.settings) ? h('p', { class: 'small muted' }, 'With the remote AI on, you can ask it for the profile once you’ve chosen what the page is for.') : null);
+/**
+ * A page that reads the wrong thing, or a form the flow can't fill yet, is mended in the flow: "Fix this in
+ * Build" changes mode and opens the flow at that page (a library's flow is copied to this computer first).
+ * Building is for everyone; the site rules still bind the mended flow.
+ */
+export function fixLink(context, { profileId = null, formId = null, stepId = null }) {
+  const { act, lib } = context;
+  const step = stepId ? { id: stepId } : (lib.steps || []).find((s) => (profileId && s.role === 'input' && s.profileId === profileId) || (formId && s.role === 'output' && s.formId === formId));
+  return h('details', { class: 'small', 'data-key': 'fix-wrong' },
+    h('summary', {}, formId ? 'This form can’t be filled yet' : 'A value is wrong or missing'),
+    h('button', { type: 'button', class: 'link sm', 'data-key': 'fix-in-build', onclick: () => act.fixInBuild(step?.id || null) }, 'Fix this in Build'));
 }
 
 // ✦ buttons appear when Enhanced tools are set up. Every one goes through the redaction preview first.
-function aiButton({ data, aiBusy }, key, label, onclick) {
+export function aiButton({ data, aiBusy }, key, label, onclick) {
   if (!aiReady(data.settings)) return null;
   return h('div', { class: 'stack', style: 'gap:2px' },
     h('button', { type: 'button', class: 'sm magic', 'data-key': key, style: 'align-self:flex-start', disabled: aiBusy, onclick }, aiBusy ? [h('span', { class: 'spinner' }), ' Waiting for the AI…'] : label),
@@ -256,6 +310,28 @@ function submittedControl({ data, act }, f) {
 
 // ------------------------------------------------------------------ conflicts
 
+/**
+ * A source named on a conflict card, as a link back to where the value came from: a page in a tab goes there
+ * (the navigate check; a blocked page's link is disabled with the reason) and holds the value in view; a
+ * fetched page opens what was read from it. A screenshot, a typed value or an AI reading has no link.
+ */
+export function sourceLink(context, clip, k, value) {
+  const { data, lib, act } = context;
+  const words = `${clip.name} ${time(clip.capturedAt)}`;
+  const key = `cf-${k}-src-${clip.id}`;
+  if (clip.kind === 'fetch' && act.openFetched) {
+    return h('button', { type: 'button', class: 'link sm', 'data-key': key, title: 'See what was read from this page', onclick: () => act.openFetched(clip.id, k) }, words);
+  }
+  if (clip.kind === 'fetch' || !/^https?:/.test(clip.url || '') || !act.followSource) return words;
+  if (data.access && !allowed(data.access, clip.url, 'navigate').ok) {
+    return h('span', {}, h('button', { type: 'button', class: 'link sm', 'data-key': key, disabled: true, title: NO_OPEN }, words), h('span', { class: 'muted' }, ' · the site rules block this page'));
+  }
+  return h('button', {
+    type: 'button', class: 'link sm', 'data-key': key, title: `Show ${label(lib, k)} on this page`,
+    onclick: () => act.followSource({ url: clip.url, key: k, value: display(lib.fields[k], value), at: time(clip.capturedAt) }),
+  }, words);
+}
+
 export function conflictCard(context, k) {
   const { data, lib, act } = context;
   const c = data.case;
@@ -266,12 +342,13 @@ export function conflictCard(context, k) {
     decide(cs, l, k, value);
     logEvent(cs, 'resolve_conflict', { page: here(context), detail: `${label(l, k)}${how ? `, ${how}` : ''}` });
   }, `${label(lib, k)} decided`);
-  return h('div', { class: 'cf' },
-    h('div', { class: 'cf-title' }, h('b', {}, label(lib, k)), h('span', { class: 'small muted' }, neededBy(c, lib, k).map((id) => lib.forms[id]?.short || id).join(' · '))),
+  // The step's conflict links come here: the card can be scrolled to, focused and ringed.
+  return h('div', { class: `cf${isRinging(k) ? ' ring' : ''}`, id: `cf-card-${k}`, 'data-key': `cf-card-${k}`, tabindex: '-1', role: 'group', 'aria-label': `Conflict: ${label(lib, k)}` },
+    h('div', { class: 'cf-title' }, h('b', {}, h('span', { 'aria-hidden': 'true' }, '⚠ '), label(lib, k)), h('span', { class: 'small muted' }, neededBy(c, lib, k).map((id) => lib.forms[id]?.short || id).join(' · '))),
     st.reopened ? h('p', { class: 'small' }, h('b', {}, 'The sources changed since you decided. '), `You chose ${display(d, st.previous)}. Decide again.`) : null,
     st.cands.map((cd, i) => h('div', { class: 'opt' },
       h('span', { class: 'v' }, display(d, cd.value)),
-      h('span', { class: 's' }, cd.sources.map((id) => c.clips.find((x) => x.id === id)).filter(Boolean).map((x) => `${x.name} ${time(x.capturedAt)}`).join(', ')),
+      h('span', { class: 's' }, cd.sources.map((id) => c.clips.find((x) => x.id === id)).filter(Boolean).map((x, j) => [j ? ', ' : null, sourceLink(context, x, k, cd.value)])),
       h('button', { type: 'button', class: 'sm', 'data-key': `${key}-use-${i}`, onclick: () => choose(cd.value) }, 'Use this'))),
     h('label', { class: 'small', for: `${key}-own` }, 'Or type the correct value'),
     h('div', { class: 'row', style: 'flex-wrap:nowrap' },
@@ -314,31 +391,63 @@ function progressCard(context) {
           p.invalid.length ? h('span', { class: 'c' }, `${p.invalid.length} need fixing`) : null,
           p.missing.length ? h('span', { class: 'm' }, `${p.missing.length} missing`) : null,
           c.filled[fv.id] ? h('span', { class: stale ? 'c' : '' }, stale ? `Filled ${time(c.filled[fv.id].at)} · check again` : `Filled ${time(c.filled[fv.id].at)}`) : null,
-          s ? h('span', { class: 'r' }, s.how === 'observed' ? 'Submitted (seen)' : 'Submitted (you said)') : null)),
-        c.forms.length > 1 ? h('button', {
-          type: 'button', class: 'link sm', 'data-key': `rm-form-${fv.id}`, style: 'align-self:flex-end',
-          onclick: async () => {
-            const ok = await confirmDialog({
-              title: `Remove ${f.name} from this case?`,
-              text: ['Evidence that only this form needed stays in the case, marked “not needed by these forms”, until you remove the clip or the case ends.'],
-              confirm: 'Remove form',
-            });
-            if (ok) act.update((cs) => removeForm(cs, fv.id), `${f.name} removed from the case`);
-          },
-        }, `Remove ${f.short || f.name}`) : null);
+          s ? h('span', { class: 'r' }, s.how === 'observed' ? 'Submitted (seen)' : 'Submitted (you said)') : null)));
     }));
 }
 
 // ------------------------------------------------------------------ clips
 
+// The pages a list of links fetched are one group in the clip list (“25 messages fetched by Team inbox”), not a
+// line each. The group can be opened to see them, and removed whole.
+function listGroups(c, lib) {
+  const groups = new Map();
+  for (const s of lib.steps || []) {
+    if (s.role !== 'fetch') continue;
+    for (const r of s.fetch?.requests || []) {
+      if (!r.each) continue;
+      const clips = c.clips.filter((cl) => cl.kind === 'fetch' && cl.via?.stepId === s.id && cl.via.requestId === r.id);
+      if (clips.length) groups.set(`${s.id}|${r.id}`, { step: s, request: r, clips });
+    }
+  }
+  return groups;
+}
+
+function groupRow(context, g, key) {
+  const { ui, act } = context;
+  const open = ui.view.clipOpen === key;
+  const n = g.clips.length;
+  return h('div', { class: 'clip', 'data-key': `clip-group-${g.request.id}` },
+    h('div', { class: 'clip-top' },
+      h('div', { class: 'clip-main' },
+        h('b', {}, `${n} ${listNoun(g.request, n)} fetched by ${g.step.name}`),
+        h('span', { class: 'muted' }, `${time(g.clips.at(-1).capturedAt)} · ${plural(g.clips.reduce((k, cl) => k + (cl.records?.length || 0), 0), 'row')}`)),
+      h('div', { class: 'row', style: 'flex-wrap:nowrap' },
+        h('button', { type: 'button', class: 'sm', 'data-key': `view-group-${g.request.id}`, 'aria-expanded': String(open), onclick: () => { ui.view.clipOpen = open ? null : key; act.render(); } }, open ? 'Hide' : 'View'),
+        h('button', {
+          type: 'button', class: 'sm', 'data-key': `remove-group-${g.request.id}`,
+          onclick: async () => {
+            if (!await confirmDialog({ title: `Remove the ${n} ${listNoun(g.request, n)} fetched by ${g.step.name}?`, text: 'Fetch them again from the step’s page if you need them.', confirm: 'Remove them' })) return;
+            act.update((cs, l) => { for (const cl of g.clips) if (cs.clips.some((x) => x.id === cl.id)) removeClip(cs, l, cl.id); }, 'Removed');
+          },
+        }, 'Remove'))),
+    open ? h('ul', { class: 'plain clip-vals' }, g.clips.map((cl) => h('li', { class: 'row between', style: 'flex-wrap:nowrap' },
+      h('span', { class: 'small', style: 'min-width:0;overflow-wrap:anywhere' }, cl.title || shortUrl(cl.url)),
+      h('span', { class: 'row', style: 'gap:8px;flex-wrap:nowrap' },
+        h('button', { type: 'button', class: 'link sm', 'data-key': `view-read-${cl.id}`, onclick: () => act.openFetched(cl.id) }, 'View what was read'),
+        h('button', { type: 'button', class: 'link sm', 'data-key': `open-${cl.id}`, onclick: () => act.openUrl(cl.url) }, 'Open the page'))))) : null);
+}
+
 function clipsCard(context) {
   const { ui, data, lib, act } = context;
   const c = data.case;
-  const list = [...c.clips].reverse();
+  const groups = listGroups(c, lib);
+  const grouped = new Set([...groups.values()].flatMap((g) => g.clips.map((cl) => cl.id)));
+  const list = [...c.clips].reverse().filter((cl) => !grouped.has(cl.id));
   const keys = new Set(caseKeys(c, lib));
   return h('div', { class: 'card' },
     h('div', { class: 'row between' }, h('h3', {}, `Clips · ${c.clips.length}`), h('span', { class: 'small muted' }, 'Newest first')),
-    list.length ? list.map((cl) => {
+    [...groups.entries()].map(([key, g]) => groupRow(context, g, key)),
+    list.length || groups.size ? list.map((cl) => {
       const ks = Object.keys(cl.values);
       const states = ks.map((k) => contribution(c, lib, cl, k, { keys }));
       const used = states.filter((s) => s.s === 'used').length;
@@ -348,19 +457,24 @@ function clipsCard(context) {
         h('div', { class: 'clip-top' },
           h('div', { class: 'clip-main' },
             h('b', {}, cl.name, cl.profile?.draft ? h('span', { class: 'pill magic', style: 'margin-left:6px' }, 'draft') : null),
+            cl.kind === 'fetch' ? h('span', { class: 'small', 'data-key': `fetched-${cl.id}` }, `${cl.format === 'json' ? 'data ' : ''}fetched by ${(lib.steps || []).find((x) => x.id === cl.via?.stepId)?.name || 'a step'}`) : null,
             h('span', { class: 'muted' }, `${time(cl.capturedAt)} · ${shortUrl(cl.url)}`),
             h('span', { class: 'diff' },
               used ? h('span', { class: 'pill ok' }, `${used} used`) : null,
               conf ? h('span', { class: 'pill bad' }, `${conf} in conflict`) : null,
               cl.records?.length ? h('span', { class: 'pill' }, `${cl.records.length} rows`) : null,
               !used && !conf && !cl.records?.length ? h('span', { class: 'pill' }, 'Nothing used') : null,
-              cl.identity && !cl.identity.confirmed ? h('span', { class: 'pill bad' }, 'May be a different person') : null)),
+              cl.identity && !cl.identity.confirmed ? h('span', { class: 'pill bad' }, 'May be a different person') : null,
+              // Never removed silently: removing evidence is the caseworker's choice.
+              cl.url && data.access && !allowed(data.access, cl.url, 'read').ok ? h('span', { class: 'pill warn', 'data-key': `blocked-clip-${cl.id}` }, 'From a page the site rules now block') : null)),
           h('div', { class: 'row', style: 'flex-wrap:nowrap' },
             h('button', { type: 'button', class: 'sm', 'data-key': `view-${cl.id}`, 'aria-expanded': String(open), 'aria-controls': `clip-${cl.id}`, onclick: () => { ui.view.clipOpen = open ? null : cl.id; act.render(); } }, open ? 'Hide' : 'View'),
             h('button', { type: 'button', class: 'sm', 'data-key': `remove-${cl.id}`, onclick: () => act.removeClip(cl.id) }, 'Remove'))),
         open ? h('div', { class: 'clip-vals', id: `clip-${cl.id}` },
           ks.map((k, i) => h('div', { class: 'row between', style: 'flex-wrap:nowrap;align-items:baseline' },
-            h('span', { style: 'min-width:0' }, `${label(lib, k)}: `, h('b', {}, display(lib.fields[k], cl.values[k]))),
+            h('span', { style: 'min-width:0' }, `${label(lib, k)}: `, h('b', {}, display(lib.fields[k], cl.values[k])),
+              // Where the value came from, as read: the only way to check a value against a response nobody sees.
+              cl.quotes?.[k] ? [h('br'), h('q', { class: 'small muted', 'data-key': `quote-${cl.id}-${k}` }, cl.quotes[k])] : null),
             h('span', { class: `pill ${states[i].c}` }, states[i].s === 'over' ? 'Not used' : states[i].t),
             states[i].s === 'extra' ? null : h('button', {
               type: 'button', class: 'link sm', 'data-key': `ex-${cl.id}-${k}`,
@@ -370,6 +484,10 @@ function clipsCard(context) {
               }, states[i].s === 'excluded' ? `${label(lib, k)} restored` : `${label(lib, k)} from ${cl.name} excluded`),
             }, states[i].s === 'excluded' ? 'Restore' : 'Exclude'))),
           cl.records?.length ? h('span', { class: 'muted small' }, `${plural(cl.records.length, 'row')} for the tools`) : null,
+          // A fetched page wasn't seen: it can be opened in the tab (a navigate check, as every opening is).
+          cl.kind === 'fetch' ? h('div', { class: 'row', style: 'gap:10px' },
+            h('button', { type: 'button', class: 'link sm', 'data-key': `view-read-${cl.id}`, onclick: () => act.openFetched(cl.id) }, 'View what was read'),
+            h('button', { type: 'button', class: 'link sm', 'data-key': `open-${cl.id}`, onclick: () => act.openUrl(cl.url) }, 'Open the page')) : null,
           h('span', { class: 'url' }, cl.url)) : null);
     }) : h('p', { class: 'muted' }, 'Nothing clipped yet.'));
 }
@@ -492,39 +610,26 @@ function notNeededCard({ data, lib }) {
     h('p', { class: 'small muted' }, `${labels(lib, keys)}. Kept until you remove the clip or the case ends.`));
 }
 
-// A case keeps the library version it started with until it ends, or until you update it here.
-function updateNotice({ data, act }) {
-  const up = libraryUpdates(data.library, data.case);
-  if (!up) return null;
-  const text = up.forms.length
-    ? `${up.forms.map((f) => `${f.name} ${f.to}`).join(', ')} ${up.forms.length === 1 ? 'is' : 'are'} in the library. This case keeps ${up.forms.map((f) => f.from).join(', ')} until it ends.`
-    : `The library has a newer commit (${up.commit}). This case keeps commit ${data.case.library.commit} until it ends.`;
-  return h('div', { class: 'notice small' }, h('p', {}, text),
-    h('button', {
-      type: 'button', class: 'sm', 'data-key': 'update-case-lib',
-      onclick: async () => {
-        try { await updateCaseLibrary(data.case.id); announce('This case now uses the latest library'); } catch (e) { announce(e.message); }
-        act.refresh();
-      },
-    }, up.forms.length ? `Update this case to ${up.forms.map((f) => `${f.name.split(' ')[0]} ${f.to}`).join(', ')}` : 'Update this case to the latest library'));
-}
-
 export function renderCaseTab(context) {
   const { data, lib } = context;
   const c = data.case;
   const conflicts = conflictKeys(c, lib);
+  // The steps first; this page's own card only when the open step hasn't already shown it.
+  const { card, showsPage } = stepsCard(context);
   return [
     ...identityWarnings(c).map((cl) => identityCard(context, cl)),
-    updateNotice(context),
-    stepsCard(context),
-    contextCard(context),
+    card,
+    // A conflict's page followed, and its value not there now.
+    followNotice(context),
+    showsPage ? null : contextCard(context),
     conflicts.length ? h('div', { class: 'conflicts', id: 'conflicts' },
       h('h3', {}, `⚠ ${plural(conflicts.length, 'conflict')} to decide`),
       h('p', { class: 'small' }, 'Sources disagree. Conflicting fields are left empty when you fill a form.'),
       conflicts.map((k) => conflictCard(context, k))) : null,
-    progressCard(context),
+    // A case with no form (an inbox triage) has no progress to show: its results are on the step's card.
+    c.forms.length ? progressCard(context) : null,
     clipsCard(context),
     notNeededCard(context),
-    ...fieldsBlock(context),
+    ...(c.forms.length ? fieldsBlock(context) : []),
   ];
 }

@@ -4,19 +4,24 @@
 import { hostApproved, pageProfiles } from './library.js';
 import { fillProfileForCase } from './fill.js';
 import { NOT_KEPT } from './activity.js';
+import { allowed } from './access.js';
 
 const E = () => globalThis.PowerLoaderExtract;
 const noHash = (u) => String(u || '').split('#')[0];
 
-/** What the log may keep for a page: { type, pattern } or null when the page isn't on an approved system. */
-export function pageInfo(lib, url, drafts = []) {
+/**
+ * What the log may keep for a page: { type, pattern } or null when the page isn't on an approved system, or
+ * the site rules (access, from lib/access.js) block navigate there: a blocked page is never logged as a visit.
+ */
+export function pageInfo(lib, url, access = null) {
   let u;
   try { u = new URL(url); } catch { return null; }
   if (!/^https?:$/.test(u.protocol)) return null;
-  const [profile] = pageProfiles(lib, url, drafts);
+  if (access && !allowed(access, url, 'navigate').ok) return null;
+  const [profile] = pageProfiles(lib, url);
   if (profile) return { type: `${profile.id}@${profile.version}${profile.draft ? '+draft' : ''}`, pattern: profile.urlPattern || NOT_KEPT };
   for (const form of Object.values(lib.forms)) {
-    const fp = fillProfileForCase(lib, form.id, drafts);
+    const fp = fillProfileForCase(lib, form.id);
     if (fp && E().matchUrl(fp.match, url)) return { type: `form:${form.id}@${form.version}`, pattern: fp.urlPattern || NOT_KEPT };
     if (form.confirmation && E().matchUrl(form.confirmation.match, url)) return { type: `confirm:${form.id}@${form.version}`, pattern: NOT_KEPT };
   }
@@ -30,8 +35,8 @@ export function pageInfo(lib, url, drafts = []) {
  * (the caseworker switched to a tab). Reloads and same-page hash changes are not new visits; switching to a
  * tab that already belongs to the case is one event.
  */
-export function visitEvent(c, lib, { url, reason = 'load' }, drafts = []) {
-  const info = pageInfo(lib, url, drafts);
+export function visitEvent(c, lib, { url, reason = 'load' }, access = null) {
+  const info = pageInfo(lib, url, access);
   if (!info) return null;
   const visits = c.log.filter((e) => e.activity === 'visit_page');
   const last = visits[visits.length - 1];

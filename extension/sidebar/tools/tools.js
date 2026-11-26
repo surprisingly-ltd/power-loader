@@ -6,6 +6,7 @@ import { calcBlock, stopCalc } from './calc-ui.js';
 import { resetTimeline, timelineBlock } from './timeline-ui.js';
 import { readerBlock, stopReader } from './reader-ui.js';
 import { aiReady } from '../../lib/ai/settings.js';
+import { TOOLS, toolOn } from '../../lib/tools.js';
 
 const modes = () => ({ calc: 'standard', timeline: 'standard', reader: 'standard' });
 export const tools = { tab: 'calc', mode: modes() };
@@ -33,7 +34,16 @@ export function enhancedGate(context) {
 
 export const TOOL_LABELS = { calc: 'Calculator', timeline: 'Timeline', reader: 'Reader' };
 
+// The Tools tab's tools, by their switch (lib/tools.js).
+const SWITCH = { calc: 'calculator', timeline: 'timeline', reader: 'reader' };
+/** The Tools tab's tools that are on. */
+export const toolsShown = (context) => Object.keys(TOOL_LABELS).filter((t) => toolOn(context.data.policy, context.data.settings, SWITCH[t]));
+
 export function toolBlock(context, tool, opts = {}) {
+  if (!toolOn(context.data.policy, context.data.settings, SWITCH[tool])) {
+    const locked = context.data.policy?.locked instanceof Set && context.data.policy.locked.has(`tools.${SWITCH[tool]}`);
+    return h('div', { class: 'card', 'data-key': `tool-off-${SWITCH[tool]}` }, h('p', { class: 'muted' }, `${TOOLS[SWITCH[tool]].label} is turned off${locked ? ' by your organisation' : ''}.`));
+  }
   return tool === 'timeline' ? timelineBlock(context, opts) : tool === 'reader' ? readerBlock(context) : calcBlock(context, opts);
 }
 
@@ -42,7 +52,10 @@ export function renderTools(context) {
     return h('div', { class: 'card' }, h('h2', {}, 'Tools work on the active case'),
       h('p', { class: 'muted' }, 'Start a case and clip a few pages. The calculator searches the case’s amounts, the timeline uses its dates, and the reader reads documents into it.'));
   }
-  const tabs = Object.entries(TOOL_LABELS).map(([key, label]) => ({ key, label }));
+  const shown = toolsShown(context);
+  if (!shown.length) return h('div', { class: 'card', 'data-key': 'tools-all-off' }, h('p', { class: 'muted' }, 'Every tool is turned off. You can turn them on in Settings, unless your organisation has turned them off.'));
+  if (!shown.includes(tools.tab)) tools.tab = shown[0];
+  const tabs = shown.map((key) => ({ key, label: TOOL_LABELS[key] }));
   return [
     h('div', { class: 'tool-head' },
       tabList({ id: 'tool', label: 'Tools', tabs, selected: tools.tab, className: 'seg', onSelect: (t) => { tools.tab = t; context.act.render(); } }),

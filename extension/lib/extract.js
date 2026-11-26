@@ -930,12 +930,47 @@
     }
     if (profile.when != null && typeof profile.when !== 'string') errors.push('"when" must be a selector string');
     if (profile.autoClip != null && typeof profile.autoClip !== 'boolean') errors.push('"autoClip" must be true or false');
+    // A profile only a fetch step reads (an inbox's links, a fetched message's row): never offered for a tab.
+    if (profile.fetchOnly != null && typeof profile.fetchOnly !== 'boolean') errors.push('"fetchOnly" must be true or false');
+    // What the profile reads: a page (the default) or a JSON response as a synthetic document (lib/json-dom.js).
+    if (profile.format != null && profile.format !== 'html' && profile.format !== 'json') errors.push('"format" must be "html" or "json"');
+    if (profile.reveal != null) validateReveal(profile.reveal, errors);
     if (!profile.fields || typeof profile.fields !== 'object' || Array.isArray(profile.fields)) {
       errors.push('"fields" must be an object');
     } else {
       validateSpec(profile.fields, 'fields', errors);
     }
     return errors;
+  }
+
+  /**
+   * Reveal rules: how to bring a closed part of the page into view, by class names only (lib/gather.js
+   * reveal()). Each rule is { selector, addClass?: [name], removeClass?: [name], open?: true, unhide?: true }
+   * and nothing else: no clicks, scripts, styles or other attributes. At most 20 a page, plain CSS selectors
+   * (no label() or @attribute), class names as plain tokens.
+   */
+  const REVEAL_KEYS = ['selector', 'addClass', 'removeClass', 'open', 'unhide'];
+  const CLASS_TOKEN = /^-?[A-Za-z_][A-Za-z0-9_-]{0,99}$/;
+  function validateReveal(rules, errors) {
+    if (!Array.isArray(rules)) { errors.push('"reveal" must be a list of rules'); return; }
+    if (rules.length > 20) errors.push('"reveal" can have at most 20 rules');
+    rules.slice(0, 20).forEach((r, i) => {
+      const at = `reveal[${i}]`;
+      if (!r || typeof r !== 'object' || Array.isArray(r)) { errors.push(`${at}: must be an object`); return; }
+      for (const k of Object.keys(r)) if (!REVEAL_KEYS.includes(k)) errors.push(`${at}: "${k}" isn’t allowed: a rule can only add or remove class names, open a <details> or remove hidden`);
+      const sel = typeof r.selector === 'string' ? r.selector.trim() : '';
+      if (!sel || sel.length > 300) errors.push(`${at}: "selector" must be a CSS selector of up to 300 characters`);
+      else {
+        const p = parseLocator(sel);
+        if (p.label != null || p.attr || /[|{}]/.test(sel)) errors.push(`${at}: "selector" must be plain CSS, without label(), @attributes or filters`);
+      }
+      for (const k of ['addClass', 'removeClass']) {
+        if (r[k] == null) continue;
+        if (!Array.isArray(r[k]) || r[k].length > 10 || !r[k].every((c) => typeof c === 'string' && CLASS_TOKEN.test(c))) errors.push(`${at}: "${k}" must be a list of up to 10 plain class names`);
+      }
+      for (const k of ['open', 'unhide']) if (r[k] != null && r[k] !== true) errors.push(`${at}: "${k}" can only be true`);
+      if (!(r.addClass?.length || r.removeClass?.length || r.open || r.unhide)) errors.push(`${at}: the rule changes nothing`);
+    });
   }
 
   function validateExpr(expr, path, errors) {
@@ -975,13 +1010,28 @@
     } else errors.push(`${path}: expected a string, list or object`);
   }
 
+  // The elements a locator finds (CSS, label(…), or both), for drawing next to them; inline text finds none.
+  function locate(doc, selector) {
+    try {
+      return resolveAll(doc, parseLocator(selector)).filter((n) => n && typeof n === 'object' && n.nodeType === 1);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // The part of a field's expression that finds its element: what comes before its first filter.
+  const locatorOf = (expr) => String(splitPipes(String(expr))[0] || '').trim();
+
   root.PowerLoaderExtract = {
+    locate,
+    locatorOf,
     extract,
     probe,
     validateFillProfile,
     matchUrl,
     profileApplies,
     validateProfile,
+    validateReveal: (rules) => { const errors = []; validateReveal(rules, errors); return errors; },
     resolveFill,
     caseRecords,
     resolveMap,

@@ -1,7 +1,7 @@
 // "Fill this form": a dry-run plan first, then values only, then a text report that stays.
 import { h, plural, time, announce, describeError } from '../ui/dom.js';
 import { openDialog } from '../ui/dialog.js';
-import { ask, describeForm, pageLogInfo, updateCase } from '../lib/core.js';
+import { ask, checkAccess, currentAccess, pageLogInfo, updateCase } from '../lib/core.js';
 import { approvedItems, buildFillPlan, fillProfileForCase, fillRecord } from '../lib/fill.js';
 import { fillStale } from '../lib/case.js';
 import { logEvent } from '../lib/activity.js';
@@ -19,32 +19,42 @@ function reportView(record, stale) {
       h('span', { class: 'pill ok' }, `✓ ${r.filled.length} filled`),
       r.skipped.length ? h('span', { class: 'pill warn' }, `${r.skipped.length} left empty`) : null,
       r.failed.length ? h('span', { class: 'pill bad' }, `✕ ${r.failed.length} failed`) : null,
-      r.unmatched.length ? h('span', { class: 'pill' }, `${r.unmatched.length} not in the profile`) : null),
+      r.unmatched.length ? h('span', { class: 'pill' }, `${r.unmatched.length} not in the template`) : null),
     h('p', { class: 'small' }, `Filled at ${time(record.at)} with ${record.profile.id} ${record.profile.version}${record.profile.draft ? ' (your draft)' : ''}.`),
     list('Filled', r.filled, (x) => [h('b', {}, x.label), `: ${x.display}`], stale),
     list('Left empty', r.skipped, (x) => [h('b', {}, x.label), `: ${x.reason}`], true),
     list('Failed', r.failed, (x) => [h('b', {}, x.label), `: ${x.reason}`], true),
-    list('Boxes the profile doesn’t fill', r.unmatched, (x) => x.label),
+    list('Boxes the template doesn’t fill', r.unmatched, (x) => x.label),
     h('p', { class: 'small' }, h('b', {}, 'Next: '), 'check the form, complete anything empty, then submit it yourself. Power Loader never submits.'));
 }
 
-export function fillBlock(context, form) {
+export function fillBlock(context, form, { main = true } = {}) {
   const { data, lib } = context;
   const c = data.case;
   const record = c.filled[form.id];
   const stale = fillStale(c, lib, form.id);
   return [
     record ? reportView(record, !!stale) : null,
-    h('button', { type: 'button', class: record ? 'sm' : 'primary big', 'data-key': `fill-${form.id}`, onclick: () => openFillPlan(context, form) }, record ? 'Fill again' : 'Fill this form'),
+    h('button', { type: 'button', class: record || !main ? 'sm' : 'primary big', 'data-key': `fill-${form.id}`, onclick: () => openFillPlan(context, form) }, record ? 'Fill again' : 'Fill this form'),
   ];
 }
 
 async function openFillPlan(context, form) {
   const { ui, data, lib, act } = context;
-  const profile = fillProfileForCase(lib, form.id, data.drafts);
-  if (!profile) { announce('The library has no fill profile for this form'); return; }
+  const profile = fillProfileForCase(lib, form.id);
+  if (!profile) { announce('The flow has no template for this form’s boxes'); return; }
   let described;
-  try { described = await describeForm(ui.page.id); } catch (e) { announce(`Couldn’t read the form: ${describeError(e)}`); return; }
+  try {
+    // The site rules and the case's approved hosts, before the form is read and for the address it was read at.
+    const layers = await currentAccess({ withHosts: true });
+    checkAccess(layers, ui.page.url, 'fill');
+    described = await ask(ui.page.id, { type: 'powerloader:describeForm' }, { layers });
+    checkAccess(layers, described.url, 'fill');
+  } catch (e) {
+    if (e.name === 'Blocked') await act.blocked?.(e.action, e.rule);
+    announce(`Couldn’t read the form: ${describeError(e)}`);
+    return;
+  }
   const controls = [...described.controls, ...described.groups.flatMap((g) => g.controls)];
   const plan = buildFillPlan(data.case, lib, form.id, profile, controls);
   const fillRows = plan.rows.filter((r) => r.status === 'fill');
@@ -61,14 +71,14 @@ async function openFillPlan(context, form) {
         h('tbody', {}, fillRows.map((r) => h('tr', {}, h('td', {}, r.label), h('td', {}, r.display), h('td', { class: 'small' }, r.sources.join(', ') || '—')))))
         : h('p', { class: 'notice warn' }, 'Nothing can be filled yet.'),
       skipped.length ? h('div', {}, h('b', {}, `Left empty (${skipped.length})`), h('ul', { class: 'impact small' }, skipped.map((r) => h('li', {}, h('b', {}, r.label), `: ${STATUS[r.status]}. ${r.reason}`)))) : null,
-      plan.unmatched.length ? h('details', {}, h('summary', {}, `Boxes on the page the profile doesn’t fill (${plan.unmatched.length})`), h('ul', { class: 'impact small' }, plan.unmatched.map((u) => h('li', {}, u.label)))) : null,
+      plan.unmatched.length ? h('details', {}, h('summary', {}, `Boxes on the page the template doesn’t fill (${plan.unmatched.length})`), h('ul', { class: 'impact small' }, plan.unmatched.map((u) => h('li', {}, u.label)))) : null,
       h('div', { class: 'actions' },
         h('button', { type: 'button', onclick: () => dlg.close() }, 'Cancel'),
         h('button', {
           type: 'button', class: 'primary', disabled: !fillRows.length,
           onclick: async () => {
             dlg.close();
-            await applyPlan(form, plan, target);
+            await applyPlan(form, plan, target, act);
             act.refresh();
           },
         }, `Fill ${plural(fillRows.length, 'box', 'boxes')}`)),
@@ -76,9 +86,12 @@ async function openFillPlan(context, form) {
   });
 }
 
-async function applyPlan(form, plan, target) {
+// The rules are read again when the plan is applied: a change in Settings since the plan was made applies.
+async function applyPlan(form, plan, target, act) {
   try {
-    const report = await ask(target.tabId, { type: 'powerloader:fill', url: target.url, documentId: target.documentId, plan: { items: approvedItems(plan) } });
+    const layers = await currentAccess({ withHosts: true });
+    checkAccess(layers, target.url, 'fill');
+    const report = await ask(target.tabId, { type: 'powerloader:fill', url: target.url, documentId: target.documentId, plan: { items: approvedItems(plan) } }, { layers });
     const record = fillRecord(plan, report);
     await updateCase(target.caseId, (c, l) => {
       c.filled[form.id] = record;
@@ -86,7 +99,8 @@ async function applyPlan(form, plan, target) {
     });
     announce(`Filled ${plural(record.report.filled.length, 'box', 'boxes')}${record.report.failed.length ? `; ${record.report.failed.length} failed` : ''}. Check the form before you submit it.`);
   } catch (e) {
-    if (e.name !== 'CaseEnded') void recordFailure('fill');
+    if (e.name === 'Blocked') await act?.blocked?.(e.action, e.rule);
+    else if (e.name !== 'CaseEnded') void recordFailure('fill');
     announce(e.name === 'CaseEnded' ? 'That case has ended' : `Filling failed: ${describeError(e)}`);
   }
 }

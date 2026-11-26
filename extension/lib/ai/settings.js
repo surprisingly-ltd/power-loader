@@ -1,5 +1,6 @@
 /* global browser */
 import { mutateStorage } from '../storage.js';
+import { checkAllowed, getPolicy } from '../policy.js';
 
 export const AI_DEFAULTS = Object.freeze({
   baseUrl: '', model: 'fast', auth: 'bearer', maxIterations: 3,
@@ -86,11 +87,25 @@ export async function saveCredential(baseUrl, key, remember = false) {
   catch { throw new Error('Could not store the key; enter it again'); }
 }
 
+/**
+ * The saved connection with what policy locks laid over it. Policy is applied on every request, not only
+ * when Settings is saved: an endpoint saved before the organisation set gateway.baseUrl is never used.
+ */
+export function withPolicy(ai, policy) {
+  const g = policy?.values?.gateway || {};
+  const locked = (k) => (policy?.locked instanceof Set ? policy.locked.has(k) : Array.isArray(policy?.locked) && policy.locked.includes(k));
+  return { ...ai, ...(locked('gateway.baseUrl') && g.baseUrl ? { baseUrl: g.baseUrl } : {}), ...(locked('gateway.model') && g.model ? { model: g.model } : {}) };
+}
+
 export async function connectionConfig() {
   const settings = await getSettings();
   if (!aiAcknowledged(settings)) throw new Error('Review and enable the remote AI in Settings');
-  const { ai } = settings;
-  const config = validateAI(ai);
+  const policy = await getPolicy();
+  if (!aiAllowed(policy)) throw new Error(AI_OFF_TEXT);
+  const config = validateAI(withPolicy(settings.ai, policy));
+  // A built-in policy file may constrain the address and model by pattern: checked here, on every request.
+  checkAllowed(policy, 'gateway.baseUrl', `${config.baseUrl}/chat/completions`);
+  checkAllowed(policy, 'gateway.model', config.model);
   if (!(await browser.permissions.contains({ origins: [endpointPattern(config.baseUrl)] }))) {
     throw new Error('Allow access to the AI endpoint in Settings');
   }
@@ -110,5 +125,11 @@ export async function backupData() {
   return { ...data, settings: migrateSettings(data.settings) };
 }
 
-// ✦ actions are offered once the gateway is set up and the caseworker has agreed to send what they approve.
-export const aiReady = (settings) => !!(aiAcknowledged(settings) && settings?.ai?.baseUrl);
+// The organisation can turn the remote AI off (policy gateway.enabled false), which also locks it off.
+export const aiAllowed = (policy) => policy?.values?.gateway?.enabled !== false;
+export const AI_OFF_TEXT = 'Your organisation has turned off the remote AI';
+/** The settings as the interface reads them: with the remote AI turned off by the organisation, it isn't agreed to. */
+export const settingsUnderPolicy = (settings, policy) => (aiAllowed(policy) || !settings ? settings : { ...settings, aiConsent: null });
+// ✦ actions are offered once the gateway is set up and the caseworker has agreed to send what they approve,
+// unless the organisation has turned the remote AI off (pass the policy where it's at hand).
+export const aiReady = (settings, policy = null) => !!(aiAcknowledged(settings) && settings?.ai?.baseUrl && aiAllowed(policy));

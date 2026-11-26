@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Power Loader",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Collect information for a case from approved casework pages, check it, and fill the target forms. Works with your team’s forms library.",
   "browser_specific_settings": {
     "gecko": {
@@ -24,6 +24,7 @@
   },
   "permissions": [
     "storage",
+    "alarms",
     "scripting",
     "tabs",
     "clipboardWrite",

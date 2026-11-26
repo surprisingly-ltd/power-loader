@@ -2536,10 +2536,11 @@ const modelReady = () => S.px.model.state === 'ready';
 const modelBase = () => S.px.src === 'hf' ? 'https://huggingface.co/' : S.px.mirror.trim().replace(/\/?$/, '/');
 const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+// The browser's own parser drops the tags and decodes the entities, once each (an inert document: nothing runs).
 function textify(html) {
-  return html.replace(/<\/(td|th)>/g, ' \t').replace(/<\/dt>/g, ': ').replace(/<\/(span|b|button|q)>/g, '$& ')
-    .replace(/<(br|\/div|\/h\d|\/p|\/tr|\/li|\/dd|\/small|\/table|\/nav)\b[^>]*>/g, '\n')
-    .replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+  const marked = html.replace(/<\/(td|th)>/g, ' \t').replace(/<\/dt>/g, ': ').replace(/<\/(span|b|button|q)>/g, '$& ')
+    .replace(/<(br|\/div|\/h\d|\/p|\/tr|\/li|\/dd|\/small|\/table|\/nav)\b[^>]*>/g, '\n');
+  return new DOMParser().parseFromString(marked, 'text/html').body.textContent
     .replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{2,}/g, '\n').trim();
 }
 function formText(fid) {

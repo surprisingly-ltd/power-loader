@@ -1,0 +1,3644 @@
+{
+ "casesDigest": "aa1608c3f5e878cd51ed16f29c32c5a7f4f9d08704951dca9ec527b47a8f8ec4",
+ "pages": {
+  "cm/case-1001.html": {
+   "profileId": "cm/case",
+   "data": {
+    "clientId": "NC-5347",
+    "title": "Ms",
+    "firstName": "Sophie",
+    "lastName": "Harrison",
+    "dob": "1980-11-09",
+    "nino": "QQ 83 77 61 D",
+    "phone": "07700 900948",
+    "email": "sophie.harrison44@example.org",
+    "address": "117 Abbey Mews, Harbourside, NS3 5NC",
+    "postcode": "NS3 5NC",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyRef": "HH-44191"
+   }
+  },
+  "cm/notes-1001.html": {
+   "profileId": "cm/notes",
+   "data": {
+    "notes": [
+     {
+      "@type": "note",
+      "date": "2026-08-22",
+      "by": "B. Officer",
+      "text": "Harbour Homes confirmed arrears of £2,549.42. No court action yet."
+     },
+     {
+      "@type": "note",
+      "date": "2026-08-21",
+      "by": "B. Officer",
+      "text": "Triage: Sophie lives with 2 other people. Rent is paid to Harbour Homes, tenancy HH-44191."
+     },
+     {
+      "@type": "note",
+      "date": "2026-08-17",
+      "by": "Contact centre",
+      "text": "Case opened from a phone call. Tenancy sustainment."
+     }
+    ]
+   }
+  },
+  "biv/income-NC-5347.html": {
+   "profileId": "biv/income",
+   "data": {
+    "firstName": "Sophie",
+    "lastName": "Harrison",
+    "nino": "QQ837761D",
+    "dob": "1980-11-09",
+    "clientId": "NC-5347",
+    "employmentStatus": "Employed (part-time)",
+    "currentEmployer": "Northshire Council",
+    "weeklyIncome": 263.36,
+    "ucClaim": "No",
+    "periods": [
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Gullwing Hotels",
+      "start": "2020-03-08",
+      "end": "2022-02-01"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Beacon Bakery",
+      "start": "2022-02-13",
+      "end": "2022-10-16"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Westcliff Motors",
+      "start": "2022-11-14",
+      "end": "2024-02-09"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Beacon Bakery",
+      "start": "2024-03-07",
+      "end": "2025-11-25"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Northshire Council",
+      "start": "2026-01-01",
+      "end": null
+     }
+    ]
+   }
+  },
+  "harbour/tenancy-HH-44191.html": {
+   "profileId": "harbour-homes/tenancy",
+   "data": {
+    "tenancyRef": "HH-44191",
+    "firstName": "Sophie",
+    "lastName": "Harrison",
+    "phone": "07700 900948",
+    "address": "117 Abbey Mews, Harbourside, NS3 5NC",
+    "postcode": "NS3 5NC",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyStart": "2017-10-26",
+    "tenancyType": "Starter tenancy",
+    "monthlyRent": 804.23,
+    "arrears": 2549.42,
+    "payments": [
+     {
+      "@type": "money",
+      "date": "2026-01-05",
+      "label": "Tenant payment",
+      "amount": 96.51
+     },
+     {
+      "@type": "money",
+      "date": "2026-02-02",
+      "label": "Tenant payment",
+      "amount": 627.3
+     },
+     {
+      "@type": "money",
+      "date": "2026-03-01",
+      "label": "UC housing element",
+      "amount": 804.23
+     },
+     {
+      "@type": "money",
+      "date": "2026-04-06",
+      "label": "Tenant payment",
+      "amount": 458.41
+     },
+     {
+      "@type": "money",
+      "date": "2026-05-04",
+      "label": "Tenant payment",
+      "amount": 804.23
+     },
+     {
+      "@type": "money",
+      "date": "2026-06-02",
+      "label": "Tenant payment",
+      "amount": 675.55
+     },
+     {
+      "@type": "money",
+      "date": "2026-07-03",
+      "label": "Tenant payment",
+      "amount": 498.62
+     },
+     {
+      "@type": "money",
+      "date": "2026-08-01",
+      "label": "Tenant payment",
+      "amount": 804.23
+     },
+     {
+      "@type": "money",
+      "date": "2026-09-04",
+      "label": "Tenant payment",
+      "amount": 289.52
+     },
+     {
+      "@type": "money",
+      "date": "2026-10-03",
+      "label": "Tenant payment",
+      "amount": 675.55
+     },
+     {
+      "@type": "money",
+      "date": "2026-11-06",
+      "label": "Tenant payment",
+      "amount": 562.96
+     }
+    ]
+   }
+  },
+  "messages/message/NC-5347-1.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-5347",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-5347-2.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-5347",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-5347-3.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-5347",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-5347-4.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-5347",
+    "changeEffectiveDate": "2026-09-01",
+    "newWeeklyIncome": 93.07,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-5347-5.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-5347",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-5347-6.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-5347",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/api/NC-5347.json": {
+   "profileId": "messages/messages-data",
+   "data": {
+    "clientId": "NC-5347",
+    "changeEffectiveDate": "2026-09-01",
+    "newWeeklyIncome": 93.07,
+    "tenancyEndDate": null,
+    "messages": [
+     {
+      "@type": "message",
+      "date": "2026-11-24",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-11-19",
+      "label": "Web chat transcript",
+      "cat": "Web chat"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-13",
+      "label": "Letter from Harbour Homes (scanned)",
+      "cat": "Letter"
+     },
+     {
+      "@type": "message",
+      "date": "2026-09-03",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-08-14",
+      "label": "Call logged by contact centre",
+      "cat": "Phone call"
+     },
+     {
+      "@type": "message",
+      "date": "2026-07-07",
+      "label": "Web chat transcript",
+      "cat": "Web chat"
+     }
+    ]
+   }
+  },
+  "cm/case-1002.html": {
+   "profileId": "cm/case",
+   "data": {
+    "clientId": "NC-6611",
+    "title": "Mr",
+    "firstName": "James",
+    "lastName": "Edwards",
+    "dob": "1985-10-19",
+    "nino": "QQ 61 43 68 D",
+    "phone": "07700 900431",
+    "email": "james.edwards66@example.com",
+    "address": "Flat 3, 129 Quayside, Southmere, NS4 5HB",
+    "postcode": "NS4 5HB",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyRef": "HH-31972"
+   }
+  },
+  "cm/notes-1002.html": {
+   "profileId": "cm/notes",
+   "data": {
+    "notes": [
+     {
+      "@type": "note",
+      "date": "2026-08-25",
+      "by": "B. Officer",
+      "text": "Harbour Homes confirmed arrears of £1,833.36. No court action yet."
+     },
+     {
+      "@type": "note",
+      "date": "2026-08-20",
+      "by": "B. Officer",
+      "text": "Triage: James lives with 4 other people. Rent is paid to Harbour Homes, tenancy HH-31972."
+     },
+     {
+      "@type": "note",
+      "date": "2026-08-17",
+      "by": "Contact centre",
+      "text": "Case opened from a referral from Harbour Homes. Change of circumstances."
+     }
+    ]
+   }
+  },
+  "biv/income-NC-6611.html": {
+   "profileId": "biv/income",
+   "data": {
+    "firstName": "James",
+    "lastName": "Edwards",
+    "nino": "QQ614368D",
+    "dob": "1985-10-19",
+    "clientId": "NC-6611",
+    "employmentStatus": "Employed (zero-hours)",
+    "currentEmployer": "Northshire Council",
+    "weeklyIncome": 259.56,
+    "ucClaim": "Yes, since 11 Feb 2025",
+    "periods": [
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Gullwing Hotels",
+      "start": "2020-02-02",
+      "end": "2021-03-19"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Westcliff Motors",
+      "start": "2021-06-16",
+      "end": "2023-02-22"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Southmere Leisure Trust",
+      "start": "2023-02-24",
+      "end": "2025-04-24"
+     },
+     {
+      "@type": "period",
+      "cat": "Benefit",
+      "label": "Universal Credit",
+      "start": "2025-02-11",
+      "end": null
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Northshire Council",
+      "start": "2025-06-05",
+      "end": null
+     }
+    ]
+   }
+  },
+  "harbour/tenancy-HH-31972.html": {
+   "profileId": "harbour-homes/tenancy",
+   "data": {
+    "tenancyRef": "HH-31972",
+    "firstName": "James",
+    "lastName": "Edwards",
+    "phone": "07700 900431",
+    "address": "Flat 3, 129 Quayside, Southmere, NS4 5HB",
+    "postcode": "NS4 5HB",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyStart": "2019-06-17",
+    "tenancyType": "Starter tenancy",
+    "monthlyRent": 638.8,
+    "arrears": 1833.36,
+    "payments": [
+     {
+      "@type": "money",
+      "date": "2026-01-03",
+      "label": "Tenant payment",
+      "amount": 638.8
+     },
+     {
+      "@type": "money",
+      "date": "2026-02-05",
+      "label": "Tenant payment",
+      "amount": 638.8
+     },
+     {
+      "@type": "money",
+      "date": "2026-03-03",
+      "label": "Tenant payment",
+      "amount": 536.59
+     },
+     {
+      "@type": "money",
+      "date": "2026-04-05",
+      "label": "UC housing element",
+      "amount": 530.2
+     },
+     {
+      "@type": "money",
+      "date": "2026-05-01",
+      "label": "UC housing element",
+      "amount": 57.49
+     },
+     {
+      "@type": "money",
+      "date": "2026-06-05",
+      "label": "UC housing element",
+      "amount": 389.67
+     },
+     {
+      "@type": "money",
+      "date": "2026-07-02",
+      "label": "Tenant payment",
+      "amount": 223.58
+     },
+     {
+      "@type": "money",
+      "date": "2026-08-05",
+      "label": "UC housing element",
+      "amount": 638.8
+     },
+     {
+      "@type": "money",
+      "date": "2026-09-03",
+      "label": "Tenant payment",
+      "amount": 261.91
+     },
+     {
+      "@type": "money",
+      "date": "2026-10-02",
+      "label": "Tenant payment",
+      "amount": 638.8
+     },
+     {
+      "@type": "money",
+      "date": "2026-11-06",
+      "label": "Tenant payment",
+      "amount": 638.8
+     }
+    ]
+   }
+  },
+  "messages/message/NC-6611-1.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-6611",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-6611-2.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-6611",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-6611-3.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-6611",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-6611-4.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-6611",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-6611-5.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-6611",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-6611-6.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-6611",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/api/NC-6611.json": {
+   "profileId": "messages/messages-data",
+   "data": {
+    "clientId": "NC-6611",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null,
+    "messages": [
+     {
+      "@type": "message",
+      "date": "2026-11-20",
+      "label": "Question about my claim",
+      "cat": "Email"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-25",
+      "label": "Web chat transcript",
+      "cat": "Web chat"
+     },
+     {
+      "@type": "message",
+      "date": "2026-09-25",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-08-30",
+      "label": "Call logged by contact centre",
+      "cat": "Phone call"
+     },
+     {
+      "@type": "message",
+      "date": "2026-08-16",
+      "label": "Letter from Harbour Homes (scanned)",
+      "cat": "Letter"
+     },
+     {
+      "@type": "message",
+      "date": "2026-07-08",
+      "label": "Letter from Harbour Homes (scanned)",
+      "cat": "Letter"
+     }
+    ]
+   }
+  },
+  "cm/case-1003.html": {
+   "profileId": "cm/case",
+   "data": {
+    "clientId": "NC-3574",
+    "title": "Mr",
+    "firstName": "Dean",
+    "lastName": "Thompson",
+    "dob": "1975-12-22",
+    "nino": "QQ 68 72 85 D",
+    "phone": "07700 900105",
+    "email": "dean.thompson64@example.org",
+    "address": "111 Chapel Hill, Westcliff, NS8 6QJ",
+    "postcode": "NS8 6QJ",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyRef": "HH-34105"
+   }
+  },
+  "cm/notes-1003.html": {
+   "profileId": "cm/notes",
+   "data": {
+    "notes": [
+     {
+      "@type": "note",
+      "date": "2026-08-26",
+      "by": "B. Officer",
+      "text": "Harbour Homes confirmed arrears of £723.71. No court action yet."
+     },
+     {
+      "@type": "note",
+      "date": "2026-08-20",
+      "by": "B. Officer",
+      "text": "Triage: Dean lives with no one else. Rent is paid to Harbour Homes, tenancy HH-34105."
+     },
+     {
+      "@type": "note",
+      "date": "2026-08-18",
+      "by": "Contact centre",
+      "text": "Case opened from a web form. Homelessness prevention."
+     }
+    ]
+   }
+  },
+  "biv/income-NC-3574.html": {
+   "profileId": "biv/income",
+   "data": {
+    "firstName": "Dean",
+    "lastName": "Thompson",
+    "nino": "QQ687285D",
+    "dob": "1975-12-22",
+    "clientId": "NC-3574",
+    "employmentStatus": "Employed (part-time)",
+    "currentEmployer": "Northshire Care Ltd",
+    "weeklyIncome": 232.68,
+    "ucClaim": "Yes, since 7 Feb 2024",
+    "periods": [
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Gullwing Hotels",
+      "start": "2018-02-09",
+      "end": "2019-04-30"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Northshire Care Ltd",
+      "start": "2019-07-27",
+      "end": "2021-10-09"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Quayside Fish Market",
+      "start": "2022-01-21",
+      "end": "2024-06-11"
+     },
+     {
+      "@type": "period",
+      "cat": "Benefit",
+      "label": "Universal Credit",
+      "start": "2024-02-07",
+      "end": null
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Quayside Fish Market",
+      "start": "2024-07-27",
+      "end": "2025-12-26"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Northshire Care Ltd",
+      "start": "2025-12-31",
+      "end": null
+     }
+    ]
+   }
+  },
+  "harbour/tenancy-HH-34105.html": {
+   "profileId": "harbour-homes/tenancy",
+   "data": {
+    "tenancyRef": "HH-34105",
+    "firstName": "Dean",
+    "lastName": "Thompson",
+    "phone": "07700 900105",
+    "address": "63 Queens Avenue, Eastbrook, NS6 9ZF",
+    "postcode": "NS6 9ZF",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyStart": "2017-01-17",
+    "tenancyType": "Assured tenancy",
+    "monthlyRent": 623.89,
+    "arrears": 723.71,
+    "payments": [
+     {
+      "@type": "money",
+      "date": "2026-01-04",
+      "label": "Tenant payment",
+      "amount": 623.89
+     },
+     {
+      "@type": "money",
+      "date": "2026-02-06",
+      "label": "Tenant payment",
+      "amount": 623.89
+     },
+     {
+      "@type": "money",
+      "date": "2026-03-06",
+      "label": "Tenant payment",
+      "amount": 442.96
+     },
+     {
+      "@type": "money",
+      "date": "2026-04-05",
+      "label": "Tenant payment",
+      "amount": 623.89
+     },
+     {
+      "@type": "money",
+      "date": "2026-05-02",
+      "label": "Tenant payment",
+      "amount": 623.89
+     },
+     {
+      "@type": "money",
+      "date": "2026-06-03",
+      "label": "UC housing element",
+      "amount": 623.89
+     },
+     {
+      "@type": "money",
+      "date": "2026-07-05",
+      "label": "Tenant payment",
+      "amount": 623.89
+     },
+     {
+      "@type": "money",
+      "date": "2026-08-01",
+      "label": "UC housing element",
+      "amount": 623.89
+     },
+     {
+      "@type": "money",
+      "date": "2026-09-01",
+      "label": "Tenant payment",
+      "amount": 623.89
+     },
+     {
+      "@type": "money",
+      "date": "2026-10-06",
+      "label": "Tenant payment",
+      "amount": 81.11
+     },
+     {
+      "@type": "money",
+      "date": "2026-11-04",
+      "label": "UC housing element",
+      "amount": 623.89
+     }
+    ]
+   }
+  },
+  "messages/message/NC-3574-1.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3574",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-3574-2.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3574",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-3574-3.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3574",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-3574-4.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3574",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-3574-5.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3574",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-3574-6.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3574",
+    "changeEffectiveDate": "2026-08-03",
+    "newWeeklyIncome": null,
+    "tenancyEndDate": "2026-10-10"
+   }
+  },
+  "messages/api/NC-3574.json": {
+   "profileId": "messages/messages-data",
+   "data": {
+    "clientId": "NC-3574",
+    "changeEffectiveDate": "2026-08-03",
+    "newWeeklyIncome": null,
+    "tenancyEndDate": "2026-10-10",
+    "messages": [
+     {
+      "@type": "message",
+      "date": "2026-11-23",
+      "label": "Letter from Harbour Homes (scanned)",
+      "cat": "Letter"
+     },
+     {
+      "@type": "message",
+      "date": "2026-11-02",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-15",
+      "label": "Call back request",
+      "cat": "Phone call"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-04",
+      "label": "Web chat transcript",
+      "cat": "Web chat"
+     },
+     {
+      "@type": "message",
+      "date": "2026-09-09",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-08-08",
+      "label": "Online form submission",
+      "cat": "Online form"
+     }
+    ]
+   }
+  },
+  "cm/case-1005.html": {
+   "profileId": "cm/case",
+   "data": {
+    "clientId": "NC-5247",
+    "title": "Miss",
+    "firstName": "Aisha",
+    "lastName": "Clark",
+    "dob": "2000-08-21",
+    "nino": "QQ 34 65 01 A",
+    "phone": "07700 900550",
+    "email": "aisha.clark60@example.org",
+    "address": "Flat 4, 65 Kiln Close, Eastbrook, NS6 2CT",
+    "postcode": "NS6 2CT",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyRef": "HH-42248"
+   }
+  },
+  "cm/notes-1005.html": {
+   "profileId": "cm/notes",
+   "data": {
+    "notes": [
+     {
+      "@type": "note",
+      "date": "2026-08-28",
+      "by": "B. Officer",
+      "text": "The income record linked to this client looked wrong at triage. Check the date of birth before using it."
+     },
+     {
+      "@type": "note",
+      "date": "2026-08-23",
+      "by": "D. Adviser",
+      "text": "Harbour Homes confirmed arrears of £2,573.61. No court action yet."
+     },
+     {
+      "@type": "note",
+      "date": "2026-08-19",
+      "by": "D. Adviser",
+      "text": "Triage: Aisha lives with 2 other people. Rent is paid to Harbour Homes, tenancy HH-42248."
+     },
+     {
+      "@type": "note",
+      "date": "2026-08-18",
+      "by": "Contact centre",
+      "text": "Case opened from a referral from Harbour Homes. Tenancy sustainment."
+     }
+    ]
+   }
+  },
+  "biv/income-NC-5247.html": {
+   "profileId": "biv/income",
+   "data": {
+    "firstName": "Jamal",
+    "lastName": "Clark",
+    "nino": "QQ991823A",
+    "dob": "1975-01-16",
+    "clientId": "NC-5247",
+    "employmentStatus": "Employed (part-time)",
+    "currentEmployer": "Quayside Fish Market",
+    "weeklyIncome": 215.3,
+    "ucClaim": "Yes, since 20 Apr 2024",
+    "periods": [
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Lantern Cafe Group",
+      "start": "2019-04-13",
+      "end": "2021-08-31"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Kestrel Couriers",
+      "start": "2021-12-01",
+      "end": "2024-02-23"
+     },
+     {
+      "@type": "period",
+      "cat": "Benefit",
+      "label": "Universal Credit",
+      "start": "2024-04-20",
+      "end": null
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Beacon Bakery",
+      "start": "2024-06-04",
+      "end": "2026-01-18"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Quayside Fish Market",
+      "start": "2026-05-04",
+      "end": null
+     }
+    ]
+   }
+  },
+  "harbour/tenancy-HH-42248.html": {
+   "profileId": "harbour-homes/tenancy",
+   "data": {
+    "tenancyRef": "HH-42248",
+    "firstName": "Aisha",
+    "lastName": "Clark",
+    "phone": "07700 900550",
+    "address": "Flat 4, 65 Kiln Close, Eastbrook, NS6 2CT",
+    "postcode": "NS6 2CT",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyStart": "2022-03-11",
+    "tenancyType": "Starter tenancy",
+    "monthlyRent": 679.05,
+    "arrears": 2573.61,
+    "payments": [
+     {
+      "@type": "money",
+      "date": "2026-01-05",
+      "label": "UC housing element",
+      "amount": 550.03
+     },
+     {
+      "@type": "money",
+      "date": "2026-02-04",
+      "label": "UC housing element",
+      "amount": 679.05
+     },
+     {
+      "@type": "money",
+      "date": "2026-03-01",
+      "label": "UC housing element",
+      "amount": 550.03
+     },
+     {
+      "@type": "money",
+      "date": "2026-04-04",
+      "label": "Tenant payment",
+      "amount": 251.25
+     },
+     {
+      "@type": "money",
+      "date": "2026-05-03",
+      "label": "Tenant payment",
+      "amount": 679.05
+     },
+     {
+      "@type": "money",
+      "date": "2026-06-04",
+      "label": "UC housing element",
+      "amount": 679.05
+     },
+     {
+      "@type": "money",
+      "date": "2026-07-03",
+      "label": "Tenant payment",
+      "amount": 47.53
+     },
+     {
+      "@type": "money",
+      "date": "2026-08-04",
+      "label": "UC housing element",
+      "amount": 414.22
+     },
+     {
+      "@type": "money",
+      "date": "2026-09-03",
+      "label": "Tenant payment",
+      "amount": 190.13
+     },
+     {
+      "@type": "money",
+      "date": "2026-10-04",
+      "label": "UC housing element",
+      "amount": 679.05
+     },
+     {
+      "@type": "money",
+      "date": "2026-11-02",
+      "label": "UC housing element",
+      "amount": 176.55
+     }
+    ]
+   }
+  },
+  "messages/message/NC-5247-1.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-5247",
+    "changeEffectiveDate": "2026-11-05",
+    "newWeeklyIncome": 387.72,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-5247-2.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-5247",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-5247-3.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-5247",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-5247-4.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-5247",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-5247-5.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-5247",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-5247-6.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-5247",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/api/NC-5247.json": {
+   "profileId": "messages/messages-data",
+   "data": {
+    "clientId": "NC-5247",
+    "changeEffectiveDate": "2026-11-05",
+    "newWeeklyIncome": 387.72,
+    "tenancyEndDate": null,
+    "messages": [
+     {
+      "@type": "message",
+      "date": "2026-11-21",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-11-09",
+      "label": "Help with bills",
+      "cat": "Email"
+     },
+     {
+      "@type": "message",
+      "date": "2026-09-30",
+      "label": "Call logged by contact centre",
+      "cat": "Phone call"
+     },
+     {
+      "@type": "message",
+      "date": "2026-09-23",
+      "label": "Re: appointment",
+      "cat": "Email"
+     },
+     {
+      "@type": "message",
+      "date": "2026-08-26",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-08-14",
+      "label": "Online form submission",
+      "cat": "Online form"
+     }
+    ]
+   }
+  },
+  "cm/case-1007.html": {
+   "profileId": "cm/case",
+   "data": {
+    "clientId": "NC-4834",
+    "title": "Mr",
+    "firstName": "David",
+    "lastName": "Phillips",
+    "dob": "1991-03-02",
+    "nino": "QQ 45 34 16 D",
+    "phone": "07700 900417",
+    "email": "david.fletcher18@example.org",
+    "address": "54 Foundry Street, Eastbrook, NS6 8WA",
+    "postcode": "NS6 8WA",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyRef": "HH-36895"
+   }
+  },
+  "cm/notes-1007.html": {
+   "profileId": "cm/notes",
+   "data": {
+    "notes": [
+     {
+      "@type": "note",
+      "date": "2026-08-24",
+      "by": "B. Officer",
+      "text": "Harbour Homes confirmed arrears of £736.53. No court action yet."
+     },
+     {
+      "@type": "note",
+      "date": "2026-08-21",
+      "by": "B. Officer",
+      "text": "Triage: David lives with no one else. Rent is paid to Harbour Homes, tenancy HH-36895."
+     },
+     {
+      "@type": "note",
+      "date": "2026-08-18",
+      "by": "Contact centre",
+      "text": "Case opened from a referral from Harbour Homes. Homelessness prevention."
+     }
+    ]
+   }
+  },
+  "biv/income-NC-4834.html": {
+   "profileId": "biv/income",
+   "data": {
+    "firstName": "David",
+    "lastName": "Philips",
+    "nino": "QQ453416D",
+    "dob": "1991-03-02",
+    "clientId": "NC-4834",
+    "employmentStatus": "Not working",
+    "currentEmployer": "None",
+    "weeklyIncome": 0,
+    "ucClaim": "Yes, since 30 Jan 2023",
+    "periods": [
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Westcliff Motors",
+      "start": "2019-12-18",
+      "end": "2021-09-22"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Northtown Cleaning Services",
+      "start": "2021-12-29",
+      "end": "2023-09-03"
+     },
+     {
+      "@type": "period",
+      "cat": "Benefit",
+      "label": "Universal Credit",
+      "start": "2023-01-30",
+      "end": null
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Harbourside Logistics Ltd",
+      "start": "2023-10-27",
+      "end": "2024-08-18"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Northshire Care Ltd",
+      "start": "2024-10-10",
+      "end": "2026-09-29"
+     }
+    ]
+   }
+  },
+  "harbour/tenancy-HH-36895.html": {
+   "profileId": "harbour-homes/tenancy",
+   "data": {
+    "tenancyRef": "HH-36895",
+    "firstName": "David",
+    "lastName": "Phillips",
+    "phone": "07700 900417",
+    "address": "54 Foundry Street, Eastbrook, NS6 8WA",
+    "postcode": "NS6 8WA",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyStart": "2023-01-21",
+    "tenancyType": "Starter tenancy",
+    "monthlyRent": 603.71,
+    "arrears": 736.53,
+    "payments": [
+     {
+      "@type": "money",
+      "date": "2026-01-05",
+      "label": "Tenant payment",
+      "amount": 603.71
+     },
+     {
+      "@type": "money",
+      "date": "2026-02-03",
+      "label": "UC housing element",
+      "amount": 603.71
+     },
+     {
+      "@type": "money",
+      "date": "2026-03-06",
+      "label": "UC housing element",
+      "amount": 603.71
+     },
+     {
+      "@type": "money",
+      "date": "2026-04-04",
+      "label": "UC housing element",
+      "amount": 603.71
+     },
+     {
+      "@type": "money",
+      "date": "2026-05-04",
+      "label": "Tenant payment",
+      "amount": 603.71
+     },
+     {
+      "@type": "money",
+      "date": "2026-06-01",
+      "label": "Tenant payment",
+      "amount": 144.89
+     },
+     {
+      "@type": "money",
+      "date": "2026-07-03",
+      "label": "Tenant payment",
+      "amount": 326
+     },
+     {
+      "@type": "money",
+      "date": "2026-08-02",
+      "label": "Tenant payment",
+      "amount": 603.71
+     },
+     {
+      "@type": "money",
+      "date": "2026-09-06",
+      "label": "UC housing element",
+      "amount": 603.71
+     },
+     {
+      "@type": "money",
+      "date": "2026-10-03",
+      "label": "UC housing element",
+      "amount": 603.71
+     },
+     {
+      "@type": "money",
+      "date": "2026-11-01",
+      "label": "Tenant payment",
+      "amount": 603.71
+     }
+    ]
+   }
+  },
+  "messages/message/NC-4834-1.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-4834",
+    "changeEffectiveDate": "2026-11-12",
+    "newWeeklyIncome": 310.42,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-4834-2.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-4834",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-4834-3.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-4834",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-4834-4.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-4834",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-4834-5.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-4834",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-4834-6.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-4834",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/api/NC-4834.json": {
+   "profileId": "messages/messages-data",
+   "data": {
+    "clientId": "NC-4834",
+    "changeEffectiveDate": "2026-11-12",
+    "newWeeklyIncome": 310.42,
+    "tenancyEndDate": null,
+    "messages": [
+     {
+      "@type": "message",
+      "date": "2026-11-20",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-11",
+      "label": "Missed call",
+      "cat": "Phone call"
+     },
+     {
+      "@type": "message",
+      "date": "2026-09-15",
+      "label": "Help with bills",
+      "cat": "Email"
+     },
+     {
+      "@type": "message",
+      "date": "2026-08-30",
+      "label": "Payslips attached",
+      "cat": "Email"
+     },
+     {
+      "@type": "message",
+      "date": "2026-08-06",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-07-13",
+      "label": "Letter from Harbour Homes (scanned)",
+      "cat": "Letter"
+     }
+    ]
+   }
+  },
+  "cm/case-1018.html": {
+   "profileId": "cm/case",
+   "data": {
+    "clientId": "NC-9403",
+    "title": "Mr",
+    "firstName": "Thomas",
+    "lastName": "Murray",
+    "dob": "1984-04-19",
+    "nino": "QQ 55 60 11 B",
+    "phone": "07700 900001",
+    "email": "thomas.murray39@example.com",
+    "address": "77 Station Street, Northtown, NS2 7CF",
+    "postcode": "NS2 7CF",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyRef": "HH-32880"
+   }
+  },
+  "cm/notes-1018.html": {
+   "profileId": "cm/notes",
+   "data": {
+    "notes": [
+     {
+      "@type": "note",
+      "date": "2026-09-03",
+      "by": "D. Adviser",
+      "text": "Harbour Homes confirmed arrears of £2,080.14. No court action yet."
+     },
+     {
+      "@type": "note",
+      "date": "2026-08-28",
+      "by": "D. Adviser",
+      "text": "Triage: Thomas lives with 3 other people. Rent is paid to Harbour Homes, tenancy HH-32880."
+     },
+     {
+      "@type": "note",
+      "date": "2026-08-25",
+      "by": "Contact centre",
+      "text": "Case opened from a referral from Harbour Homes. Tenancy sustainment."
+     }
+    ]
+   }
+  },
+  "biv/income-NC-9403.html": {
+   "profileId": "biv/income",
+   "data": {
+    "firstName": "Thomas",
+    "lastName": "Murray",
+    "nino": "QQ556011B",
+    "dob": "1984-04-19",
+    "clientId": "NC-9403",
+    "employmentStatus": "Employed (part-time)",
+    "currentEmployer": "Northshire Council",
+    "weeklyIncome": 321.13,
+    "ucClaim": "Yes, since 26 Apr 2026",
+    "periods": [
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Harbourside Logistics Ltd",
+      "start": "2019-05-29",
+      "end": "2021-11-04"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Copperfield Engineering",
+      "start": "2022-03-02",
+      "end": "2023-02-05"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Quayside Fish Market",
+      "start": "2023-05-21",
+      "end": "2025-09-05"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Northshire Council",
+      "start": "2025-11-13",
+      "end": null
+     },
+     {
+      "@type": "period",
+      "cat": "Benefit",
+      "label": "Universal Credit",
+      "start": "2026-04-26",
+      "end": null
+     }
+    ]
+   }
+  },
+  "harbour/tenancy-HH-32880.html": {
+   "profileId": "harbour-homes/tenancy",
+   "data": {
+    "tenancyRef": "HH-32880",
+    "firstName": "Thomas",
+    "lastName": "Murray",
+    "phone": "07700 900001",
+    "address": "Flat 17, 105 Kiln Close, Southmere, NS4 2GA",
+    "postcode": "NS4 2GA",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyStart": "2022-05-19",
+    "tenancyType": "Starter tenancy",
+    "monthlyRent": 863.13,
+    "arrears": 2080.14,
+    "payments": [
+     {
+      "@type": "money",
+      "date": "2026-01-02",
+      "label": "UC housing element",
+      "amount": 863.13
+     },
+     {
+      "@type": "money",
+      "date": "2026-02-05",
+      "label": "Tenant payment",
+      "amount": 215.78
+     },
+     {
+      "@type": "money",
+      "date": "2026-03-06",
+      "label": "Tenant payment",
+      "amount": 146.73
+     },
+     {
+      "@type": "money",
+      "date": "2026-04-05",
+      "label": "Tenant payment",
+      "amount": 863.13
+     },
+     {
+      "@type": "money",
+      "date": "2026-05-04",
+      "label": "Tenant payment",
+      "amount": 863.13
+     },
+     {
+      "@type": "money",
+      "date": "2026-06-02",
+      "label": "UC housing element",
+      "amount": 569.67
+     },
+     {
+      "@type": "money",
+      "date": "2026-07-04",
+      "label": "UC housing element",
+      "amount": 863.13
+     },
+     {
+      "@type": "money",
+      "date": "2026-08-05",
+      "label": "UC housing element",
+      "amount": 440.2
+     },
+     {
+      "@type": "money",
+      "date": "2026-09-04",
+      "label": "UC housing element",
+      "amount": 863.13
+     },
+     {
+      "@type": "money",
+      "date": "2026-10-03",
+      "label": "Tenant payment",
+      "amount": 863.13
+     },
+     {
+      "@type": "money",
+      "date": "2026-11-06",
+      "label": "UC housing element",
+      "amount": 863.13
+     }
+    ]
+   }
+  },
+  "messages/message/NC-9403-1.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-9403",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-9403-2.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-9403",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-9403-3.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-9403",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-9403-4.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-9403",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-9403-5.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-9403",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-9403-6.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-9403",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/api/NC-9403.json": {
+   "profileId": "messages/messages-data",
+   "data": {
+    "clientId": "NC-9403",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null,
+    "messages": [
+     {
+      "@type": "message",
+      "date": "2026-11-23",
+      "label": "Web chat transcript",
+      "cat": "Web chat"
+     },
+     {
+      "@type": "message",
+      "date": "2026-11-01",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-21",
+      "label": "Re: your rent account",
+      "cat": "Email"
+     },
+     {
+      "@type": "message",
+      "date": "2026-09-27",
+      "label": "Call back request",
+      "cat": "Phone call"
+     },
+     {
+      "@type": "message",
+      "date": "2026-09-12",
+      "label": "Web chat transcript",
+      "cat": "Web chat"
+     },
+     {
+      "@type": "message",
+      "date": "2026-08-30",
+      "label": "Online form submission",
+      "cat": "Online form"
+     }
+    ]
+   }
+  },
+  "cm/case-1042.html": {
+   "profileId": "cm/case",
+   "data": {
+    "clientId": "NC-3302",
+    "title": "Miss",
+    "firstName": "Chloe",
+    "lastName": "Nowak",
+    "dob": "1971-10-23",
+    "nino": "QQ 82 02 86 B",
+    "phone": "07700 900521",
+    "email": "chloe.nowak60@example.org",
+    "address": "63 Abbey Mews, Northtown, NS1 7HP",
+    "postcode": "NS1 7HP",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyRef": "HH-38399"
+   }
+  },
+  "cm/notes-1042.html": {
+   "profileId": "cm/notes",
+   "data": {
+    "notes": [
+     {
+      "@type": "note",
+      "date": "2026-09-15",
+      "by": "C. Caseworker",
+      "text": "Harbour Homes confirmed arrears of £1,438.57. No court action yet."
+     },
+     {
+      "@type": "note",
+      "date": "2026-09-07",
+      "by": "C. Caseworker",
+      "text": "Triage: Chloe lives with 2 other people. Rent is paid to Harbour Homes, tenancy HH-38399."
+     },
+     {
+      "@type": "note",
+      "date": "2026-09-06",
+      "by": "Contact centre",
+      "text": "Case opened from a phone call. Homelessness prevention."
+     }
+    ]
+   }
+  },
+  "biv/income-NC-3302.html": {
+   "profileId": "biv/income",
+   "data": {
+    "firstName": "Chloe",
+    "lastName": "Nowak",
+    "nino": "QQ820286B",
+    "dob": "1971-10-23",
+    "clientId": "NC-3302",
+    "employmentStatus": "Employed (full-time)",
+    "currentEmployer": "Saltings Primary School",
+    "weeklyIncome": 475.85,
+    "ucClaim": "Yes, since 6 Jan 2025",
+    "periods": [
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Gullwing Hotels",
+      "start": "2020-09-22",
+      "end": "2022-06-03"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Quayside Fish Market",
+      "start": "2022-07-04",
+      "end": "2023-08-10"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Saltings Primary School",
+      "start": "2023-11-28",
+      "end": "2024-09-20"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Lantern Cafe Group",
+      "start": "2024-10-25",
+      "end": "2025-12-31"
+     },
+     {
+      "@type": "period",
+      "cat": "Benefit",
+      "label": "Universal Credit",
+      "start": "2025-01-06",
+      "end": null
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Saltings Primary School",
+      "start": "2026-01-13",
+      "end": null
+     }
+    ]
+   }
+  },
+  "harbour/tenancy-HH-38399.html": {
+   "profileId": "harbour-homes/tenancy",
+   "data": {
+    "tenancyRef": "HH-38399",
+    "firstName": "Chloe",
+    "lastName": "Nowak",
+    "phone": "07700 900141",
+    "address": "63 Abbey Mews, Northtown, NS1 7HP",
+    "postcode": "NS1 7HP",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyStart": "2024-11-10",
+    "tenancyType": "Assured tenancy",
+    "monthlyRent": 575.43,
+    "arrears": 1438.57,
+    "payments": [
+     {
+      "@type": "money",
+      "date": "2026-01-03",
+      "label": "Tenant payment",
+      "amount": 575.43
+     },
+     {
+      "@type": "money",
+      "date": "2026-02-06",
+      "label": "Tenant payment",
+      "amount": 241.68
+     },
+     {
+      "@type": "money",
+      "date": "2026-03-03",
+      "label": "Tenant payment",
+      "amount": 322.24
+     },
+     {
+      "@type": "money",
+      "date": "2026-04-05",
+      "label": "UC housing element",
+      "amount": 264.7
+     },
+     {
+      "@type": "money",
+      "date": "2026-05-06",
+      "label": "UC housing element",
+      "amount": 575.43
+     },
+     {
+      "@type": "money",
+      "date": "2026-06-06",
+      "label": "Tenant payment",
+      "amount": 575.43
+     },
+     {
+      "@type": "money",
+      "date": "2026-07-04",
+      "label": "Tenant payment",
+      "amount": 575.43
+     },
+     {
+      "@type": "money",
+      "date": "2026-08-05",
+      "label": "UC housing element",
+      "amount": 374.03
+     },
+     {
+      "@type": "money",
+      "date": "2026-09-04",
+      "label": "UC housing element",
+      "amount": 575.43
+     },
+     {
+      "@type": "money",
+      "date": "2026-10-03",
+      "label": "UC housing element",
+      "amount": 575.43
+     },
+     {
+      "@type": "money",
+      "date": "2026-11-06",
+      "label": "Tenant payment",
+      "amount": 235.93
+     }
+    ]
+   }
+  },
+  "messages/message/NC-3302-1.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3302",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-3302-2.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3302",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-3302-3.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3302",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-3302-4.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3302",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-3302-5.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3302",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-3302-6.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3302",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/api/NC-3302.json": {
+   "profileId": "messages/messages-data",
+   "data": {
+    "clientId": "NC-3302",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null,
+    "messages": [
+     {
+      "@type": "message",
+      "date": "2026-11-19",
+      "label": "Web chat transcript",
+      "cat": "Web chat"
+     },
+     {
+      "@type": "message",
+      "date": "2026-11-13",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-22",
+      "label": "Help with bills",
+      "cat": "Email"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-08",
+      "label": "Letter from Harbour Homes (scanned)",
+      "cat": "Letter"
+     },
+     {
+      "@type": "message",
+      "date": "2026-09-23",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-08-27",
+      "label": "Call back request",
+      "cat": "Phone call"
+     }
+    ]
+   }
+  },
+  "cm/case-1047.html": {
+   "profileId": "cm/case",
+   "data": {
+    "clientId": "NC-7271",
+    "title": "Mr",
+    "firstName": "Joseph",
+    "lastName": "Hussain",
+    "dob": "1979-07-16",
+    "nino": "QQ 20 31 35 D",
+    "phone": "07700 900393",
+    "email": "joseph.hussain79@example.org",
+    "address": "Flat 1, 10 Fisher Street, Harbourside, NS3 2UT",
+    "postcode": "NS3 2UT",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyRef": "HH-43836"
+   }
+  },
+  "cm/notes-1047.html": {
+   "profileId": "cm/notes",
+   "data": {
+    "notes": [
+     {
+      "@type": "note",
+      "date": "2026-09-19",
+      "by": "B. Officer",
+      "text": "The income record linked to this client looked wrong at triage. Check the date of birth before using it."
+     },
+     {
+      "@type": "note",
+      "date": "2026-09-17",
+      "by": "D. Adviser",
+      "text": "Harbour Homes confirmed arrears of £2,212.78. No court action yet."
+     },
+     {
+      "@type": "note",
+      "date": "2026-09-11",
+      "by": "D. Adviser",
+      "text": "Triage: Joseph lives with 2 other people. Rent is paid to Harbour Homes, tenancy HH-43836."
+     },
+     {
+      "@type": "note",
+      "date": "2026-09-09",
+      "by": "Contact centre",
+      "text": "Case opened from a web form. Homelessness prevention."
+     }
+    ]
+   }
+  },
+  "biv/income-NC-7271.html": {
+   "profileId": "biv/income",
+   "data": {
+    "firstName": "Jessica",
+    "lastName": "Hussain",
+    "nino": "QQ332552B",
+    "dob": "1994-03-03",
+    "clientId": "NC-7271",
+    "employmentStatus": "Employed (zero-hours)",
+    "currentEmployer": "Kestrel Couriers",
+    "weeklyIncome": 287.24,
+    "ucClaim": "Yes, since 3 Jun 2024",
+    "periods": [
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Saltings Primary School",
+      "start": "2021-08-27",
+      "end": "2023-11-06"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Lantern Cafe Group",
+      "start": "2024-02-12",
+      "end": "2025-05-26"
+     },
+     {
+      "@type": "period",
+      "cat": "Benefit",
+      "label": "Universal Credit",
+      "start": "2024-06-03",
+      "end": null
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Northshire Council",
+      "start": "2025-08-28",
+      "end": "2026-06-15"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Kestrel Couriers",
+      "start": "2026-10-06",
+      "end": null
+     }
+    ]
+   }
+  },
+  "harbour/tenancy-HH-43836.html": {
+   "profileId": "harbour-homes/tenancy",
+   "data": {
+    "tenancyRef": "HH-43836",
+    "firstName": "Joseph",
+    "lastName": "Hussain",
+    "phone": "07700 900373",
+    "address": "Flat 1, 10 Fisher Street, Harbourside, NS3 2UT",
+    "postcode": "NS3 2UT",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyStart": "2024-01-09",
+    "tenancyType": "Starter tenancy",
+    "monthlyRent": 716.11,
+    "arrears": 2212.78,
+    "payments": [
+     {
+      "@type": "money",
+      "date": "2026-01-03",
+      "label": "Tenant payment",
+      "amount": 716.11
+     },
+     {
+      "@type": "money",
+      "date": "2026-02-03",
+      "label": "UC housing element",
+      "amount": 716.11
+     },
+     {
+      "@type": "money",
+      "date": "2026-03-06",
+      "label": "Tenant payment",
+      "amount": 716.11
+     },
+     {
+      "@type": "money",
+      "date": "2026-04-06",
+      "label": "UC housing element",
+      "amount": 422.5
+     },
+     {
+      "@type": "money",
+      "date": "2026-05-06",
+      "label": "UC housing element",
+      "amount": 293.61
+     },
+     {
+      "@type": "money",
+      "date": "2026-06-05",
+      "label": "Tenant payment",
+      "amount": 157.54
+     },
+     {
+      "@type": "money",
+      "date": "2026-07-03",
+      "label": "Tenant payment",
+      "amount": 716.11
+     },
+     {
+      "@type": "money",
+      "date": "2026-08-04",
+      "label": "Tenant payment",
+      "amount": 57.29
+     },
+     {
+      "@type": "money",
+      "date": "2026-09-06",
+      "label": "Tenant payment",
+      "amount": 716.11
+     },
+     {
+      "@type": "money",
+      "date": "2026-10-05",
+      "label": "Tenant payment",
+      "amount": 716.11
+     },
+     {
+      "@type": "money",
+      "date": "2026-11-01",
+      "label": "Tenant payment",
+      "amount": 436.83
+     }
+    ]
+   }
+  },
+  "messages/message/NC-7271-1.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-7271",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-7271-2.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-7271",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-7271-3.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-7271",
+    "changeEffectiveDate": "2026-11-01",
+    "newWeeklyIncome": 347.11,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-7271-4.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-7271",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-7271-5.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-7271",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-7271-6.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-7271",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/api/NC-7271.json": {
+   "profileId": "messages/messages-data",
+   "data": {
+    "clientId": "NC-7271",
+    "changeEffectiveDate": "2026-11-01",
+    "newWeeklyIncome": 347.11,
+    "tenancyEndDate": null,
+    "messages": [
+     {
+      "@type": "message",
+      "date": "2026-11-20",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-11-12",
+      "label": "Web chat transcript",
+      "cat": "Web chat"
+     },
+     {
+      "@type": "message",
+      "date": "2026-11-06",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-26",
+      "label": "Missed call",
+      "cat": "Phone call"
+     },
+     {
+      "@type": "message",
+      "date": "2026-09-22",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-09-13",
+      "label": "Call logged by contact centre",
+      "cat": "Phone call"
+     }
+    ]
+   }
+  },
+  "cm/case-1050.html": {
+   "profileId": "cm/case",
+   "data": {
+    "clientId": "NC-8081",
+    "title": "Ms",
+    "firstName": "Joanna",
+    "lastName": "Evans",
+    "dob": "1965-08-26",
+    "nino": "QQ 55 13 92 D",
+    "phone": "07700 900148",
+    "email": "joanna.evans65@example.com",
+    "address": "Flat 21, 33 Willow Court, Northtown, NS1 8DL",
+    "postcode": "NS1 8DL",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyRef": "HH-48973"
+   }
+  },
+  "cm/notes-1050.html": {
+   "profileId": "cm/notes",
+   "data": {
+    "notes": [
+     {
+      "@type": "note",
+      "date": "2026-09-16",
+      "by": "D. Adviser",
+      "text": "Harbour Homes confirmed arrears of £1,985.01. No court action yet."
+     },
+     {
+      "@type": "note",
+      "date": "2026-09-15",
+      "by": "D. Adviser",
+      "text": "Triage: Joanna lives with 3 other people. Rent is paid to Harbour Homes, tenancy HH-48973."
+     },
+     {
+      "@type": "note",
+      "date": "2026-09-11",
+      "by": "Contact centre",
+      "text": "Case opened from a phone call. Rent arrears support."
+     }
+    ]
+   }
+  },
+  "biv/income-NC-8081.html": {
+   "profileId": "biv/income",
+   "data": {
+    "firstName": "Joanna",
+    "lastName": "Evans",
+    "nino": "QQ551392D",
+    "dob": "1965-08-26",
+    "clientId": "NC-8081",
+    "employmentStatus": "Employed (full-time)",
+    "currentEmployer": "Riverside Care Homes",
+    "weeklyIncome": 423.22,
+    "ucClaim": "No",
+    "periods": [
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Northshire Care Ltd",
+      "start": "2019-12-14",
+      "end": "2021-06-07"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Northshire Council",
+      "start": "2021-06-12",
+      "end": "2022-11-29"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Lantern Cafe Group",
+      "start": "2023-01-26",
+      "end": "2025-02-25"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Beacon Bakery",
+      "start": "2025-04-28",
+      "end": "2026-04-08"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Riverside Care Homes",
+      "start": "2026-07-07",
+      "end": null
+     }
+    ]
+   }
+  },
+  "harbour/tenancy-HH-48973.html": {
+   "profileId": "harbour-homes/tenancy",
+   "data": {
+    "tenancyRef": "HH-48973",
+    "firstName": "Joanna",
+    "lastName": "Evans",
+    "phone": "07700 900148",
+    "address": "Flat 21, 33 Willow Court, Northtown, NS1 8DL",
+    "postcode": "NS1 8DL",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyStart": "2025-08-27",
+    "tenancyType": "Starter tenancy",
+    "monthlyRent": 784.59,
+    "arrears": 1985.01,
+    "payments": [
+     {
+      "@type": "money",
+      "date": "2026-01-06",
+      "label": "Tenant payment",
+      "amount": 784.59
+     },
+     {
+      "@type": "money",
+      "date": "2026-02-06",
+      "label": "UC housing element",
+      "amount": 94.15
+     },
+     {
+      "@type": "money",
+      "date": "2026-03-06",
+      "label": "Tenant payment",
+      "amount": 360.91
+     },
+     {
+      "@type": "money",
+      "date": "2026-04-05",
+      "label": "UC housing element",
+      "amount": 580.6
+     },
+     {
+      "@type": "money",
+      "date": "2026-05-01",
+      "label": "UC housing element",
+      "amount": 290.3
+     },
+     {
+      "@type": "money",
+      "date": "2026-06-03",
+      "label": "UC housing element",
+      "amount": 784.59
+     },
+     {
+      "@type": "money",
+      "date": "2026-07-02",
+      "label": "Tenant payment",
+      "amount": 784.59
+     },
+     {
+      "@type": "money",
+      "date": "2026-08-03",
+      "label": "Tenant payment",
+      "amount": 784.59
+     },
+     {
+      "@type": "money",
+      "date": "2026-09-02",
+      "label": "Tenant payment",
+      "amount": 784.59
+     },
+     {
+      "@type": "money",
+      "date": "2026-10-02",
+      "label": "Tenant payment",
+      "amount": 784.59
+     },
+     {
+      "@type": "money",
+      "date": "2026-11-05",
+      "label": "UC housing element",
+      "amount": 611.98
+     }
+    ]
+   }
+  },
+  "messages/message/NC-8081-1.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8081",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-8081-2.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8081",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-8081-3.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8081",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-8081-4.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8081",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-8081-5.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8081",
+    "changeEffectiveDate": "2026-09-30",
+    "newWeeklyIncome": null,
+    "tenancyEndDate": "2026-11-23"
+   }
+  },
+  "messages/message/NC-8081-6.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8081",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/api/NC-8081.json": {
+   "profileId": "messages/messages-data",
+   "data": {
+    "clientId": "NC-8081",
+    "changeEffectiveDate": "2026-09-30",
+    "newWeeklyIncome": null,
+    "tenancyEndDate": "2026-11-23",
+    "messages": [
+     {
+      "@type": "message",
+      "date": "2026-11-23",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-11-15",
+      "label": "Call back request",
+      "cat": "Phone call"
+     },
+     {
+      "@type": "message",
+      "date": "2026-11-08",
+      "label": "Help with bills",
+      "cat": "Email"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-22",
+      "label": "Question about my claim",
+      "cat": "Email"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-06",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-09-24",
+      "label": "Web chat transcript",
+      "cat": "Web chat"
+     }
+    ]
+   }
+  },
+  "cm/case-1063.html": {
+   "profileId": "cm/case",
+   "data": {
+    "clientId": "NC-7165",
+    "title": "Miss",
+    "firstName": "Agnieszka",
+    "lastName": "Begum",
+    "dob": "1975-04-08",
+    "nino": "QQ 01 35 20 A",
+    "phone": "07700 900341",
+    "email": "agnieszka.allen51@example.com",
+    "address": "104 Lantern Walk, Westcliff, NS8 2NT",
+    "postcode": "NS8 2NT",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyRef": "HH-38057"
+   }
+  },
+  "cm/notes-1063.html": {
+   "profileId": "cm/notes",
+   "data": {
+    "notes": [
+     {
+      "@type": "note",
+      "date": "2026-09-22",
+      "by": "B. Officer",
+      "text": "Harbour Homes confirmed arrears of £4,861.27. No court action yet."
+     },
+     {
+      "@type": "note",
+      "date": "2026-09-17",
+      "by": "B. Officer",
+      "text": "Triage: Agnieszka lives with 1 other person. Rent is paid to Harbour Homes, tenancy HH-38057."
+     },
+     {
+      "@type": "note",
+      "date": "2026-09-15",
+      "by": "Contact centre",
+      "text": "Case opened from a phone call. Homelessness prevention."
+     }
+    ]
+   }
+  },
+  "biv/income-NC-7165.html": {
+   "profileId": "biv/income",
+   "data": {
+    "firstName": "Agnieszka",
+    "lastName": "Begam",
+    "nino": "QQ013520A",
+    "dob": "1975-04-08",
+    "clientId": "NC-7165",
+    "employmentStatus": "Self-employed",
+    "currentEmployer": "Self-employed (cleaning)",
+    "weeklyIncome": 134.97,
+    "ucClaim": "No",
+    "periods": [
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Northshire Council",
+      "start": "2019-05-08",
+      "end": "2020-08-05"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Riverside Care Homes",
+      "start": "2020-09-19",
+      "end": "2022-07-27"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Northshire Council",
+      "start": "2022-09-16",
+      "end": "2023-09-13"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Quayside Fish Market",
+      "start": "2023-12-17",
+      "end": "2025-04-02"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Self-employed (cleaning)",
+      "start": "2025-04-09",
+      "end": null
+     }
+    ]
+   }
+  },
+  "harbour/tenancy-HH-38057.html": {
+   "profileId": "harbour-homes/tenancy",
+   "data": {
+    "tenancyRef": "HH-38057",
+    "firstName": "Agnieszka",
+    "lastName": "Begum",
+    "phone": "07700 900341",
+    "address": "104 Lantern Walk, Westcliff, NS8 2NT",
+    "postcode": "NS8 2NT",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyStart": "2020-02-14",
+    "tenancyType": "Assured tenancy",
+    "monthlyRent": 842.51,
+    "arrears": 4861.27,
+    "payments": [
+     {
+      "@type": "money",
+      "date": "2026-01-01",
+      "label": "UC housing element",
+      "amount": 25.28
+     },
+     {
+      "@type": "money",
+      "date": "2026-02-03",
+      "label": "Tenant payment",
+      "amount": 842.51
+     },
+     {
+      "@type": "money",
+      "date": "2026-03-04",
+      "label": "UC housing element",
+      "amount": 33.7
+     },
+     {
+      "@type": "money",
+      "date": "2026-04-02",
+      "label": "Tenant payment",
+      "amount": 842.51
+     },
+     {
+      "@type": "money",
+      "date": "2026-05-05",
+      "label": "Tenant payment",
+      "amount": 84.25
+     },
+     {
+      "@type": "money",
+      "date": "2026-06-06",
+      "label": "Tenant payment",
+      "amount": 235.9
+     },
+     {
+      "@type": "money",
+      "date": "2026-07-01",
+      "label": "Tenant payment",
+      "amount": 25.28
+     },
+     {
+      "@type": "money",
+      "date": "2026-08-01",
+      "label": "Tenant payment",
+      "amount": 842.51
+     },
+     {
+      "@type": "money",
+      "date": "2026-09-05",
+      "label": "Tenant payment",
+      "amount": 842.51
+     },
+     {
+      "@type": "money",
+      "date": "2026-10-02",
+      "label": "Tenant payment",
+      "amount": 25.28
+     },
+     {
+      "@type": "money",
+      "date": "2026-11-03",
+      "label": "Tenant payment",
+      "amount": 606.61
+     }
+    ]
+   }
+  },
+  "messages/message/NC-7165-1.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-7165",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-7165-2.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-7165",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-7165-3.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-7165",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-7165-4.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-7165",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-7165-5.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-7165",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-7165-6.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-7165",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/api/NC-7165.json": {
+   "profileId": "messages/messages-data",
+   "data": {
+    "clientId": "NC-7165",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null,
+    "messages": [
+     {
+      "@type": "message",
+      "date": "2026-11-19",
+      "label": "Re: appointment",
+      "cat": "Email"
+     },
+     {
+      "@type": "message",
+      "date": "2026-11-03",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-15",
+      "label": "Letter from Harbour Homes (scanned)",
+      "cat": "Letter"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-11",
+      "label": "Payslips attached",
+      "cat": "Email"
+     },
+     {
+      "@type": "message",
+      "date": "2026-09-06",
+      "label": "Web chat transcript",
+      "cat": "Web chat"
+     },
+     {
+      "@type": "message",
+      "date": "2026-08-14",
+      "label": "Call logged by contact centre",
+      "cat": "Phone call"
+     }
+    ]
+   }
+  },
+  "cm/case-1077.html": {
+   "profileId": "cm/case",
+   "data": {
+    "clientId": "NC-8652",
+    "title": "Ms",
+    "firstName": "Zainab",
+    "lastName": "Matthews",
+    "dob": "1975-02-21",
+    "nino": "QQ 71 63 36 A",
+    "phone": "07700 900264",
+    "email": "zainab.matthews37@example.org",
+    "address": "Flat 15, 17 Saltings Way, Northtown, NS1 1QL",
+    "postcode": "NS1 1QL",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyRef": "HH-44873"
+   }
+  },
+  "cm/notes-1077.html": {
+   "profileId": "cm/notes",
+   "data": {
+    "notes": [
+     {
+      "@type": "note",
+      "date": "2026-09-26",
+      "by": "B. Officer",
+      "text": "Harbour Homes confirmed arrears of £2,930.23. No court action yet."
+     },
+     {
+      "@type": "note",
+      "date": "2026-09-23",
+      "by": "B. Officer",
+      "text": "Triage: Zainab lives with 4 other people. Rent is paid to Harbour Homes, tenancy HH-44873."
+     },
+     {
+      "@type": "note",
+      "date": "2026-09-20",
+      "by": "Contact centre",
+      "text": "Case opened from a referral from Harbour Homes. Homelessness prevention."
+     }
+    ]
+   }
+  },
+  "biv/income-NC-8652.html": {
+   "profileId": "biv/income",
+   "data": {
+    "firstName": "Zainab",
+    "lastName": "Matthews",
+    "nino": "QQ716336A",
+    "dob": "1975-02-21",
+    "clientId": "NC-8652",
+    "employmentStatus": "Not working",
+    "currentEmployer": "None",
+    "weeklyIncome": 0,
+    "ucClaim": "Yes, since 8 Jul 2023",
+    "periods": [
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Westcliff Motors",
+      "start": "2021-10-23",
+      "end": "2023-04-24"
+     },
+     {
+      "@type": "period",
+      "cat": "Benefit",
+      "label": "Universal Credit",
+      "start": "2023-07-08",
+      "end": null
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Westcliff Motors",
+      "start": "2023-08-16",
+      "end": "2025-10-07"
+     }
+    ]
+   }
+  },
+  "harbour/tenancy-HH-44873.html": {
+   "profileId": "harbour-homes/tenancy",
+   "data": {
+    "tenancyRef": "HH-44873",
+    "firstName": "Zainab",
+    "lastName": "Matthews",
+    "phone": "07700 900264",
+    "address": "Flat 15, 17 Saltings Way, Northtown, NS1 1QL",
+    "postcode": "NS1 1QL",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyStart": "2025-03-08",
+    "tenancyType": "Assured shorthold tenancy",
+    "monthlyRent": 743.71,
+    "arrears": 2930.23,
+    "payments": [
+     {
+      "@type": "money",
+      "date": "2026-01-05",
+      "label": "UC housing element",
+      "amount": 394.17
+     },
+     {
+      "@type": "money",
+      "date": "2026-02-02",
+      "label": "Tenant payment",
+      "amount": 743.71
+     },
+     {
+      "@type": "money",
+      "date": "2026-03-05",
+      "label": "UC housing element",
+      "amount": 327.23
+     },
+     {
+      "@type": "money",
+      "date": "2026-04-01",
+      "label": "UC housing element",
+      "amount": 743.71
+     },
+     {
+      "@type": "money",
+      "date": "2026-05-02",
+      "label": "UC housing element",
+      "amount": 743.71
+     },
+     {
+      "@type": "money",
+      "date": "2026-06-05",
+      "label": "UC housing element",
+      "amount": 141.3
+     },
+     {
+      "@type": "money",
+      "date": "2026-07-02",
+      "label": "Tenant payment",
+      "amount": 743.71
+     },
+     {
+      "@type": "money",
+      "date": "2026-08-05",
+      "label": "Tenant payment",
+      "amount": 327.23
+     },
+     {
+      "@type": "money",
+      "date": "2026-09-03",
+      "label": "Tenant payment",
+      "amount": 193.36
+     },
+     {
+      "@type": "money",
+      "date": "2026-10-02",
+      "label": "Tenant payment",
+      "amount": 743.71
+     },
+     {
+      "@type": "money",
+      "date": "2026-11-01",
+      "label": "UC housing element",
+      "amount": 148.74
+     }
+    ]
+   }
+  },
+  "messages/message/NC-8652-1.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8652",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-8652-2.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8652",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-8652-3.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8652",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-8652-4.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8652",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-8652-5.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8652",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-8652-6.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8652",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/api/NC-8652.json": {
+   "profileId": "messages/messages-data",
+   "data": {
+    "clientId": "NC-8652",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null,
+    "messages": [
+     {
+      "@type": "message",
+      "date": "2026-11-22",
+      "label": "Payslips attached",
+      "cat": "Email"
+     },
+     {
+      "@type": "message",
+      "date": "2026-11-18",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-11-14",
+      "label": "Letter from Harbour Homes (scanned)",
+      "cat": "Letter"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-07",
+      "label": "Missed call",
+      "cat": "Phone call"
+     },
+     {
+      "@type": "message",
+      "date": "2026-09-13",
+      "label": "Call logged by contact centre",
+      "cat": "Phone call"
+     },
+     {
+      "@type": "message",
+      "date": "2026-09-10",
+      "label": "Web chat transcript",
+      "cat": "Web chat"
+     }
+    ]
+   }
+  },
+  "cm/case-1088.html": {
+   "profileId": "cm/case",
+   "data": {
+    "clientId": "NC-3415",
+    "title": "Ms",
+    "firstName": "Michelle",
+    "lastName": "Chen",
+    "dob": "1984-12-08",
+    "nino": "QQ 80 44 06 B",
+    "phone": "07700 900517",
+    "email": "michelle.chen81@example.org",
+    "address": "59 Mill Lane, Northtown, NS2 4GF",
+    "postcode": "NS2 4GF",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyRef": "HH-39261"
+   }
+  },
+  "cm/notes-1088.html": {
+   "profileId": "cm/notes",
+   "data": {
+    "notes": [
+     {
+      "@type": "note",
+      "date": "2026-10-07",
+      "by": "B. Officer",
+      "text": "The income record linked to this client looked wrong at triage. Check the date of birth before using it."
+     },
+     {
+      "@type": "note",
+      "date": "2026-10-02",
+      "by": "B. Officer",
+      "text": "Harbour Homes confirmed arrears of £1,782.57. No court action yet."
+     },
+     {
+      "@type": "note",
+      "date": "2026-09-30",
+      "by": "B. Officer",
+      "text": "Triage: Michelle lives with no one else. Rent is paid to Harbour Homes, tenancy HH-39261."
+     },
+     {
+      "@type": "note",
+      "date": "2026-09-27",
+      "by": "Contact centre",
+      "text": "Case opened from a phone call. Change of circumstances."
+     }
+    ]
+   }
+  },
+  "biv/income-NC-3415.html": {
+   "profileId": "biv/income",
+   "data": {
+    "firstName": "Mohammed",
+    "lastName": "Chen",
+    "nino": "QQ792239B",
+    "dob": "1967-02-06",
+    "clientId": "NC-3415",
+    "employmentStatus": "Not working",
+    "currentEmployer": "None",
+    "weeklyIncome": 0,
+    "ucClaim": "Yes, since 16 Dec 2024",
+    "periods": [
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Southmere Leisure Trust",
+      "start": "2019-12-06",
+      "end": "2020-07-27"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Copperfield Engineering",
+      "start": "2020-10-28",
+      "end": "2022-01-26"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Northshire Council",
+      "start": "2022-03-05",
+      "end": "2022-10-12"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Copperfield Engineering",
+      "start": "2022-11-18",
+      "end": "2024-07-19"
+     },
+     {
+      "@type": "period",
+      "cat": "Benefit",
+      "label": "Universal Credit",
+      "start": "2024-12-16",
+      "end": null
+     }
+    ]
+   }
+  },
+  "harbour/tenancy-HH-39261.html": {
+   "profileId": "harbour-homes/tenancy",
+   "data": {
+    "tenancyRef": "HH-39261",
+    "firstName": "Michelle",
+    "lastName": "Chen",
+    "phone": "07700 900517",
+    "address": "59 Mill Lane, Northtown, NS2 4GF",
+    "postcode": "NS2 4GF",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyStart": "2024-06-18",
+    "tenancyType": "Assured shorthold tenancy",
+    "monthlyRent": 555.32,
+    "arrears": 1782.57,
+    "payments": [
+     {
+      "@type": "money",
+      "date": "2026-01-05",
+      "label": "Tenant payment",
+      "amount": 555.32
+     },
+     {
+      "@type": "money",
+      "date": "2026-02-03",
+      "label": "Tenant payment",
+      "amount": 49.98
+     },
+     {
+      "@type": "money",
+      "date": "2026-03-06",
+      "label": "UC housing element",
+      "amount": 338.75
+     },
+     {
+      "@type": "money",
+      "date": "2026-04-05",
+      "label": "Tenant payment",
+      "amount": 244.34
+     },
+     {
+      "@type": "money",
+      "date": "2026-05-03",
+      "label": "UC housing element",
+      "amount": 555.32
+     },
+     {
+      "@type": "money",
+      "date": "2026-06-02",
+      "label": "Tenant payment",
+      "amount": 555.32
+     },
+     {
+      "@type": "money",
+      "date": "2026-07-04",
+      "label": "UC housing element",
+      "amount": 83.3
+     },
+     {
+      "@type": "money",
+      "date": "2026-08-02",
+      "label": "UC housing element",
+      "amount": 383.17
+     },
+     {
+      "@type": "money",
+      "date": "2026-09-05",
+      "label": "UC housing element",
+      "amount": 555.32
+     },
+     {
+      "@type": "money",
+      "date": "2026-10-02",
+      "label": "Tenant payment",
+      "amount": 555.32
+     },
+     {
+      "@type": "money",
+      "date": "2026-11-05",
+      "label": "UC housing element",
+      "amount": 449.81
+     }
+    ]
+   }
+  },
+  "messages/message/NC-3415-1.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3415",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-3415-2.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3415",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-3415-3.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3415",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-3415-4.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3415",
+    "changeEffectiveDate": "2026-09-04",
+    "newWeeklyIncome": 284.77,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-3415-5.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3415",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-3415-6.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-3415",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/api/NC-3415.json": {
+   "profileId": "messages/messages-data",
+   "data": {
+    "clientId": "NC-3415",
+    "changeEffectiveDate": "2026-09-04",
+    "newWeeklyIncome": 284.77,
+    "tenancyEndDate": null,
+    "messages": [
+     {
+      "@type": "message",
+      "date": "2026-11-22",
+      "label": "Re: your rent account",
+      "cat": "Email"
+     },
+     {
+      "@type": "message",
+      "date": "2026-11-11",
+      "label": "Web chat transcript",
+      "cat": "Web chat"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-08",
+      "label": "Call back request",
+      "cat": "Phone call"
+     },
+     {
+      "@type": "message",
+      "date": "2026-09-18",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-08-21",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-07-13",
+      "label": "Web chat transcript",
+      "cat": "Web chat"
+     }
+    ]
+   }
+  },
+  "cm/case-1100.html": {
+   "profileId": "cm/case",
+   "data": {
+    "clientId": "NC-8503",
+    "title": "Ms",
+    "firstName": "Chiamaka",
+    "lastName": "Harrison",
+    "dob": "1959-07-08",
+    "nino": "QQ 73 44 43 C",
+    "phone": "07700 900728",
+    "email": "chiamaka.harrison52@example.org",
+    "address": "Flat 22, 121 Church View, Westcliff, NS8 3LD",
+    "postcode": "NS8 3LD",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyRef": "HH-49815"
+   }
+  },
+  "cm/notes-1100.html": {
+   "profileId": "cm/notes",
+   "data": {
+    "notes": [
+     {
+      "@type": "note",
+      "date": "2026-10-09",
+      "by": "D. Adviser",
+      "text": "Harbour Homes confirmed arrears of £3,049.29. No court action yet."
+     },
+     {
+      "@type": "note",
+      "date": "2026-10-06",
+      "by": "D. Adviser",
+      "text": "Triage: Chiamaka lives with 3 other people. Rent is paid to Harbour Homes, tenancy HH-49815."
+     },
+     {
+      "@type": "note",
+      "date": "2026-10-04",
+      "by": "Contact centre",
+      "text": "Case opened from a phone call. Change of circumstances."
+     }
+    ]
+   }
+  },
+  "biv/income-NC-8503.html": {
+   "profileId": "biv/income",
+   "data": {
+    "firstName": "Chiamaka",
+    "lastName": "Harrison",
+    "nino": "QQ734443C",
+    "dob": "1959-07-08",
+    "clientId": "NC-8503",
+    "employmentStatus": "Employed (part-time)",
+    "currentEmployer": "Brightwater Retail Ltd",
+    "weeklyIncome": 216.59,
+    "ucClaim": "Yes, since 13 May 2023",
+    "periods": [
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Westcliff Motors",
+      "start": "2018-02-09",
+      "end": "2019-12-03"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Brightwater Retail Ltd",
+      "start": "2019-12-08",
+      "end": "2021-09-27"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Lantern Cafe Group",
+      "start": "2022-01-19",
+      "end": "2022-12-30"
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Riverside Care Homes",
+      "start": "2023-03-02",
+      "end": "2025-04-30"
+     },
+     {
+      "@type": "period",
+      "cat": "Benefit",
+      "label": "Universal Credit",
+      "start": "2023-05-13",
+      "end": null
+     },
+     {
+      "@type": "period",
+      "cat": "Employment",
+      "label": "Brightwater Retail Ltd",
+      "start": "2025-08-21",
+      "end": null
+     }
+    ]
+   }
+  },
+  "harbour/tenancy-HH-49815.html": {
+   "profileId": "harbour-homes/tenancy",
+   "data": {
+    "tenancyRef": "HH-49815",
+    "firstName": "Chiamaka",
+    "lastName": "Harrison",
+    "phone": "07700 900728",
+    "address": "Flat 22, 121 Church View, Westcliff, NS8 3LD",
+    "postcode": "NS8 3LD",
+    "landlord": "Harbour Homes Ltd",
+    "tenancyStart": "2017-04-24",
+    "tenancyType": "Assured tenancy",
+    "monthlyRent": 714.12,
+    "arrears": 3049.29,
+    "payments": [
+     {
+      "@type": "money",
+      "date": "2026-01-02",
+      "label": "Tenant payment",
+      "amount": 99.98
+     },
+     {
+      "@type": "money",
+      "date": "2026-02-05",
+      "label": "Tenant payment",
+      "amount": 171.39
+     },
+     {
+      "@type": "money",
+      "date": "2026-03-02",
+      "label": "UC housing element",
+      "amount": 714.12
+     },
+     {
+      "@type": "money",
+      "date": "2026-04-04",
+      "label": "UC housing element",
+      "amount": 114.26
+     },
+     {
+      "@type": "money",
+      "date": "2026-05-05",
+      "label": "Tenant payment",
+      "amount": 714.12
+     },
+     {
+      "@type": "money",
+      "date": "2026-06-03",
+      "label": "UC housing element",
+      "amount": 442.75
+     },
+     {
+      "@type": "money",
+      "date": "2026-07-03",
+      "label": "UC housing element",
+      "amount": 714.12
+     },
+     {
+      "@type": "money",
+      "date": "2026-08-03",
+      "label": "Tenant payment",
+      "amount": 328.5
+     },
+     {
+      "@type": "money",
+      "date": "2026-09-02",
+      "label": "Tenant payment",
+      "amount": 78.55
+     },
+     {
+      "@type": "money",
+      "date": "2026-10-02",
+      "label": "Tenant payment",
+      "amount": 714.12
+     },
+     {
+      "@type": "money",
+      "date": "2026-11-05",
+      "label": "UC housing element",
+      "amount": 714.12
+     }
+    ]
+   }
+  },
+  "messages/message/NC-8503-1.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8503",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-8503-2.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8503",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-8503-3.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8503",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-8503-4.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8503",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-8503-5.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8503",
+    "changeEffectiveDate": "2026-08-29",
+    "newWeeklyIncome": 422.83,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/message/NC-8503-6.html": {
+   "profileId": "messages/message",
+   "data": {
+    "clientId": "NC-8503",
+    "changeEffectiveDate": null,
+    "newWeeklyIncome": null,
+    "tenancyEndDate": null
+   }
+  },
+  "messages/api/NC-8503.json": {
+   "profileId": "messages/messages-data",
+   "data": {
+    "clientId": "NC-8503",
+    "changeEffectiveDate": "2026-08-29",
+    "newWeeklyIncome": 422.83,
+    "tenancyEndDate": null,
+    "messages": [
+     {
+      "@type": "message",
+      "date": "2026-11-23",
+      "label": "Question about my claim",
+      "cat": "Email"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-28",
+      "label": "Payslips attached",
+      "cat": "Email"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-15",
+      "label": "Call logged by contact centre",
+      "cat": "Phone call"
+     },
+     {
+      "@type": "message",
+      "date": "2026-10-12",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-09-05",
+      "label": "Online form submission",
+      "cat": "Online form"
+     },
+     {
+      "@type": "message",
+      "date": "2026-08-01",
+      "label": "Help with bills",
+      "cat": "Email"
+     }
+    ]
+   }
+  }
+ }
+}

@@ -2,8 +2,10 @@ import { config, test, assert, equal, until, state, query, click, button, go, pa
 import { saveSettings, getCase } from '../../lib/core.js';
 import { syncLibrary } from '../../lib/library-sync.js';
 
+const DHP = 'start-flow-f-lib-discretionary-housing-payment';
+
 export async function workflow() {
-  await test('Connect a library through real HTTP and render its forms', async () => {
+  await test('Connect a library through real HTTP and render its flows', async () => {
     // The first time it opens, the sidebar starts on Settings with the library form.
     await until(() => query('lib-url'), 'first run opens Settings with the library form');
     equal(document.querySelector('[role=tab][aria-selected=true]')?.textContent, 'Settings', 'First-run tab');
@@ -13,22 +15,23 @@ export async function workflow() {
     const synced = await syncLibrary();
     assert(synced.ok, synced.error);
     [...document.querySelectorAll('[role=tab]')].find((tab) => tab.textContent === 'Case').click();
-    await until(() => query('sel-dhp-a'), 'library forms appear');
+    await until(() => query(DHP), 'library flows appear');
     assert((await state()).library.current === synced.commit, 'Verified library was persisted');
   });
   await test('Keyboard navigation follows the selected sidebar tab', async () => {
     const tabs = [...document.querySelectorAll('[role=tab]')];
-    equal(tabs.map((tab) => tab.textContent), ['Case', 'Tools', 'Privacy', 'Flows', 'Settings'], 'Sidebar tabs');
+    equal(tabs.map((tab) => tab.textContent), ['Case', 'Tools', 'Privacy', 'Settings'], 'Sidebar tabs in Casework');
     tabs[0].focus();
     tabs[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
     await until(() => document.activeElement?.textContent === 'Tools', 'keyboard tab focus');
     document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
-    await until(() => query('sel-dhp-a'), 'return to Case');
+    await until(() => query(DHP), 'return to Case');
   });
   await test('Start a case, clip real tabs, resolve conflicts and undo the wrong person', async () => {
     await go('client-1042.html');
-    await click('sel-dhp-a');
-    await click('start-sel');
+    // Every case is a case of a flow. The library's flow is untested on this computer, so it asks first.
+    await click(DHP);
+    button('Start case', await until(() => document.querySelector('[role=dialog]'), 'start confirmation')).click();
     await until(() => button('Clip this page'), 'case ready to clip');
     for (const page of ['client-1042.html', 'rent-account-1042.html', 'employment-1042.html']) {
       await go(page);
@@ -53,6 +56,12 @@ export async function workflow() {
     button('Remove clip', dialog).click();
     await until(async () => (await getCase())?.clips.length === 3, 'wrong-person clip removed');
     assert(!(await getCase()).log.some((event) => event.url?.includes('2077')), 'Wrong-person page purged from activity log');
+    // The pages are clipped: the open step's one main button goes on to the form, in the real tab.
+    const next = await until(() => query('step-next'), 'Next, after the steps that clip');
+    equal(document.querySelectorAll('[data-key="step-body"] .primary').length, 1, 'One main button in the open step');
+    assert(/^Next: Discretionary housing payment/.test(next.textContent.trim()), `Next goes to the form: ${next.textContent}`);
+    next.click();
+    await until(async () => (await browser.tabs.query({})).some((t) => t.url === `${config.base}/demo/dhp.html` && t.status === 'complete'), 'Next opened the form');
   });
   await test('Fill preview leaves the target untouched; approval fills without submission', async () => {
     const tab = await go('dhp.html');

@@ -6,8 +6,16 @@ import { saveSettings } from '../lib/core.js';
 import { complete } from '../lib/ai/client.js';
 import { approve, prepare } from '../lib/ai/boundary.js';
 import { effectiveSettings } from '../lib/privacy-detect.js';
+import { allowedFor } from '../lib/policy.js';
+import { allowedNote, refuseOutside } from './org-policy.js';
 
 export function aiSettingsCard({ data, act }) {
+  // Turned off by the organisation (policy gateway.enabled false): nothing to set up.
+  if (data.policy?.values?.gateway?.enabled === false) {
+    return h('div', { class: 'card', 'data-key': 'ai-off-by-org' },
+      h('div', { class: 'row between' }, h('h2', {}, '✦ Remote AI'), h('span', { class: 'pill' }, '🔒 Off')),
+      h('p', {}, 'Your organisation has turned off the remote AI. Nothing is sent to one. Everything else works on this computer.'));
+  }
   const settings = data.settings || {};
   const ai = { ...(settings.ai || {}) };
   const policy = data.policy?.values?.gateway || {};
@@ -22,6 +30,8 @@ export function aiSettingsCard({ data, act }) {
     try {
       if (!form.consent) throw new Error('Tick the box to confirm you understand what is sent to the remote AI, and that you have checked it is allowed');
       next = validateAI({ ...ai, baseUrl: form.baseUrl, model: form.model, auth: 'bearer' });
+      refuseOutside(data.policy, 'gateway.baseUrl', `${next.baseUrl}/chat/completions`);
+      refuseOutside(data.policy, 'gateway.model', next.model);
     } catch (e) { status.textContent = describeError(e); return; }
     // The permission request must happen during the click itself.
     const permission = browser.permissions.request({ origins: [endpointPattern(next.baseUrl)] });
@@ -59,9 +69,11 @@ export function aiSettingsCard({ data, act }) {
   const on = aiAcknowledged(settings) && settings.ai?.baseUrl;
   return h('div', { class: 'card' },
     h('div', { class: 'row between' }, h('h2', {}, '✦ Remote AI'), locked.baseUrl ? h('span', { class: 'pill' }, '🔒 Set by your organisation') : on ? h('span', { class: 'pill ok' }, 'On') : h('span', { class: 'pill' }, 'Off')),
-    h('p', { class: 'small muted' }, 'An OpenAI-compatible chat completions endpoint, such as your organisation’s AI gateway. It powers the ✦ buttons, including asking for a page profile instead of using the on-device model. Nothing is sent until you press an ✦ button and check the preview, with personal data replaced by placeholders. Standard tools never leave this browser.'),
+    h('p', { class: 'small muted' }, 'An OpenAI-compatible chat completions endpoint, such as your organisation’s AI gateway. It powers the ✦ buttons, including asking for a page’s template while building a flow. Nothing is sent until you press an ✦ button and check the preview, with personal data replaced by placeholders. Standard tools never leave this browser.'),
     field('Endpoint address (including /v1)', 'baseUrl', { type: 'url', disabled: locked.baseUrl, placeholder: 'https://gateway.example.gov.uk/v1' }),
+    locked.baseUrl ? null : allowedNote(allowedFor(data.policy, 'gateway.baseUrl'), { 'data-key': 'ai-allowed-url' }),
     field('Model name', 'model', { type: 'text', disabled: locked.model }),
+    locked.model ? null : allowedNote(allowedFor(data.policy, 'gateway.model'), { 'data-key': 'ai-allowed-model' }),
     h('label', { class: 'field' }, 'API key', h('span', { class: 'hint' }, 'This extension’s own key, such as a virtual key from IT. Never a personal or provider account key.'),
       h('input', { type: 'password', autocomplete: 'new-password', 'data-key': 'ai-key', value: form.key, oninput: (e) => { form.key = e.target.value; } })),
     h('label', { class: 'check small' }, h('input', { type: 'checkbox', 'data-key': 'ai-remember', checked: form.remember, onchange: (e) => { form.remember = e.target.checked; } }),

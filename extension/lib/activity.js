@@ -6,16 +6,18 @@ export const SCHEMA = 'powerloader-activity/1';
 
 // Stable activity ids. Display labels are separate, so renaming one never breaks analysis.
 export const ACTIVITIES = {
-  start_case: 'Start case', finish_case: 'Finish case', discard_case: 'Discard case',
+  start_case: 'Start case', finish_case: 'Finish case', discard_case: 'Discard case', close_case: 'Deleted when Firefox closed', expire_case: 'Deleted after being left without use', keep_case: 'Keep the case',
   visit_page: 'Visit page', open_document: 'Open document',
-  clip_page: 'Clip page', auto_clip_page: 'Auto-clip page', read_document: 'Read document', read_screen_region: 'Read screen region', read_pasted_image: 'Read pasted image',
+  clip_page: 'Clip page', auto_clip_page: 'Auto-clip page', fetch_page: 'Fetch page', read_document: 'Read document', read_screen_region: 'Read screen region', read_pasted_image: 'Read pasted image',
   resolve_conflict: 'Resolve conflict', choose_value: 'Choose value', edit_value: 'Edit value', clear_my_value: 'Clear my value',
   exclude_source_value: 'Exclude source value', restore_source_value: 'Restore source value', remove_source: 'Remove source',
   use_calculator: 'Use calculator', save_timeline: 'Save timeline', open_full_case_view: 'Open full case view',
   send_to_ai: 'Send to AI', ai_extract_page: 'AI extract page', ai_read_document: 'AI read document',
   ai_calculator: 'AI calculator question', ai_timeline_find: 'AI find periods', ai_timeline_accept: 'Accept AI period', ai_timeline_explain: 'AI explain timeline',
   fill_form: 'Fill form', submit_form: 'Submit form',
-  complete_step: 'Complete step', skip_step: 'Skip step', follow_step_link: 'Follow step link',
+  complete_step: 'Complete step', reopen_step: 'Do a step that isn’t needed', set_reference: 'Set the case reference', skip_step: 'Skip step', follow_step_link: 'Follow step link', open_email: 'Open email',
+  update_flow: 'Use the changed flow',
+  blocked_action: 'Blocked by site rules',
 };
 
 export const NOT_KEPT = '(link not kept)';
@@ -35,6 +37,15 @@ export function logEvent(c, activity, { page = {}, detail = '', clip, doc, at = 
   };
   c.log.push(e);
   return e;
+}
+
+/**
+ * Something the caseworker started that the site rules blocked: the action and which layer's rule, never
+ * the page's address or the rule's pattern (a caseworker could type a client's address as a pattern).
+ */
+export function logBlocked(c, { action, layer }) {
+  const by = { policy: 'policy rule', library: 'library rule', mine: 'your rule', hosts: 'approved systems' }[layer] || 'site rules';
+  return logEvent(c, 'blocked_action', { page: { type: 'blocked' }, detail: `${action} · ${by}` });
 }
 
 // The kept copy of a case's log when it ends: real links dropped, notes kept on this computer.

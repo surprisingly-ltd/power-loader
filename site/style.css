@@ -2,7 +2,7 @@
 :root {
   --bg: #10171c; --panel: #18222a; --panel-2: #202a30; --line: #39454b; --line-2: #2c3a42;
   --fg: #e9e8de; --soft: #d6d8cf; --muted: #a1adb0; --amber: #ecb44e; --amber-2: #f5c869; --ink: #17242d;
-  --green: #4fcf63; --red: #e8483f; --blue: #3f8ff0;
+  --green: #4fcf63; --red: #e8483f; --red-2: #f47a72; --blue: #3f8ff0;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -23,7 +23,7 @@ a:hover { color: var(--amber-2); }
 .top .bar { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; min-height: 3.6rem; }
 .brand { display: flex; align-items: center; gap: 0.6rem; color: var(--fg); text-decoration: none; }
 .brand b { font-size: 1.2rem; letter-spacing: -0.02em; }
-.mark { display: inline-block; width: 30px; height: 22px; background: repeating-linear-gradient(120deg, var(--amber) 0 5px, transparent 5px 9px); }
+.mark { display: inline-block; width: 32px; height: 32px; background: url(/favicon.svg) center / contain no-repeat; }
 .tabs { display: flex; gap: 0.25rem; list-style: none; margin: 0; padding: 0; flex-wrap: wrap; }
 .tabs a {
   display: flex; align-items: center; gap: 0.45rem; padding: 0.95rem 0.8rem 0.8rem; color: var(--muted);
@@ -155,3 +155,88 @@ main.wide { max-width: 90rem; }
 .game-frame iframe { display: block; width: 100%; height: clamp(640px, calc(100vh - 8rem), 980px); border: 0; }
 .game-frame:fullscreen { border: 0; border-radius: 0; width: 100vw; height: 100vh; }
 .game-frame:fullscreen iframe { height: 100vh; }
+
+/* How it works: sequence diagrams (tools/sequence-svg.mjs). Amber is kept for the trust boundary. */
+.diagram { margin: 1.5rem 0 1rem; }
+.diagram-scroll, .diagram-box { overflow-x: auto; background: var(--panel); border: 1px solid var(--line-2); border-radius: 6px; padding: 0.5rem; }
+.diagram svg { display: block; max-width: none; height: auto; }
+.diagram figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 0.5rem; max-width: 46rem; }
+.diagram figcaption b { color: var(--soft); }
+.seq { font-family: inherit; color: var(--soft); }
+.seq text { fill: var(--fg); }
+.seq .actor rect { fill: var(--panel-2); stroke: var(--line); }
+.seq .actor.optional rect { fill: none; stroke: var(--muted); }
+.seq .name { font-weight: 700; }
+.seq .lifeline { stroke: var(--line); }
+.seq .lifeline.optional { stroke: var(--muted); }
+.seq .line { stroke: var(--soft); }
+.seq .head { fill: var(--soft); }
+.seq .head.open { fill: none; stroke: var(--soft); }
+.seq .label { paint-order: stroke; stroke: var(--panel); stroke-width: 4px; stroke-linejoin: round; }
+.seq .num { fill: var(--fg); }
+.seq .kind { fill: var(--soft); letter-spacing: 0.04em; }
+.seq .notebox { fill: var(--panel); stroke: var(--muted); }
+.seq .fold { stroke: var(--muted); }
+.seq .frame { stroke: var(--muted); }
+.seq .tab { fill: var(--panel-2); stroke: var(--muted); }
+.seq .phase rect { fill: var(--fg); }
+.seq .phase-name { fill: var(--muted); letter-spacing: 0.06em; }
+.seq .boundary line { stroke: var(--amber); }
+.seq .zone, .seq .cross { fill: var(--amber); }
+.seq-steps li { margin: 0.6rem 0; }
+
+/* The other diagrams (tools/diagram-svg.mjs): each drawn twice, the narrow layout on small screens.
+   Amber marks the trust boundary, red a refusal. */
+.diagram .dg { display: block; max-width: 100%; height: auto; font-family: inherit; color: var(--soft); }
+.dg-pair .dg-narrow { display: none; }
+@media (max-width: 62rem) {
+  .dg-pair .dg-wide { display: none; }
+  .dg-pair .dg-narrow { display: block; width: 100%; max-width: 30rem; }
+}
+.dg text { fill: var(--soft); }
+.dg .title, .dg .what { fill: var(--fg); }
+.dg .sub, .dg .who { fill: var(--muted); }
+.dg .node rect { fill: var(--panel-2); stroke: var(--line); }
+.dg .node.optional rect, .dg .node.ghost rect, .dg .node.firefox rect { fill: none; stroke: var(--muted); }
+.dg .node.allow rect { stroke: var(--fg); stroke-width: 1.6; }
+.dg .page path { stroke: var(--muted); }
+.dg .edge { stroke: var(--soft); }
+.dg .head { fill: var(--soft); }
+.dg .boundary rect, .dg .always rect { stroke: var(--amber); }
+.dg .zone, .dg .cross { fill: var(--amber); }
+.dg .edge.deny, .dg .refused rect { stroke: var(--red); }
+.dg .head.deny { fill: var(--red); }
+.dg .refused .title, .dg .deny-label { fill: var(--red-2); }
+.dg .rule { stroke: var(--line-2); }
+.dg .track line { stroke: var(--muted); }
+.dg .track circle { stroke: var(--soft); fill: var(--soft); }
+.dg .track circle:first-of-type { fill: var(--panel); }
+.dg .chip rect { stroke: var(--soft); }
+.dg .chip.lock rect { fill: var(--soft); }
+.dg .chip-text.on { fill: var(--ink); }
+.yes, .no { font-weight: 700; white-space: nowrap; }
+.yes { color: var(--green); }
+.no { color: var(--red); }
+.glossary dt { font-weight: 700; color: var(--fg); margin-top: 0.9rem; }
+.glossary dd { margin: 0.2rem 0 0; color: var(--soft); }
+
+/* Print: dark ink on white, no navigation, diagrams scaled to the page */
+@media print {
+  :root {
+    --bg: #fff; --panel: #fff; --panel-2: #f1f1ee; --line: #777; --line-2: #bbb;
+    --fg: #000; --soft: #111; --muted: #444; --amber: #8a5a00; --green: #1d6b2a; --red: #a3221b; --red-2: #a3221b; --blue: #1f5fae; --ink: #fff;
+    color-scheme: light;
+  }
+  body { font-size: 11pt; }
+  .skip, .top nav, .foot ul, .next-level { display: none; }
+  .top { position: static; background: none; backdrop-filter: none; }
+  a { color: inherit; }
+  pre { white-space: pre-wrap; overflow: visible; }
+  .scroll, .diagram-scroll, .diagram-box { overflow: visible; }
+  .diagram-scroll, .diagram-box { border: 0; padding: 0; }
+  .diagram svg { width: 100%; }
+  .dg-pair .dg-wide { display: block; }
+  .dg-pair .dg-narrow { display: none; }
+  h2, h3 { break-after: avoid; }
+  tr, figure, figcaption { break-inside: avoid; }
+}

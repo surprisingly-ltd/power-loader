@@ -1,6 +1,7 @@
 // The timeline: periods from the case, with exact gaps. Standard works it out on this computer; ✦ Enhanced
 // finds periods written in the case notes and explains the gaps, after the redaction preview.
-import { h, plural, copyText } from '../../ui/dom.js';
+import { assertTool } from '../../lib/tools.js';
+import { h, plural, copyText, announce } from '../../ui/dom.js';
 import { PERIOD_CATS, approxDuration, dayNum, fmtDay, periods, pointsText, summaryText, timeline } from '../../lib/timeline.js';
 import { datePoints, seriesLanes } from '../../lib/journey.js';
 import { addWorking } from '../../lib/case.js';
@@ -101,6 +102,7 @@ function changes(m) {
 // ✦ Find periods in the notes: suggestions wait in the case until the caseworker adds or dismisses each.
 async function findPeriods(context, notes) {
   const { act } = context;
+  try { await assertTool('timeline'); } catch (e) { announce(e.message); return; }
   tl.busy = 'find';
   act.render();
   await runAi(context, 'tlFind', { notes }, async (out) => {
@@ -119,6 +121,7 @@ async function findPeriods(context, notes) {
 
 async function explain(context, m, notes) {
   const { act } = context;
+  try { await assertTool('timeline'); } catch (e) { announce(e.message); return; }
   tl.busy = 'explain';
   act.render();
   await runAi(context, 'tlExplain', { summary: summaryText(m), notes }, async (out) => {
@@ -244,10 +247,10 @@ export function timelineBlock(context, { wide = false } = {}) {
     tl.from || tl.to ? h('button', { type: 'button', class: 'link sm', 'data-key': 'tl-reset', onclick: () => { tl.from = ''; tl.to = ''; act.render(); } }, 'Reset dates to what’s shown') : null);
   const uses = [...new Set(v.lanes.flatMap((l) => [...l.bars, ...l.points]).map((p) => p.clipId).filter(Boolean))];
   const actions = h('div', { class: 'row' },
-    h('button', { type: 'button', class: 'sm', 'data-key': 'tl-save', onclick: () => act.update((cs) => {
+    h('button', { type: 'button', class: 'sm', 'data-key': 'tl-save', onclick: async () => { try { await assertTool('timeline'); } catch (e) { announce(e.message); return; } act.update((cs) => {
       addWorking(cs, { title: v.def ? `Timeline: ${v.def.name}` : 'Timeline', text, uses });
       logEvent(cs, 'save_timeline', { detail: `${m.empty ? 0 : m.gaps.length} gaps` });
-    }, 'Timeline saved to the case’s workings') }, 'Save summary to case'),
+    }, 'Timeline saved to the case’s workings'); } }, 'Save summary to case'),
     h('button', { type: 'button', class: 'sm', 'data-key': 'tl-copy', onclick: () => copyText(text, 'Summary') }, 'Copy summary'));
   const dateList = shownPoints.length ? h('ul', { class: 'plain stack small', style: 'gap:2px', 'aria-label': 'Dates' }, shownPoints.map((p) => h('li', {}, h('b', {}, fmtDay(p.at)), ` · ${p.lane === p.label ? p.label : `${p.lane}: ${p.label}`}`))) : null;
   const bad = tl.from && tl.to && tl.from > tl.to;

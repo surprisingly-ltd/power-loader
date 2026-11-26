@@ -15,6 +15,20 @@ import { modelSource } from '../lib/model-fetch.js';
 import { describeModel, loadModel } from '../lib/privacy-client.js';
 import { collectFacts, diagnosticsReport, webgpuInfo } from '../lib/diagnostics.js';
 import { returnToSidebar } from '../lib/pages.js';
+import { fixedHosts } from '../lib/build-hosts.js';
+
+// An organisation build's hosts are granted at install. A caseworker can still switch a site off in Firefox's
+// add-on manager: name what's missing, and how to turn it back on.
+async function permissionsCheck(hosts) {
+  const missing = [];
+  for (const h of hosts) if (!await browser.permissions.contains({ origins: [h] }).catch(() => false)) missing.push(h);
+  return missing.length
+    ? fail(`Power Loader isn’t allowed on ${missing.join(', ')}, which your organisation’s version needs.`, 'Turn it back on: open about:addons, choose Power Loader, then Permissions, and switch on the sites listed.')
+    : hosts.includes('<all_urls>') ? pass(`Every site your organisation’s version needs is allowed: ${hosts.join(', ')}.`)
+      : (browser.runtime.getManifest().permissions || []).includes('activeTab')
+        ? pass(`Every site your organisation’s version needs is allowed: ${hosts.join(', ')}. Selecting a region starts from the page: its right-click menu, or Alt+Shift+R.`)
+        : warn(`Every site your organisation’s version needs is allowed: ${hosts.join(', ')}. Selecting a region is turned off in this version.`, 'Nothing to do: caseworkers paste a screenshot instead (Win+Shift+S, then Ctrl+V).');
+}
 
 // Needed for the model download and cache, with room to spare.
 const MODEL_BYTES = 1.2e9;
@@ -25,7 +39,7 @@ export const HUMAN_CHECKS = [
   'Every model file loads from the chosen model server (huggingface.co and its download CDN by default, or the address set by policy), and a proxy log shows no other model requests.',
   'The library loads from the enterprise git host with the chosen read authentication (token in managed storage, or SSO cookies).',
   'Authenticated PDFs and blob: documents can be read from the document store under cookie partitioning, containers and frames.',
-  'Region capture crops correctly at 125%, 150% and 200% Windows scaling, with browser zoom and scrolled pages (region capture is deferred; confirm before it is enabled).',
+  'Region capture crops correctly at 125%, 150% and 200% Windows scaling, with browser zoom and scrolled pages (⬚ Select a region in the reader).',
   'The signed XPI installs through the managed channel, and the CSP (wasm-unsafe-eval, blob: images) and the vendored libraries pass review.',
   'Managed storage policy applies after a Firefox restart, and locked settings show as locked.',
   'The DPIA, retention period, access to logs and the staff notice are agreed before the activity log is used.',
@@ -50,6 +64,12 @@ const fail = (text, fix) => ({ state: 'fail', text, fix });
 const run = {
   async policy() {
     const p = await getPolicy({ fresh: true });
+    const keys = await policyKeysSet();
+    if (p.builtIn) {
+      const ignored = p.managedIgnored ? ' Managed storage (policies.json) is set for this extension, but an organisation build ignores it.' : '';
+      return (p.managedIgnored ? warn : pass)(`Rules built in by ${p.builtIn.name}: ${keys.length ? keys.join(', ') : 'none set'}.${ignored}`,
+        p.managedIgnored ? 'Nothing to do: to change a rule, ship a new version of the organisation build. Remove the policies.json section if it isn’t needed.' : undefined);
+    }
     return p.managed ? pass(`${p.locked.size} setting${p.locked.size === 1 ? '' : 's'} set by policy: ${[...p.locked].sort().join(', ')}`)
       : warn('No managed policy found. Every setting is the caseworker’s to set.', 'For a managed rollout, deploy the policies.json “3rdparty” section for this extension, then restart Firefox.');
   },
@@ -92,9 +112,11 @@ const run = {
   async model() {
     const { library } = await browser.storage.local.get('library');
     const source = modelSource(await getPolicy(), library ? libraryAt(library, library.current) : null, await getSettings());
+    // Switched off by the organisation, the library or the caseworker: nothing to download or check.
+    if (!source.use.on) return pass(`Not used: switched off ${{ policy: 'by your organisation', library: 'by your library', you: 'in Settings' }[source.use.from] || ''}. Case values and the library’s patterns are still redacted before anything goes to the AI.`);
     const m = await loadModel(source);
     if (m.state === 'ready') return pass(`${describeModel(m)}. ${source.hashes ? 'File hashes were checked.' : 'No file hashes are set, so files weren’t checked against them.'}`);
-    const fixes = { config: 'Set a pinned revision for the model server, in policy (privacyModel.revision) or the library’s privacy.json.', blocked: 'A request went outside the model server; check the model server address.', denied: 'The model server refused access: check the address, or its authentication.', hash: 'A model file doesn’t match its expected hash: check the model server serves that revision unchanged.', webgpu: 'See the WebGPU check above.', disk: 'Free disk space: the model needs about 1 GB.', test: 'The model loaded but its test scan failed: check the revision.', unreachable: 'Check the network path to the model server.' };
+    const fixes = { config: 'Set a pinned revision for the model server, in policy (privacyModel.revision) or the library’s privacy.json.', blocked: 'A request went outside the model server; check the model server address. A folder address must be the folder that holds config.json.', denied: 'The model server refused access: check the address, or its authentication.', hash: 'A model file doesn’t match its expected hash: check the model server serves that revision unchanged.', webgpu: 'See the WebGPU check above.', disk: 'Free disk space: the model needs about 1 GB.', test: 'The model loaded but its test scan failed: check the revision.', unreachable: 'Check the network path to the model server.' };
     return fail(describeModel(m), fixes[m.reason] || 'Check the model server settings.');
   },
   async storage() {
@@ -106,8 +128,10 @@ const run = {
   },
   async capture() {
     const all = await browser.permissions.contains({ origins: ['<all_urls>'] });
+    const fixed = fixedHosts();
+    if (!all && fixed) return permissionsCheck(fixed);
     return all ? pass('Screen capture is allowed (<all_urls>).')
-      : warn('Screen-region capture isn’t in this release, and <all_urls> isn’t granted.', 'Nothing to do now. Before region capture is enabled, grant <all_urls> through the managed install or use a keyboard command (activeTab).');
+      : warn('<all_urls> isn’t granted, so ⬚ Select a region asks for it the first time it’s used. While site rules are set it doesn’t ask, and a pasted screenshot works instead.', 'Nothing to do unless you want region capture without the prompt: grant <all_urls> through the managed install.');
   },
 };
 
@@ -122,7 +146,7 @@ async function runAll() {
 }
 
 async function copyDiagnostics() {
-  const report = diagnosticsReport(await collectFacts({ libraryAt, policyKeysSet }));
+  const report = diagnosticsReport(await collectFacts({ libraryAt, policyKeysSet, getPolicy }));
   try { await navigator.clipboard.writeText(report); announce('Diagnostics copied. They include no case data, links or keys.'); } catch { announce('Copy was blocked'); }
 }
 

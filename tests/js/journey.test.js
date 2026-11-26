@@ -257,3 +257,122 @@ test('✦ steps from the guidance: only known pages, web addresses with known na
   assert.equal(out.steps.length, 1);
   assert.deepEqual(out.steps[0].links.map((l) => l.label), ['Open employment', 'Search']);
 });
+
+// ------------------------------------------------------------------ the open step's one main button
+
+const X = 'https://x.example';
+function stepsLib() {
+  return {
+    fields: { lastName: { label: 'Last name' } }, forms: { form: { id: 'form', name: 'Form', url: `${X}/form`, fill: 'fill/form', fields: [] } },
+    fill: [{ id: 'fill/form', match: [`${X}/form*`], fields: {} }],
+    profiles: [{ id: 'case', name: 'Case', match: [`${X}/case-*`], urlPattern: `${X}/case-{ref}.html`, fields: {} }],
+    steps: [
+      { id: 'g', name: 'Queue', role: 'guide', text: '', url: `${X}/queue`, match: [`${X}/queue*`], links: [{ label: 'Open the queue', url: `${X}/queue` }], choose: { label: 'Choose a case', next: 'p', url: `${X}/case-{ref}.html` } },
+      { id: 'p', name: 'Case', role: 'input', text: '', profileId: 'case', links: [] },
+      { id: 'g2', name: 'Search', role: 'guide', text: '', links: [{ label: 'Search for the client', url: `${X}/search?q={lastName}` }] },
+      { id: 'e', name: 'Tell them', role: 'email', text: '', email: { to: 'a@b.cd', subject: 'Case {ref}' }, links: [] },
+      { id: 'f', name: 'Messages', role: 'fetch', text: '', url: `${X}/messages`, match: [`${X}/messages*`], fetch: { requests: [{ id: 'r', name: 'M', url: `${X}/m/{ref}`, profileId: 'm', required: true }] }, links: [] },
+      { id: 'o', name: 'Form', role: 'output', text: '', formId: 'form', links: [] },
+    ],
+  };
+}
+const blank = () => ({ ref: '', clips: [], steps: {}, filled: {}, submitted: {}, manual: {}, resolved: {}, resolvedOn: {}, excluded: [], forms: [{ id: 'form', version: 'v1' }] });
+
+test('nextStepAction: one main button for every kind of open step, always the next thing to do', async () => {
+  const { nextStepAction } = await import('../../extension/lib/journey.js');
+  const lib = stepsLib();
+  const c = blank();
+  const at = (url, o = {}) => nextStepAction(c, lib, { url, ...o });
+  // Its page isn't in view, the address is known: go there, with the flow's own words for that address.
+  assert.deepEqual(at('https://elsewhere.example/'), { kind: 'go', label: 'Open the queue', url: `${X}/queue`, stepId: 'g' });
+  // A page to visit, in view, that chooses the case: done on the page.
+  assert.deepEqual(at(`${X}/queue`), { kind: 'on-page', label: '', text: 'On the page: open the case you’re picking up.', stepId: 'g' });
+  // A page to clip, in view, not clipped.
+  c.ref = '1001';
+  assert.equal(at(`${X}/case-1001.html`, { info: { kind: 'source', profileId: 'case' } }).kind, 'clip');
+  // Done, and a later step isn't: Next, to that step (its page isn't known, so it just opens).
+  c.clips.push({ id: 'c1', profile: { id: 'case' }, values: {}, records: [] });
+  assert.deepEqual(at(`${X}/case-1001.html`, { info: { kind: 'source', profileId: 'case' } }), { kind: 'next', label: 'Next: Search', stepId: 'p', nextId: 'g2', url: null });
+  // Its address needs a value the case lacks: no button, and which value.
+  assert.deepEqual(at('https://elsewhere.example/'), { kind: 'needs', label: '', missing: ['lastName'], stepId: 'g2' });
+  // A step the caseworker chose is the open one, wherever they are.
+  assert.equal(at('https://elsewhere.example/', { chosen: 'e' }).kind, 'email');
+  // A page to visit, not in view: its first link.
+  c.manual.lastName = 'Kowalska';
+  assert.deepEqual(at('https://elsewhere.example/'), { kind: 'link', label: 'Search for the client', url: `${X}/search?q=Kowalska`, linkIndex: 0, stepId: 'g2' });
+  markStep(c, 'g2', true);
+  // An email, not opened.
+  assert.equal(at('https://elsewhere.example/').kind, 'email');
+  markStep(c, 'e', true);
+  // A fetch step, on its page, not run; not on its page, go there.
+  assert.equal(at(`${X}/messages`).kind, 'fetch');
+  assert.deepEqual(at('https://elsewhere.example/'), { kind: 'go', label: 'Go to Messages', url: `${X}/messages`, stepId: 'f' });
+  markStep(c, 'f', true);
+  // A form, in view, not filled; filled, not submitted.
+  assert.equal(at(`${X}/form`, { info: { kind: 'form', formId: 'form' } }).kind, 'fill');
+  c.filled.form = { at: 'now' };
+  assert.deepEqual(at(`${X}/form`, { info: { kind: 'form', formId: 'form' } }), { kind: 'on-page', label: '', text: 'On the page: check every box, complete anything empty, then submit it yourself.', stepId: 'o' });
+  // Every step done: Finish case, except on a confirmation page, whose own card has it.
+  c.submitted.form = { how: 'reported' };
+  assert.deepEqual(at('https://elsewhere.example/'), { kind: 'finish', label: 'Finish case', stepId: null });
+  assert.equal(at('https://elsewhere.example/', { info: { kind: 'confirm' } }), null);
+  assert.equal(at('https://elsewhere.example/', { chosen: 'g2' }).kind, 'finish', 'a done step opened, with nothing left to do');
+});
+
+test('nextStepAction: a step whose page the site rules block has no main button', async () => {
+  const { nextStepAction } = await import('../../extension/lib/journey.js');
+  const lib = stepsLib();
+  const c = blank();
+  assert.equal(nextStepAction(c, lib, { url: 'https://elsewhere.example/', blocked: (s) => s.id === 'g' }).kind, 'blocked');
+  // The address can't be opened: no button to it either.
+  assert.equal(nextStepAction(c, lib, { url: 'https://elsewhere.example/', navigable: () => false }).kind, 'blocked');
+});
+
+// ------------------------------------------------------------------ steps with a condition
+
+test('stepNeeded and stepStatus: a step needed only when a value is missing, or present, judged in its turn', async () => {
+  const { stepNeeded, stepStatus: status, validateSteps: check, wantStep } = await import('../../extension/lib/journey.js');
+  const lib = { fields: { tenancyRef: { label: 'Tenancy reference' } }, forms: {}, fill: [], profiles: [{ id: 'case', match: [`${X}/case-*`], fields: {} }, { id: 'other', match: [`${X}/other-*`], fields: {} }], steps: [] };
+  const first = { id: 'a', name: 'Case', role: 'input', profileId: 'case', text: '', links: [] };
+  const ask = { id: 'b', name: 'Ask for it', role: 'email', text: '', email: { to: 'a@b.cd', subject: 'x' }, links: [], when: { field: 'tenancyRef', is: 'missing' } };
+  const only = { id: 'c', name: 'Only with it', role: 'input', profileId: 'other', text: '', links: [], when: { field: 'tenancyRef', is: 'present' } };
+  lib.steps = [first, ask, only];
+  const c = blank();
+  // Not judged yet: the step before it isn't done.
+  assert.equal(stepNeeded(c, lib, ask), null);
+  assert.equal(status(c, ask, lib), 'todo');
+  // The case page clipped without the value: missing, so needed; the other isn't.
+  c.clips.push({ id: 'c1', profile: { id: 'case' }, values: {}, records: [] });
+  assert.equal(stepNeeded(c, lib, ask), true);
+  assert.equal(status(c, ask, lib), 'todo');
+  // With the value: not needed, and passed over; the step for "present" is needed.
+  c.clips[0].values.tenancyRef = 'HH-1';
+  assert.equal(stepNeeded(c, lib, ask), false);
+  assert.equal(status(c, ask, lib), 'skipped');
+  assert.equal(stepNeeded(c, lib, only), true, 'judged once every step before it is done or not needed');
+  assert.equal(currentStep(c, lib, 'https://elsewhere.example/').step.id, 'c', 'Next passes over a step that isn’t needed');
+  // A value in conflict is there: the caseworker decides it, so the step that asks for it isn't needed.
+  c.clips.push({ id: 'c2', profile: { id: 'other' }, values: { tenancyRef: 'HH-2' }, records: [] });
+  assert.equal(stepNeeded(c, lib, ask), false);
+  // A value removed later brings the step back.
+  c.clips = [{ id: 'c1', profile: { id: 'case' }, values: {}, records: [] }];
+  assert.equal(status(c, ask, lib), 'todo');
+  // Marked done by hand: done, whatever its condition says.
+  c.clips[0].values.tenancyRef = 'HH-1';
+  markStep(c, 'b', true);
+  assert.equal(status(c, ask, lib), 'done');
+  markStep(c, 'b', false);
+  // Do it anyway: a normal step for this case.
+  wantStep(c, 'b');
+  assert.equal(status(c, ask, lib), 'todo');
+  // Without the library a condition can't be judged: the step is as it would be.
+  assert.equal(status(blank(), ask), 'todo');
+  // The case reference can be the field.
+  assert.equal(stepNeeded({ ...blank(), clips: c.clips }, { ...lib, steps: [first, { ...ask, when: { field: 'ref', is: 'missing' } }] }, { ...ask, when: { field: 'ref', is: 'missing' } }), true);
+  // steps.json: the shape, and a field that exists.
+  const doc = (when) => ({ schema: 'powerloader-steps/1', steps: [{ ...ask, when }] });
+  assert.deepEqual(check(doc({ field: 'tenancyRef', is: 'missing' }), lib.fields), []);
+  assert.deepEqual(check(doc({ field: 'ref', is: 'present' }), lib.fields), []);
+  assert.match(check(doc({ field: 'tenancyRef', is: 'empty' }), lib.fields)[0], /"when" must be \{ field, is: "missing" \| "present" \}/);
+  assert.match(check(doc({ field: 'nope', is: 'missing' }), lib.fields)[0], /"when" uses nope, which isn’t a field/);
+});

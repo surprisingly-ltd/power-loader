@@ -9,8 +9,9 @@ pnpm test
 POWERLOADER_FIREFOX=/path/to/firefox pnpm test:firefox
 ```
 
-If Firefox is on PATH, omit POWERLOADER_FIREFOX. Run this command separately against the supported ESR
-and the deployed release. Firefox 151 was used during implementation. Headless is the default;
+If Firefox is on PATH, omit POWERLOADER_FIREFOX. CI runs it on every pull request against the latest ESR
+and the latest release (`firefox` job in `.github/workflows/ci.yml`); it was last checked locally on
+Firefox 161 and 153 ESR. Headless is the default;
 set POWERLOADER_FIREFOX_HEADFUL=1 to show the browser. The runner requires localhost networking and
 permission to start Firefox and child processes.
 
@@ -21,8 +22,10 @@ origins and a test bootstrap; no production file or installed Firefox profile is
 
 ## Coverage
 
-- Library connection over real HTTP, verified files, rendered forms, keyboard sidebar navigation,
-  case creation, clipping real tabs, conflict resolution and wrong-person removal.
+- Library connection over real HTTP, verified files, rendered flows, keyboard sidebar navigation,
+  starting a case from a library flow, clipping real tabs, conflict resolution and wrong-person removal.
+- Build: a two-page flow made on real pages (a form mapped from its labels, a value chosen on the page
+  through the injected agent), tested, then Try it: a case of the flow clipped, filled and finished.
 - Fill preview and cancellation, approval, actual target values and page side effects, no submission,
   modal focus wrapping/Escape, finishing a case, sanitised receipts and retained logs.
 - Real AI redaction preview, cancellation and required-model blocking; observed outgoing HTTP proves
@@ -66,6 +69,22 @@ directory containing its isolated profile, extension copy and browser logs. Set
 POWERLOADER_KEEP_TEST_PROFILE=1 to keep these after success too. Test profiles contain only synthetic data.
 
 `pnpm test:firefox:smoke` retains the shorter module-import/OCR/PDF check.
+
+## Organisation builds
+
+```sh
+POWERLOADER_FIREFOX=/path/to/esr/firefox pnpm test:firefox:org
+```
+
+Builds the `locked-down` sample policy file, pointed at a local server, with `tools/build-ext.mjs`'s own
+manifest rewrite, and installs it as a normal add-on: an unsigned XPI in a fresh profile's extensions folder,
+which an ESR or unbranded Firefox accepts with `xpinstall.signatures.required` off. Firefox release refuses it.
+It checks that `build.hosts` are granted at install with nothing else grantable, that `connect-src` applies to
+the background, a page and a worker, that Transformers.js, tesseract.js and pdf.js run under it, that managed
+storage is ignored, that the library syncs by itself and is read with cookies, what `storage.session` holds,
+and that a case open when Firefox closes is gone at the next start. It writes one file outside its temporary
+folder, `~/.mozilla/managed-storage/powerloader-orgtest@example.gov.uk.json`, and deletes it afterwards. The
+report is `dist/test-results/firefox-org-build.json`. `tools/ci-local.sh --only policy` runs it.
 
 The suite pre-grants loopback origins, so native installation and permission prompts still need manual
 checks. Restart tests inject precise persisted failure checkpoints and restart Firefox; they do not

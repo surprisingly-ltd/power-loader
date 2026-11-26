@@ -119,3 +119,25 @@ ol.checks > li.card.pass { border-left-color: var(--ok); }
 ol.checks > li.card.fail { border-left-color: var(--danger); }
 ol.checks > li.card.check { border-left-color: var(--amber); }
 @media (max-width: 600px) { table.grid { font-size: 12.5px; } }
+
+/* The fetched view: what a fetch step read, as text, each value outlined. */
+.fv-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 34%); gap: 14px; align-items: start; }
+@media (max-width: 900px) { .fv-grid { grid-template-columns: minmax(0, 1fr); } }
+.fv-text { max-height: 60vh; overflow: auto; border: 1px solid var(--border); background: var(--panel); padding: 6px 10px; }
+.fv-key { font-size: 12.5px; margin: 8px 0 2px; color: var(--muted); }
+.fv-key:first-child { margin-top: 0; }
+.fv-lines { font: 12.5px/1.5 ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace; background: var(--surface); padding: 4px 6px; }
+.fv-line { display: grid; grid-template-columns: 3.5em minmax(0, 1fr); gap: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.fv-n { color: var(--muted); text-align: right; user-select: none; }
+.fv-gap { color: var(--muted); padding-left: 4em; }
+.fv-mark { background: var(--ok-soft); color: inherit; outline: 2px solid var(--ok); outline-offset: 1px; }
+.fv-mark.cf { background: var(--conflict-soft); outline-color: var(--conflict-edge); color: var(--conflict); font-weight: 700; }
+.fv-mark.flash { animation: fv-flash 1.2s ease-out; }
+@keyframes fv-flash { from { box-shadow: 0 0 0 6px var(--focus); } to { box-shadow: 0 0 0 0 transparent; } }
+@media (prefers-reduced-motion: reduce) { .fv-mark.flash { animation: none; } }
+.fv-vals { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; }
+.fv-val { display: flex; flex-direction: column; gap: 2px; border-left: 4px solid var(--border); padding: 4px 8px; background: var(--surface); }
+.fv-val.conflict { border-left-color: var(--conflict-edge); background: var(--conflict-soft); }
+.fv-val.used, .fv-val.matched, .fv-val.new { border-left-color: var(--ok); }
+.fv-val .pill { align-self: flex-start; }
+.pill.cf { background: var(--conflict-soft); color: var(--conflict); font-weight: 700; }

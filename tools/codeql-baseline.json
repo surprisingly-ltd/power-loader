@@ -1,0 +1,47 @@
+[
+  {
+    "finding": "js/client-side-request-forgery extension/lib/model-fetch.js",
+    "count": 1,
+    "reason": "The request goes to the model server the person chose in settings: that is the feature. verifyingFetch refuses any address outside that server (and outside the policy's allowed list), and checks every file against its pinned hash."
+  },
+  {
+    "finding": "js/client-side-request-forgery lab/shell/shell.js",
+    "count": 1,
+    "reason": "The UX lab is a local tool (lab/README.md): the variant in its own address picks a file under /lab/variants/ on the same local server. Nothing ships from lab/."
+  },
+  {
+    "finding": "js/file-access-to-http extension/lib/model-fetch.js",
+    "count": 1,
+    "reason": "The 'file data' is the demo library a unit test reads from demo/library (tests/js/helpers/library.js); in the extension the test connection asks the model server the person chose for the model's own file names."
+  },
+  {
+    "finding": "js/http-to-file-access lab/film/voiceover.mjs",
+    "count": 1,
+    "reason": "A local tool that saves the voiceover audio it has just bought from the text-to-speech service: writing that download to a file is its job. Nothing ships from lab/."
+  },
+  {
+    "finding": "js/http-to-file-access tools/amo-signed.mjs",
+    "count": 2,
+    "reason": "A release tool that downloads the signed XPI from Mozilla and saves it: writing that download to a file is its job. The bytes are checked against the hash AMO reports before they are written, and compared file by file with the build before the output file is written."
+  },
+  {
+    "finding": "js/insufficient-password-hash tests/tools/make-document-fixtures.mjs",
+    "count": 1,
+    "reason": "Builds a test PDF with the PDF 1.1 Standard Security Handler, which is defined with MD5 and RC4; the 'password' is the published test value test-password. Nothing here protects a real password."
+  },
+  {
+    "finding": "js/missing-origin-check extension/assist/worker.js",
+    "count": 1,
+    "reason": "A dedicated worker: only the extension page that created it can post to it, and its message events carry no origin to check."
+  },
+  {
+    "finding": "js/missing-origin-check extension/privacy/worker.js",
+    "count": 1,
+    "reason": "A dedicated worker: only the extension page that created it can post to it, and its message events carry no origin to check."
+  },
+  {
+    "finding": "js/missing-origin-check extension/tools/calc-worker.js",
+    "count": 1,
+    "reason": "A dedicated worker: only the extension page that created it can post to it, and its message events carry no origin to check."
+  }
+]

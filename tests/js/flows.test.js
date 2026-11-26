@@ -71,7 +71,7 @@ test('field keys and types come from the name, and a field is defined once', () 
   assert.equal(fieldKey('Date of birth'), 'dateOfBirth');
   assert.equal(fieldKey('Date of birth', { dateOfBirth: {} }), 'dateOfBirth2');
   assert.equal(fieldKey('2nd line'), 'f2ndLine');
-  assert.deepEqual(['Date of birth', 'NI number', 'Monthly rent (£)', 'Postcode', 'Landlord'].map(guessType), ['date', 'nino', 'money', 'postcode', 'text']);
+  assert.deepEqual(['Date of birth', 'NI number', 'Monthly rent (£)', 'Postcode', 'Landlord', 'Current employer', 'Rent arrears', 'Weekly pay'].map(guessType), ['date', 'nino', 'money', 'postcode', 'text', 'text', 'money', 'money']);
   const flow = newFlow();
   const a = addField(flow, { label: 'Landlord' });
   assert.equal(addField(flow, { label: 'landlord' }), a, 'the same label is the same field');
@@ -153,7 +153,7 @@ test('export and import: the file carries the flow and its library files, and pa
   testAll(flow);
   const body = exportFlow(flow);
   assert.equal(body.schema, 'powerloader-flow/1');
-  assert.deepEqual(Object.keys(body.files).sort(), ['fields.json', 'forms/discretionary-housing-payment.json', 'profiles/fill/discretionary-housing-payment.json', 'profiles/pages/localhost/page-to-clip-1.json']);
+  assert.deepEqual(Object.keys(body.files).sort(), ['fields.json', 'forms/discretionary-housing-payment.json', 'profiles/fill/discretionary-housing-payment.json', 'profiles/pages/localhost/page-to-clip-1.json', 'steps.json']);
   assert.deepEqual(body.problems, []);
   assert.doesNotMatch(JSON.stringify(body), /Kowalska/);
   const back = importFlow(JSON.parse(JSON.stringify(body)));
@@ -163,6 +163,30 @@ test('export and import: the file carries the flow and its library files, and pa
   assert.deepEqual(back.pages.map((p) => p.draft.profile.fields), flow.pages.map((p) => p.draft.profile.fields));
   assert.deepEqual(codes(validateFlow(back)), ['untested', 'untested']);
   assert.throws(() => importFlow({ schema: 'powerloader-profile/1' }), /isn’t a Power Loader flow file/);
+});
+
+test('a page’s reveal rules are part of its template: compiled, exported, imported, and checked', () => {
+  const { flow, inp } = rentFlow();
+  inp.draft.profile.reveal = [{ selector: '#history', addClass: ['acc--open'] }];
+  testAll(flow);
+  const body = exportFlow(flow);
+  const file = Object.entries(body.files).find(([p]) => p.startsWith('profiles/pages/'))[1];
+  assert.deepEqual(file.reveal, [{ selector: '#history', addClass: ['acc--open'] }]);
+  assert.deepEqual(body.problems, []);
+  const back = importFlow(JSON.parse(JSON.stringify(body)));
+  assert.deepEqual(back.pages.find((p) => p.role === 'input').draft.profile.reveal, inp.draft.profile.reveal);
+  // A rule that would do anything else is a problem in the compiled library, like any bad template.
+  inp.draft.profile.reveal = [{ selector: '#history', click: true }];
+  testAll(flow);
+  assert.match(exportFlow(flow).problems.join(' '), /reveal\[0\]: "click" isn’t allowed/);
+});
+
+test('every flow has steps: one with no instructions, links or pages to visit compiles to a step for each page', () => {
+  const { flow, out, inp } = rentFlow();
+  testAll(flow);
+  assert.ok(flow.pages.every((p) => !p.step?.text && !p.step?.links?.length));
+  const { steps } = compileFlow(flow).files['steps.json'];
+  assert.deepEqual(steps.map((s) => [s.id, s.role, s.text]), [[inp.id, 'input', ''], [out.id, 'output', '']], 'pages in the caseworker’s order, with empty text');
 });
 
 test('the AI’s answers: form fields join the contract, own picks stay, unknown boxes are dropped', () => {
@@ -225,7 +249,7 @@ test('a flow from a library form copies its fill profile and the pages that read
   const [form] = pagesOf(flow, 'output');
   assert.deepEqual([form.formId, form.form.version, form.url], ['dhp', 'v2', lib.forms.dhp.url]);
   assert.ok(form.required.includes('nino') && !form.required.includes('tenancyStart'));
-  assert.deepEqual(pagesOf(flow, 'input').map((p) => p.profileId).sort(), ['biv/employment', 'cm/client-record', 'harbour-homes/rent-account']);
+  assert.deepEqual(pagesOf(flow, 'input').map((p) => p.profileId).sort(), ['biv/employment', 'biv/income', 'cm/case', 'cm/client-record', 'harbour-homes/rent-account', 'harbour-homes/tenancy', 'messages/referral']);
   // The client record reads more than DHP needs, so its copy keeps only DHP's fields and needs a test here.
   const client = pagesOf(flow, 'input').find((p) => p.profileId === 'cm/client-record');
   assert.equal(client.draft.profile.fields.email, undefined);
@@ -236,7 +260,7 @@ test('a flow from a library form copies its fill profile and the pages that read
   const can = startable(flow);
   assert.ok(can.ok, can.reason);
   assert.deepEqual(can.formIds, ['dhp']);
-  assert.deepEqual(can.untested.sort(), ['Client record', 'Employment and income', 'Rent account']);
+  assert.deepEqual(can.untested.sort(), ['Case', 'Client record', 'Employment and income', 'Employment and income record', 'Harbour Homes tenancy', 'Referral', 'Rent account']);
   assert.ok(testedNow(form.draft), 'the published fill profile counts as tested until it is changed');
   const set = flowSet(flow, { hash: 'abc123', base: lib });
   assert.match(set.commit, /^flow-[0-9a-f]+-abc123$/);
@@ -249,4 +273,70 @@ test('a flow from a library form copies its fill profile and the pages that read
   assert.deepEqual([...new Set(validateFlow(flow).filter((i) => i.level === 'error').map((i) => i.code))], ['untested']);
   // A new flow with nothing made can't start a case.
   assert.match(startable(newFlow({ name: 'x' })).reason, /Make a form to fill first/);
+});
+
+test('templatesOf: the demo library’s pages and forms, each with the flows that use it, copies gathered and compared', async () => {
+  const { templatesOf, libraryFlow, pagesOf: pages } = await import('../../extension/lib/flows.js');
+  const { demoLibrary } = await import('./helpers/library.js');
+  const lib = demoLibrary();
+  const { templates, notInFlow } = templatesOf({ lib });
+  const by = (kind, id) => templates.find((t) => t.kind === kind && t.id === id);
+  const names = (t) => [...new Set(t.uses.map((u) => u.flowName))].sort();
+  assert.deepEqual(templates.filter((t) => t.kind === 'form').map((t) => t.id).sort(), ['coc', 'dhp', 'hsr', 'rsr']);
+  assert.deepEqual(names(by('form', 'dhp')), ['Discretionary housing payment']);
+  assert.deepEqual(names(by('page', 'cm/client-record')), ['Change of circumstances', 'Discretionary housing payment', 'Housing support referral']);
+  // The two rent support review flows share their case, tenancy and income templates, unchanged.
+  for (const id of ['cm/case', 'harbour-homes/tenancy', 'biv/income']) {
+    assert.deepEqual(names(by('page', id)), ['Rent support review', 'Rent support review (messages as data)'], id);
+    assert.equal(by('page', id).differs, false, id);
+  }
+  assert.equal(by('page', 'cm/case').uses[0].stepNumber, 2);
+  // The six messages a fetch step fetches are one template, at the step that fetches them.
+  assert.equal(by('page', 'messages/message').uses.length, 6);
+  assert.ok(by('page', 'messages/message').uses.every((u) => u.stepNumber === 6));
+  // A page to visit, an email and a fetch step aren't templates.
+  for (const step of ['Choose a case', 'Ask the client for a missing reference', 'Customer messages', 'Deal with each referral', 'Tell the income team']) assert.ok(!templates.some((t) => t.name === step), step);
+  assert.equal(by('page', 'cm/client-record').from, 'library');
+  // A copy changed in one flow on this computer differs, and says how.
+  const mine = libraryFlow(lib, 'flows/rent-support-review.flow.json');
+  mine.id = 'f-mine';
+  mine.name = 'My review';
+  delete pages(mine, 'input').find((p) => p.profileId === 'cm/case').draft.profile.fields.email;
+  const withMine = templatesOf({ lib, flows: [mine] });
+  const cs = withMine.templates.find((t) => t.kind === 'page' && t.id === 'cm/case');
+  assert.equal(cs.differs, true);
+  assert.match(cs.differences.join(' '), /My review differs from .*: the values it reads/);
+  // A library form no flow uses is "Not in a flow"; so are pages no flow clips.
+  const noCoc = { ...lib, flows: lib.flows.filter((f) => f.name !== 'Change of circumstances') };
+  assert.ok(templatesOf({ lib: noCoc }).notInFlow.some((x) => x.kind === 'form' && x.id === 'coc'));
+  assert.ok(notInFlow.some((x) => x.kind === 'page' && x.id === 'cm/case-notes'));
+  assert.ok(!notInFlow.some((x) => x.id === 'messages/inbox-message'), 'a page only a fetch step reads isn’t offered on its own');
+});
+
+test('a step’s condition: written on its page, compiled, exported and imported, and checked', async () => {
+  const { setStepWhen, journeyOf: order } = await import('../../extension/lib/flows.js');
+  const { flow, out, inp } = rentFlow();
+  testAll(flow);
+  const key = Object.keys(flow.fields)[0];
+  setStepWhen(out, { field: key, is: 'present' });
+  assert.deepEqual(out.step.when, { field: key, is: 'present' });
+  const step = compileFlow(flow).files['steps.json'].steps.find((s) => s.id === out.id);
+  assert.deepEqual(step.when, { field: key, is: 'present' });
+  assert.deepEqual(codes(validateFlow(flow)).filter((c) => c === 'when-bad'), []);
+  const back = importFlow(JSON.parse(JSON.stringify(exportFlow(flow))));
+  assert.deepEqual(back.pages.find((p) => p.role === 'output').step.when, { field: key, is: 'present' });
+  // A field the flow doesn't have; the first step; the step that chooses the case: each a problem, with a fix.
+  setStepWhen(out, { field: 'nope', is: 'missing' });
+  assert.match(validateFlow(flow).find((i) => i.code === 'when-bad').text, /nope, which isn’t a field of this flow/);
+  setStepWhen(out, null);
+  assert.equal(out.step.when, undefined);
+  setStepWhen(order(flow)[0], { field: key, is: 'missing' });
+  assert.match(validateFlow(flow).find((i) => i.code === 'when-bad').text, /the first step can’t depend on the case/);
+  setStepWhen(order(flow)[0], null);
+  const queue = addPage(flow, 'guide');
+  bindPage(flow, queue.id, { url: `${base}cases.html`, title: 'Cases' });
+  flow.journey = [inp.id, queue.id, out.id];
+  queue.choose = { label: 'Choose a case', next: out.id };
+  setStepWhen(queue, { field: 'ref', is: 'missing' });
+  assert.ok(validateFlow(flow).some((i) => i.code === 'when-bad' && /chooses the case is always needed/.test(i.text) && i.pageId === queue.id));
 });

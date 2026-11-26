@@ -1,0 +1,34 @@
+{
+  "schema": "powerloader-profile/1",
+  "id": "fill/rent-review",
+  "kind": "fill",
+  "name": "Rent support review",
+  "version": "v1",
+  "form": {
+    "id": "rsr",
+    "version": "v1"
+  },
+  "match": [
+    "http://localhost:8787/demo/rent-review.html*"
+  ],
+  "urlPattern": "http://localhost:8787/demo/rent-review.html",
+  "when": "form#rent-review",
+  "fields": {
+    "#r-client": "CaseData.clientId",
+    "#r-first": "CaseData.firstName",
+    "#r-last": "CaseData.lastName",
+    "#r-dob": "CaseData.dob",
+    "#r-nino": "CaseData.nino",
+    "#r-address": "CaseData.address",
+    "#r-postcode": "CaseData.postcode",
+    "#r-tenancy": "CaseData.tenancyRef",
+    "#r-rent": "CaseData.monthlyRent",
+    "#r-arrears": "CaseData.arrears",
+    "#r-end": "CaseData.tenancyEndDate",
+    "#r-employer": "CaseData.currentEmployer",
+    "#r-income": "CaseData.weeklyIncome",
+    "#r-change": "CaseData.changeEffectiveDate",
+    "#r-new-income": "CaseData.newWeeklyIncome",
+    "#r-reason": "CaseData.reason"
+  }
+}

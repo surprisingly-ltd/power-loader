@@ -59,7 +59,7 @@ globalThis.browser = {
   scripting: { executeScript: async () => [] },
   downloads: { download: async ({ url, filename }) => { saved.push({ filename, text: await blobs.get(url).text() }); return saved.length; }, onChanged: events() },
   tabs: {
-    query: async () => [page], onUpdated: tabsUpdated, onActivated: tabsActivated,
+    query: async () => [page], get: async () => page, onUpdated: tabsUpdated, onActivated: tabsActivated,
     update: async (id, { url }) => { page = { ...page, url }; },
     sendMessage: async (id, msg) => {
       const d = pageDoc(page.url);
@@ -118,10 +118,15 @@ test('with no library, a flow is authored: the form by hand, the page with the A
   await until(() => /What to redact/.test(doc.body.textContent) && /Built-in patterns/.test(doc.body.textContent), 'privacy tab');
   [...doc.querySelectorAll('[role=tab]')].find((t) => t.textContent === 'Settings').click();
   (await until(() => byKey('welcome-done'), 'welcome again')).click();
-  // No library: the start screen offers to connect one, or to make a flow.
-  await until(() => /Or make a flow/.test(doc.body.textContent), 'start screen');
+  // No library and no flows: the start screen says so, and offers to connect one or to build a flow.
+  await until(() => byKey('go-build'), 'start screen');
   assert.match(doc.body.textContent, /Connect your team’s forms library/);
-  byKey('start-new-flow').click();
+  assert.match(byKey('no-flows').textContent, /no library connected, and no flows on this computer/);
+  assert.ok(byKey('go-connect'));
+  byKey('go-build').click();
+  await until(() => doc.querySelector('.sb-head.mode-build'), 'Build');
+  await until(() => local.settings.mode === 'build', 'the mode is kept');
+  (await until(() => byKey('fl-new'), 'flows list')).click();
   const name = await until(() => byKey('fl-name'), 'new flow');
   assert.equal(doc.querySelector('[role=tab][aria-selected=true]').textContent, 'Flows');
   // Typed, then straight to Edit without leaving the box: the guidance is saved and still there on return.
@@ -215,7 +220,7 @@ test('with no library, a flow is authored: the form by hand, the page with the A
   await until(() => inp().draft?.kind === 'extract', 'bound');
   assert.equal(requests, 1, 'asked once, in the click');
   assert.doesNotMatch(inp().name, /Kowalska/, 'never named after the person on the page');
-  (await until(() => { const b = byKey('fl-ai'); return b && !b.disabled && /Generate the extraction profile with AI/.test(b.textContent) && b; }, 'ai button')).click();
+  (await until(() => { const b = byKey('fl-ai'); return b && !b.disabled && /Make the template with AI/.test(b.textContent) && b; }, 'ai button')).click();
   const dlg = await until(() => doc.querySelector('[role=dialog]'), 'preview');
   assert.match(dlg.textContent, /Flow guidance/);
   [...dlg.querySelectorAll('button')].find((b) => /✦ Send/.test(b.textContent)).click();
@@ -306,8 +311,11 @@ test('the flow guides the caseworker: a page to visit, steps with templated link
 });
 
 test('a case starts from the flow with no library: clipping its page, then filling its form', async () => {
-  byKey(`fl-start-${flow().id}`).click();
+  // Try it, on the flow's overview: the only way from Build to a case.
+  byKey(`fl-open-${flow().id}`).click();
+  (await until(() => byKey('fl-try'), 'overview')).click();
   await until(() => local.case, 'case started');
+  await until(() => doc.querySelector('.sb-head.mode-casework'), 'Casework');
   assert.equal(doc.querySelector('[role=tab][aria-selected=true]').textContent, 'Case');
   assert.match(local.case.library.commit, /^flow-/);
   assert.deepEqual(local.case.library.flow, { id: flow().id, name: 'Rent arrears help' });
@@ -328,21 +336,28 @@ test('a case starts from the flow with no library: clipping its page, then filli
   await updateFlow(flow().id, (f) => { f.name = 'Renamed'; });
   assert.equal(local.case.library.commit, commit);
   assert.ok(local.library.sets[local.case.library.commit]);
-  // While a case is open, another can't start from a flow.
-  doc.querySelector('[role=tab]:nth-child(4)').click();
-  await until(() => byKey(`fl-start-${flow().id}`), 'flows list');
-  assert.equal(byKey(`fl-start-${flow().id}`).disabled, true);
+  // In Build, with the case still open: another can't start from a flow.
+  byKey('mode-build').click();
+  await until(() => byKey('fl-try') || byKey(`fl-open-${flow().id}`), 'Build');
+  byKey(`fl-open-${flow().id}`)?.click();
+  await until(() => byKey('fl-try'), 'overview');
+  assert.equal(byKey('fl-try').disabled, true);
+  assert.ok(local.case, 'the case stays open in Build');
+  assert.match(doc.querySelector('.case-chip').textContent, /Active case/, 'its reference stays in the header');
+  byKey('mode-casework').click();
+  await until(() => doc.querySelector('.sb-head.mode-casework'), 'back to Casework');
 });
 
 test('the case shows its steps: the link waits for the case reference, then opens the next page; the timeline is the flow’s', async () => {
   [...doc.querySelectorAll('[role=tab]')].find((t) => t.textContent === 'Case').click();
   await go('cases.html');
-  await until(() => /Steps · /.test(doc.body.textContent) && /oldest case marked New/.test(doc.body.textContent), 'steps card');
+  await until(() => byKey('steps-count') && /oldest case marked New/.test(doc.body.textContent), 'steps card');
+  assert.match(byKey('step-on-page').textContent, /This step is done on the page/, 'a page to visit, in view: no main button');
   assert.match(doc.body.textContent, /you’re on it now/);
   const open = byKey('step-link-0');
   assert.equal(open.textContent, 'Open the rent account');
   assert.equal(open.disabled, true, 'it needs the case reference');
-  assert.match(doc.body.textContent, /A link needs Case reference/);
+  assert.match(byKey('step-needs').textContent, /To go on, Power Loader needs the Case reference/);
   type(byKey('step-var-ref'), '1042', 'input');
   byKey('step-var-ref-use').click();
   await until(() => local.case.ref === '1042' && byKey('step-link-0') && !byKey('step-link-0').disabled, 'reference saved');
@@ -360,4 +375,39 @@ test('the case shows its steps: the link waits for the case reference, then open
   assert.match(doc.body.textContent, /6 Jan 2026 · Payments: Tenant payment/);
   type(show, 'all');
   await until(() => /Every period and date in the case/.test(doc.body.textContent), 'all dates');
+});
+
+test('Build: a page in view that isn’t in the flow is added as any of the three kinds; arriving on one in the flow opens it', async () => {
+  byKey('mode-build').click();
+  await until(() => doc.querySelector('.sb-head.mode-build'), 'Build');
+  assert.deepEqual([...doc.querySelectorAll('[role=tab]')].map((t) => t.textContent), ['Flows', 'Templates', 'Privacy', 'Settings']);
+  // The tab is on the rent account, a page of the open flow: Build opens it in its editor.
+  await until(() => byKey('fl-step-of') && byKey('fl-page-name')?.value === inp().name, 'the page in view, in its editor');
+  assert.match(byKey('fl-step-of').textContent, /^Step \d of Renamed$/);
+  await tick(); await tick();
+  byKey('fl-back').click();
+  await until(() => byKey('fl-try'), 'overview');
+  const before = flow().pages.length;
+  for (const [file, role] of [['employment-1042.html', 'input'], ['referral.html', 'output'], ['index.html', 'guide']]) {
+    await go(file);
+    const card = await until(() => byKey('fl-add-here'), `add card on ${file}`);
+    assert.match(card.textContent, /Add this page to Renamed/);
+    const had = new Set(flow().pages.map((p) => p.id));
+    byKey(`fl-add-here-${role}`).click();
+    const made = await until(() => flow().pages.find((p) => !had.has(p.id) && p.role === role), `${role} page made`);
+    assert.ok(made.draft || made.url, 'bound to the page in view');
+    await until(() => byKey('fl-page-name')?.value === made.name, `${role} editor open`);
+    assert.match(byKey('fl-step-of').textContent, /^Step \d+ of Renamed$/);
+    assert.equal(flow().journey.at(-1), made.id, 'added at the end of the steps');
+    (byKey('fl-page-done') || byKey('fl-back')).click();
+    await until(() => byKey('fl-try'), `overview again after ${role}: ${doc.querySelector('[role=tabpanel]')?.textContent.slice(0, 300)}`);
+  }
+  assert.equal(flow().pages.length, before + 3);
+  // Arriving on a page the flow has opens it in its editor.
+  await go('cases.html');
+  await until(() => byKey('fl-step-of'), 'arrived');
+  assert.equal(byKey('fl-page-name').value, flow().pages.find((p) => p.role === 'guide' && /cases\.html/.test(p.url)).name);
+  assert.equal(byKey('fl-add-here'), null, 'a page in the flow isn’t offered again');
+  byKey('mode-casework').click();
+  await until(() => doc.querySelector('.sb-head.mode-casework'), 'Casework');
 });

@@ -16,6 +16,8 @@ concurrency:
 
 jobs:
   build:
+    # Actions minutes: CI runs on the public repo only (free there); see tools/ci-local.sh.
+    if: github.repository == 'surprisingly-ltd/power-loader'
     name: build
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -36,7 +38,7 @@ jobs:
           [ "$TAG" = "v$version" ] || { echo "Tag $TAG doesn't match manifest version $version"; exit 1; }
           git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "$TAG is not on main"; exit 1; }
           echo "version=$version" >> "$GITHUB_OUTPUT"
-      - uses: ./.github/actions/setup
+      - uses: $/.github/actions/setup
       - run: pnpm test
       - run: pnpm check:vendor
       - run: pnpm check:lint
@@ -69,7 +71,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/actions/setup
+      - uses: $/.github/actions/setup
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: release-inputs
@@ -79,14 +81,26 @@ jobs:
           VERSION: ${{ needs.build.outputs.version }}
           WEB_EXT_API_KEY: ${{ secrets.AMO_JWT_ISSUER }}
           WEB_EXT_API_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
         run: |
           set -euo pipefail
-          src=$(mktemp -d)
-          unzip -q "inputs/power-loader-${VERSION}.zip" -d "$src"
-          npx web-ext sign --channel=unlisted --source-dir "$src" --artifacts-dir signed \
-            --upload-source-code "inputs/power-loader-${VERSION}-src.zip" --amo-metadata amo-metadata.json \
-            --approval-timeout 3000000
-          mv signed/*.xpi "signed/power-loader-${VERSION}.xpi"
+          mkdir -p signed
+          # AMO signs a version once. If it already has this one (uploaded by hand, or a re-run after a
+          # timeout), download it, checked against this build, instead of submitting it again.
+          status=0
+          node tools/amo-signed.mjs "$VERSION" "inputs/power-loader-${VERSION}.zip" "signed/power-loader-${VERSION}.xpi" || status=$?
+          if [ "$status" = 2 ]; then
+            src=$(mktemp -d)
+            unzip -q "inputs/power-loader-${VERSION}.zip" -d "$src"
+            npx web-ext sign --channel=unlisted --source-dir "$src" --artifacts-dir web-ext-signed \
+              --upload-source-code "inputs/power-loader-${VERSION}-src.zip" --amo-metadata amo-metadata.json \
+              --approval-timeout 3000000
+            # Then fetch the signed file the same way, so it is checked against this build too.
+            node tools/amo-signed.mjs "$VERSION" "inputs/power-loader-${VERSION}.zip" "signed/power-loader-${VERSION}.xpi"
+          elif [ "$status" != 0 ]; then
+            exit "$status"
+          fi
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: signed
